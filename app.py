@@ -135,24 +135,28 @@ class WebAnalyzer:
                 'Referer': self.url
             }
 
-            response = requests.head(url, headers=headers, timeout=5, allow_redirects=True)
-            content_length = response.headers.get('content-length')
-
-            if content_length and content_length.isdigit():
-                size = int(content_length)
-            else:
-                # Se content-length non è disponibile, fai una richiesta GET
+            # Usa direttamente GET per evitare problemi con HEAD
+            try:
                 response = requests.get(url, headers=headers, timeout=5, stream=True)
-                response.raw.decode_content = True
                 size = len(response.content)
+            except requests.exceptions.RequestException as e:
+                # In caso di errore, imposta una dimensione predefinita
+                print(f"Errore nel recuperare {url}: {str(e)}")
+                size = 0
 
             # Aggiorna le statistiche per il tipo di risorsa
-            self.resources[resource_type]['size'] += size
-            self.resources[resource_type]['count'] += 1
-            self.total_size += size
+            if resource_type in self.resources:
+                self.resources[resource_type]['size'] += size
+                self.resources[resource_type]['count'] += 1
+                self.total_size += size
+            else:
+                # Usa 'other' se il tipo di risorsa non è valido
+                self.resources['other']['size'] += size
+                self.resources['other']['count'] += 1
+                self.total_size += size
 
         except Exception as e:
-            pass  # Ignora errori per singole risorse
+            print(f"Errore nell'analizzare la risorsa {url}: {str(e)}")
 
     def calculate_metrics(self):
         # Calcola la CO2 in grammi basandosi sulla dimensione totale
