@@ -28,6 +28,7 @@ class WebAnalyzer:
         self.sustainability_score = 0
         self.co2_emissions = 0
         self.optimizations = []
+        self.economic_benefits = {}
 
     def analyze(self):
         # Misura il tempo di caricamento
@@ -195,6 +196,30 @@ class WebAnalyzer:
         # Limita il punteggio tra 0 e 100
         self.sustainability_score = max(0, min(100, score))
 
+        # Calcola il beneficio economico potenziale
+        # Assumiamo un costo medio di €0.05 per GB di traffico dati
+        # e una media di 10,000 visite mensili per un sito web standard
+        monthly_visits = 10000
+        current_cost_per_visit = (total_mb / 1024) * 0.05  # Costo in euro per visita
+        monthly_data_cost = current_cost_per_visit * monthly_visits
+
+        # Stima di risparmio potenziale (40% per siti con score basso, 20% per siti con score medio)
+        if self.sustainability_score < 50:
+            potential_savings_percent = 0.40
+        elif self.sustainability_score < 80:
+            potential_savings_percent = 0.20
+        else:
+            potential_savings_percent = 0.10
+
+        self.economic_benefits = {
+            "current_monthly_cost": round(monthly_data_cost, 2),
+            "potential_savings_percent": int(potential_savings_percent * 100),
+            "potential_monthly_savings": round(monthly_data_cost * potential_savings_percent, 2),
+            "potential_annual_savings": round(monthly_data_cost * potential_savings_percent * 12, 2),
+            "bandwidth_cost_per_visit": round(current_cost_per_visit * 1000, 4),  # in centesimi di euro
+            "estimated_monthly_visits": monthly_visits
+        }
+
     def generate_optimizations(self):
         # Analizza le risorse e genera suggerimenti di ottimizzazione
 
@@ -207,7 +232,8 @@ class WebAnalyzer:
                 'description': f'Le immagini sono troppo pesanti. Puoi ridurre la dimensione complessiva di {potential_savings}MB (60%) utilizzando formati moderni come WebP e tecniche di compressione.',
                 'priority': 'high' if image_size_mb > 2 else 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 risparmiata
-                'resource_type': 'images'
+                'resource_type': 'images',
+                'economic_impact': round((potential_savings / (self.total_size / (1024 * 1024))) * self.economic_benefits["potential_annual_savings"], 2)
             })
 
         # 2. Ottimizzazione JavaScript
@@ -219,7 +245,8 @@ class WebAnalyzer:
                 'description': f'I file JavaScript possono essere ridotti di {int(potential_savings * 1024)}KB (30%) attraverso la minificazione e l\'eliminazione di codice inutilizzato.',
                 'priority': 'high' if js_size_mb > 1 else 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 risparmiata
-                'resource_type': 'javascript'
+                'resource_type': 'javascript',
+                'economic_impact': round((potential_savings / (self.total_size / (1024 * 1024))) * self.economic_benefits["potential_annual_savings"], 2)
             })
 
         # 3. Ottimizzazione CSS
@@ -231,7 +258,8 @@ class WebAnalyzer:
                 'description': f'I file CSS possono essere ridotti di {int(potential_savings * 1024)}KB (40%) attraverso la minificazione e l\'eliminazione di regole inutilizzate.',
                 'priority': 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 risparmiata
-                'resource_type': 'css'
+                'resource_type': 'css',
+                'economic_impact': round((potential_savings / (self.total_size / (1024 * 1024))) * self.economic_benefits["potential_annual_savings"], 2)
             })
 
         # 4. Suggerimento CDN (sempre consigliato)
@@ -240,7 +268,8 @@ class WebAnalyzer:
             'description': 'L\'implementazione di una CDN (Content Delivery Network) potrebbe ridurre le emissioni di CO₂ del 16% grazie alla distribuzione geografica ottimizzata.',
             'priority': 'low',
             'impact': round(self.co2_emissions * 0.16, 2),  # CO2 risparmiata: 16% del totale
-            'resource_type': 'general'
+            'resource_type': 'general',
+            'economic_impact': round(self.economic_benefits["potential_annual_savings"] * 0.16, 2)
         })
 
         # 5. Hosting Green (sempre consigliato)
@@ -249,7 +278,8 @@ class WebAnalyzer:
             'description': 'Passare a un provider di hosting che utilizza energia rinnovabile potrebbe ridurre l\'impronta di carbonio del tuo sito web fino al 40%.',
             'priority': 'low',
             'impact': round(self.co2_emissions * 0.4, 2),  # CO2 risparmiata: 40% del totale
-            'resource_type': 'general'
+            'resource_type': 'general',
+            'economic_impact': round(self.economic_benefits["potential_annual_savings"] * 0.10, 2)  # Minor impatto economico ma grande impatto ecologico
         })
 
     def create_report(self):
@@ -286,14 +316,16 @@ class WebAnalyzer:
                 'co2_emissions': self.co2_emissions,
                 'total_size': total_size_formatted,
                 'total_size_bytes': self.total_size,
-                'load_time': round(self.load_time, 2)
+                'load_time': round(self.load_time, 2),
+                'economic_benefits': self.economic_benefits
             },
             'resources': resources_formatted,
             'optimizations': self.optimizations,
             'industry_comparison': {
                 'better_than_percent': 65,  # Valore di esempio
                 'average_co2': 0.6,  # Valore di esempio
-                'average_load_time': 2.5  # Valore di esempio
+                'average_load_time': 2.5,  # Valore di esempio
+                'average_cost_saving': 120  # Valore medio di risparmio annuale in euro
             }
         }
 

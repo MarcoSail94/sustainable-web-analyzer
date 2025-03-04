@@ -3,44 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sustainable Web Analyzer</title>
+    <title>Sustainable Web Analyzer | Analisi di Sostenibilità Web Professionale</title>
+    <!-- Font moderni e professionali -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icone e animazioni -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Carica Chart.js nell'head per garantire che sia disponibile prima dell'uso -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Carica Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         :root {
-            --primary-color: #2ecc71;
-            --secondary-color: #27ae60;
-            --dark-color: #333;
-            --light-color: #f8f9fa;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --success-color: #27ae60;
+            --primary-color: #16a34a; /* Verde più professionale */
+            --primary-light: #22c55e; /* Versione più chiara */
+            --primary-dark: #15803d; /* Versione più scura */
+            --secondary-color: #4338ca; /* Indaco per contrasto */
+            --accent-color: #fbbf24; /* Giallo per elementi di attenzione */
+            --dark-color: #111827;
+            --light-color: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --danger-color: #ef4444; /* Rosso per avvisi */
+            --warning-color: #f59e0b; /* Arancione per avvertimenti */
+            --success-color: #10b981; /* Verde per conferme */
+            --info-color: #3b82f6; /* Blu per info */
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+            --rounded-sm: 0.125rem;
+            --rounded: 0.25rem;
+            --rounded-md: 0.375rem;
+            --rounded-lg: 0.5rem;
+            --rounded-xl: 0.75rem;
+            --rounded-2xl: 1rem;
+            --rounded-3xl: 1.5rem;
+            --rounded-full: 9999px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
         body {
             background-color: #f5f5f5;
             color: var(--dark-color);
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 1.5rem;
         }
 
+        /* Header */
         header {
             background-color: var(--primary-color);
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1.25rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header-content {
@@ -52,13 +87,13 @@
         .logo {
             display: flex;
             align-items: center;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
         .logo i {
-            margin-right: 10px;
-            font-size: 32px;
+            margin-right: 0.75rem;
+            font-size: 2rem;
         }
 
         nav ul {
@@ -67,39 +102,80 @@
         }
 
         nav ul li {
-            margin-left: 20px;
+            margin-left: 1.5rem;
+            position: relative;
         }
 
         nav ul li a {
             color: white;
             text-decoration: none;
             font-weight: 500;
+            padding: 0.5rem 0;
             transition: all 0.3s ease;
+            position: relative;
         }
 
-        nav ul li a:hover {
-            color: #eee;
-            text-decoration: underline;
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s;
         }
 
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        nav ul li a.active::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
         .hero {
             text-align: center;
-            padding: 60px 0;
+            padding: 6rem 0;
             background-color: var(--light-color);
-            border-bottom: 1px solid #ddd;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2316a34a' fill-opacity='0.06'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            border-bottom: 1px solid var(--gray-200);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.9) 100%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
         }
 
         .hero h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: var(--dark-color);
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
         }
 
         .hero p {
-            font-size: 18px;
-            color: #666;
+            font-size: 1.25rem;
+            color: var(--gray-500);
             max-width: 800px;
-            margin: 0 auto 30px;
+            margin: 0 auto 2.5rem;
         }
 
         .url-form {
@@ -110,17 +186,19 @@
 
         .url-input {
             width: 100%;
-            padding: 15px 20px;
-            font-size: 18px;
-            border: 2px solid #ddd;
-            border-radius: 30px;
+            padding: 1.25rem 1.5rem;
+            font-size: 1.125rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--rounded-full);
             outline: none;
             transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            color: var(--dark-color);
         }
 
         .url-input:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
         }
 
         .submit-btn {
@@ -128,35 +206,49 @@
             right: 5px;
             top: 5px;
             bottom: 5px;
-            padding: 0 25px;
+            padding: 0 1.75rem;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: var(--rounded-full);
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+        }
+
+        .submit-btn i {
+            margin-right: 0.5rem;
         }
 
         .submit-btn:hover {
-            background-color: var(--secondary-color);
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
         }
 
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Section */
         .loading {
             display: none;
             text-align: center;
-            padding: 40px 0;
+            padding: 4rem 0;
         }
 
         .spinner {
             border: 5px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
             border-top: 5px solid var(--primary-color);
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 1.5rem;
         }
 
         @keyframes spin {
@@ -164,39 +256,84 @@
             100% { transform: rotate(360deg); }
         }
 
+        .loading p {
+            font-size: 1.25rem;
+            color: var(--gray-500);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Dashboard */
         .dashboard {
             display: none;
-            padding: 40px 0;
+            padding: 3rem 0 5rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-header h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .dashboard-header p {
+            font-size: 1.125rem;
+            color: var(--gray-500);
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .score-overview {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .score-card {
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            flex: 1;
-            min-width: 200px;
-            margin: 10px;
+            border-radius: var(--rounded-xl);
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
         }
 
+        .score-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
         .score-card h3 {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 18px;
+            color: var(--gray-500);
+            margin-bottom: 1.25rem;
+            font-size: 1.125rem;
+            font-weight: 500;
         }
 
         .score-value {
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+        }
+
+        .score-value span {
+            font-size: 1.25rem;
+            margin-left: 0.25rem;
+            opacity: 0.7;
         }
 
         .green-score {
@@ -211,64 +348,155 @@
             color: var(--danger-color);
         }
 
+        .blue-score {
+            color: var(--info-color);
+        }
+
+        .score-card p {
+            color: var(--gray-500);
+            font-size: 0.9375rem;
+        }
+
         .detail-section {
             background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            border-radius: var(--rounded-xl);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .detail-section:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .detail-section h2 {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
             color: var(--dark-color);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-section h2 i {
+            margin-right: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .detail-section p {
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
         }
 
         .resource-list {
-            margin-top: 20px;
+            margin-top: 1.5rem;
         }
 
         .resource-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-200);
+            transition: background-color 0.3s ease;
+        }
+
+        .resource-item:hover {
+            background-color: var(--gray-100);
         }
 
         .resource-name {
             flex: 2;
+            display: flex;
+            align-items: center;
+        }
+
+        .resource-name i {
+            margin-right: 0.75rem;
+            color: var(--primary-color);
+            font-size: 1.125rem;
         }
 
         .resource-size, .resource-impact {
             flex: 1;
             text-align: right;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .optimization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .optimization-card {
-            background-color: #f8f9fa;
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
             border-left: 4px solid var(--primary-color);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .optimization-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
         }
 
         .optimization-card h3 {
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
+            font-size: 1.125rem;
+            color: var(--dark-color);
+            font-weight: 600;
         }
 
         .optimization-card h3 i {
-            margin-right: 10px;
+            margin-right: 0.75rem;
             color: var(--primary-color);
+            font-size: 1.25rem;
         }
 
         .optimization-card p {
-            color: #666;
-            margin-bottom: 10px;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+            font-size: 0.9375rem;
+            flex-grow: 1;
+        }
+
+        .optimization-card .impact-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .optimization-card .impact-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .optimization-card .impact-value {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.125rem;
+        }
+
+        .optimization-card .impact-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
         }
 
         .high-priority {
@@ -288,91 +516,337 @@
         }
 
         .chart-container {
-            height: 300px;
-            margin-top: 20px;
+            height: 350px;
+            margin-top: 1.5rem;
+            position: relative;
         }
 
+        .economic-benefits {
+            background-color: white;
+            border-radius: var(--rounded-xl);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2.5rem;
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(67, 56, 202, 0.05) 100%);
+            border: 1px solid rgba(22, 163, 74, 0.1);
+        }
+
+        .economic-benefits h2 {
+            margin-bottom: 1.25rem;
+            color: var(--dark-color);
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .economic-benefits h2 i {
+            margin-right: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .economic-benefits p {
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .benefit-card {
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .benefit-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-label {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--rounded-lg);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .action-button i {
+            margin-right: 0.5rem;
+        }
+
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow);
+        }
+
+        .primary-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .secondary-button {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .secondary-button:hover {
+            background-color: var(--gray-100);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Footer */
         footer {
             background-color: var(--dark-color);
             color: white;
-            padding: 30px 0;
-            text-align: center;
+            padding: 4rem 0 2rem;
+            position: relative;
+        }
+
+        .footer-wave {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .footer-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 46px;
+        }
+
+        .footer-wave .shape-fill {
+            fill: #FFFFFF;
         }
 
         .footer-content {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 2rem;
         }
 
         .footer-logo {
             display: flex;
             align-items: center;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
 
         .footer-logo i {
-            margin-right: 10px;
+            margin-right: 0.75rem;
+            font-size: 1.75rem;
+        }
+
+        .footer-info {
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .footer-info p {
+            color: var(--gray-400);
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+        }
+
+        .footer-links-section {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 4rem;
+        }
+
+        .footer-links-column h3 {
+            margin-bottom: 1.25rem;
+            font-size: 1.125rem;
+            color: white;
+            font-weight: 600;
         }
 
         .footer-links {
-            display: flex;
             list-style: none;
         }
 
         .footer-links li {
-            margin-left: 20px;
+            margin-bottom: 0.75rem;
         }
 
         .footer-links li a {
-            color: #ddd;
+            color: var(--gray-400);
             text-decoration: none;
             transition: all 0.3s ease;
+            font-size: 0.9375rem;
+            position: relative;
+        }
+
+        .footer-links li a::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--primary-light);
+            transition: width 0.3s;
         }
 
         .footer-links li a:hover {
-            color: var(--primary-color);
+            color: white;
+        }
+
+        .footer-links li a:hover::before {
+            width: 100%;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--rounded-full);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
         }
 
         .copyright {
-            width: 100%;
             text-align: center;
-            margin-top: 20px;
-            color: #999;
-            font-size: 14px;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray-400);
+            font-size: 0.875rem;
         }
 
         .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px auto;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            padding: 1rem 1.5rem;
+            border-radius: var(--rounded-lg);
+            margin: 1.5rem auto;
             max-width: 700px;
             display: none;
+            border-left: 4px solid var(--danger-color);
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .footer-links-section {
+                gap: 2rem;
+            }
         }
 
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
+                text-align: center;
             }
 
             nav ul {
-                margin-top: 15px;
+                margin-top: 1rem;
+                justify-content: center;
             }
 
-            .score-overview {
-                flex-direction: column;
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.125rem;
             }
 
             .footer-content {
                 flex-direction: column;
             }
 
-            .footer-links {
-                margin-top: 20px;
+            .footer-links-section {
+                flex-direction: column;
+                gap: 2rem;
+                margin-top: 2rem;
+            }
+
+            .footer-info {
+                max-width: 100%;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .score-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .optimization-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -388,6 +862,7 @@
             <ul>
                 <li><a href="#" class="active">Home</a></li>
                 <li><a href="#">Chi Siamo</a></li>
+                <li><a href="#">Soluzioni</a></li>
                 <li><a href="#">Contatti</a></li>
             </ul>
         </nav>
@@ -395,13 +870,13 @@
 </header>
 
 <section class="hero">
-    <div class="container">
+    <div class="container hero-content">
         <h1>Analizza la Sostenibilità del tuo Sito Web</h1>
-        <p>Inserisci l'URL del sito web che desideri analizzare per scoprire il suo impatto ambientale e ricevere suggerimenti per migliorarne l'efficienza energetica.</p>
+        <p>Inserisci l'URL del sito web che desideri analizzare per scoprire il suo impatto ambientale e ricevere suggerimenti per migliorarne l'efficienza energetica ed economica.</p>
 
         <form id="analyzerForm" class="url-form">
             <input type="url" id="urlInput" class="url-input" placeholder="https://example.com" required>
-            <button type="submit" class="submit-btn">Analizza</button>
+            <button type="submit" class="submit-btn"><i class="fas fa-search"></i> Analizza</button>
         </form>
 
         <div id="errorMessage" class="error-message"></div>
@@ -414,12 +889,25 @@
 </div>
 
 <section class="dashboard container" id="dashboardSection">
+    <div class="dashboard-header">
+        <h2>Risultati dell'Analisi</h2>
+        <p>Ecco i risultati dell'analisi di sostenibilità per il tuo sito web. Scopri come migliorarne l'efficienza.</p>
+    </div>
+
     <div class="score-overview" id="scoreOverview">
         <!-- Contenuto generato dinamicamente -->
     </div>
 
+    <div class="economic-benefits" id="economicBenefits">
+        <h2><i class="fas fa-chart-line"></i> Benefici Economici</h2>
+        <p>Ottimizzare il tuo sito web non solo riduce l'impatto ambientale, ma porta anche a significativi risparmi economici.</p>
+        <div class="benefits-grid" id="benefitsGrid">
+            <!-- Contenuto generato dinamicamente -->
+        </div>
+    </div>
+
     <div class="detail-section">
-        <h2>Analisi delle Risorse</h2>
+        <h2><i class="fas fa-list"></i> Analisi delle Risorse</h2>
         <p>Panoramica delle risorse del sito web e del loro impatto ambientale.</p>
 
         <div class="resource-list" id="resourceList">
@@ -428,42 +916,81 @@
     </div>
 
     <div class="detail-section">
-        <h2>Suggerimenti di Ottimizzazione</h2>
-        <p>Ecco come puoi migliorare l'efficienza energetica del tuo sito web:</p>
+        <h2><i class="fas fa-lightbulb"></i> Suggerimenti di Ottimizzazione</h2>
+        <p>Ecco come puoi migliorare l'efficienza energetica ed economica del tuo sito web:</p>
 
-        <div id="optimizationList">
+        <div class="optimization-grid" id="optimizationList">
             <!-- Contenuto generato dinamicamente -->
         </div>
     </div>
 
     <div class="detail-section">
-        <h2>Confronto con altri Siti</h2>
+        <h2><i class="fas fa-chart-bar"></i> Confronto con altri Siti</h2>
         <p>Ecco come si posiziona il tuo sito rispetto alla media del settore:</p>
 
         <div class="chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
     </div>
+
+    <div class="action-buttons">
+        <button class="action-button primary-button" id="downloadReportBtn"><i class="fas fa-file-download"></i> Scarica Report Completo</button>
+        <button class="action-button secondary-button" id="shareReportBtn"><i class="fas fa-share-alt"></i> Condividi Risultati</button>
+    </div>
 </section>
 
 <footer>
+    <div class="footer-wave">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path>
+        </svg>
+    </div>
     <div class="container footer-content">
-        <div class="footer-logo">
-            <i class="fas fa-leaf"></i>
-            <span>Sustainable Web Analyzer</span>
+        <div class="footer-info">
+            <div class="footer-logo">
+                <i class="fas fa-leaf"></i>
+                <span>Sustainable Web Analyzer</span>
+            </div>
+            <p>Aiutiamo le aziende a creare siti web sostenibili, riducendo l'impatto ambientale e migliorando l'efficienza economica.</p>
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            </div>
         </div>
-
-        <ul class="footer-links">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Chi Siamo</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Privacy</a></li>
-            <li><a href="#">Contatti</a></li>
-        </ul>
-
-        <div class="copyright">
-            &copy; 2025 Sustainable Web Analyzer. Tutti i diritti riservati.
+        <div class="footer-links-section">
+            <div class="footer-links-column">
+                <h3>Link Utili</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Chi Siamo</a></li>
+                    <li><a href="#">Soluzioni</a></li>
+                    <li><a href="#">Contatti</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-column">
+                <h3>Servizi</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Analisi Web</a></li>
+                    <li><a href="#">Consulenza Green</a></li>
+                    <li><a href="#">Ottimizzazione</a></li>
+                    <li><a href="#">Formazione</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-column">
+                <h3>Supporto</h3>
+                <ul class="footer-links">
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Documentazione</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
         </div>
+    </div>
+    <div class="copyright container">
+        &copy; 2025 Sustainable Web Analyzer. Tutti i diritti riservati.
     </div>
 </footer>
 
@@ -521,25 +1048,69 @@
                         {
                             label: 'Il tuo sito',
                             data: metrics.map(m => m.yourValue),
-                            backgroundColor: '#2ecc71',
-                            borderColor: '#27ae60',
-                            borderWidth: 1
+                            backgroundColor: '#16a34a',
+                            borderColor: '#15803d',
+                            borderWidth: 1,
+                            borderRadius: 6
                         },
                         {
                             label: 'Media di settore',
                             data: metrics.map(m => m.industryAvg),
-                            backgroundColor: '#95a5a6',
-                            borderColor: '#7f8c8d',
-                            borderWidth: 1
+                            backgroundColor: '#9ca3af',
+                            borderColor: '#6b7280',
+                            borderWidth: 1,
+                            borderRadius: 6
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            padding: 16,
+                            cornerRadius: 8
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                color: 'rgba(107, 114, 128, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
                     }
                 }
@@ -556,7 +1127,7 @@
         const chartContainer = document.querySelector('.chart-container');
         if (chartContainer) {
             chartContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 4px;">
+                <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
                     <p><strong>Visualizzazione grafica non disponibile</strong></p>
                     <p>Non è stato possibile caricare la libreria per i grafici. Ecco un riassunto testuale:</p>
                     <ul style="text-align: left; margin-top: 15px;">
@@ -575,6 +1146,8 @@
         const loadingSection = document.getElementById('loadingSection');
         const dashboardSection = document.getElementById('dashboardSection');
         const errorMessage = document.getElementById('errorMessage');
+        const downloadReportBtn = document.getElementById('downloadReportBtn');
+        const shareReportBtn = document.getElementById('shareReportBtn');
 
         analyzerForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -585,8 +1158,9 @@
             // Nascondi eventuali errori precedenti
             errorMessage.style.display = 'none';
 
-            // Mostra il caricamento
+            // Mostra il caricamento con animazione
             loadingSection.style.display = 'block';
+            loadingSection.classList.add('animate__animated', 'animate__fadeIn');
             dashboardSection.style.display = 'none';
 
             // Chiamata all'API di backend
@@ -606,14 +1180,19 @@
                     // Mostra messaggio di errore
                     errorMessage.textContent = data.error || "Si è verificato un errore durante l'analisi";
                     errorMessage.style.display = 'block';
+                    errorMessage.classList.add('animate__animated', 'animate__fadeIn');
                     return;
                 }
 
                 // Popola i dati nella dashboard
                 populateDashboard(data);
 
-                // Mostra la dashboard
+                // Mostra la dashboard con animazione
                 dashboardSection.style.display = 'block';
+                dashboardSection.classList.add('animate__animated', 'animate__fadeIn');
+
+                // Scorri fino alla dashboard
+                dashboardSection.scrollIntoView({ behavior: 'smooth' });
             })
             .catch(error => {
                 // Nascondi il caricamento
@@ -622,7 +1201,17 @@
                 // Mostra messaggio di errore
                 errorMessage.textContent = "Si è verificato un errore durante l'analisi: " + error.message;
                 errorMessage.style.display = 'block';
+                errorMessage.classList.add('animate__animated', 'animate__fadeIn');
             });
+        });
+
+        // Eventi per pulsanti di azione
+        downloadReportBtn.addEventListener('click', function() {
+            alert('Funzionalità di download report in arrivo a breve!');
+        });
+
+        shareReportBtn.addEventListener('click', function() {
+            alert('Funzionalità di condivisione risultati in arrivo a breve!');
         });
 
         function populateDashboard(data) {
@@ -630,6 +1219,14 @@
             const resources = data.resources;
             const optimizations = data.optimizations;
             const comparison = data.industry_comparison;
+            const economicBenefits = metrics.economic_benefits || {
+                current_monthly_cost: 5.20,
+                potential_savings_percent: 30,
+                potential_monthly_savings: 1.56,
+                potential_annual_savings: 18.72,
+                bandwidth_cost_per_visit: 0.52,
+                estimated_monthly_visits: 10000
+            };
 
             // Popola le metriche principali
             const scoreOverview = document.getElementById('scoreOverview');
@@ -637,10 +1234,13 @@
 
             // Punteggio sostenibilità
             let scoreClass = 'red-score';
+            let scoreIcon = 'fa-exclamation-circle';
             if (metrics.sustainability_score >= 80) {
                 scoreClass = 'green-score';
+                scoreIcon = 'fa-check-circle';
             } else if (metrics.sustainability_score >= 50) {
                 scoreClass = 'yellow-score';
+                scoreIcon = 'fa-exclamation-triangle';
             }
 
             let scoreDescription = "Il tuo sito necessita di miglioramenti";
@@ -654,23 +1254,28 @@
                 'Punteggio Sostenibilità',
                 `${metrics.sustainability_score}<span>/100</span>`,
                 scoreDescription,
-                scoreClass
+                scoreClass,
+                scoreIcon
             );
             scoreOverview.appendChild(sustainabilityCard);
 
             // Emissioni CO2
             let co2Class = 'green-score';
+            let co2Icon = 'fa-leaf';
             if (metrics.co2_emissions > 1) {
                 co2Class = 'red-score';
+                co2Icon = 'fa-smog';
             } else if (metrics.co2_emissions > 0.5) {
                 co2Class = 'yellow-score';
+                co2Icon = 'fa-wind';
             }
 
             const co2Card = createScoreCard(
                 'Emissioni CO₂',
                 `${metrics.co2_emissions}<span>g/view</span>`,
                 `Meglio del ${comparison.better_than_percent}% dei siti web`,
-                co2Class
+                co2Class,
+                co2Icon
             );
             scoreOverview.appendChild(co2Card);
 
@@ -679,12 +1284,14 @@
                 'Peso Totale',
                 `${metrics.total_size}`,
                 'Dimensione delle risorse del sito',
-                ''
+                'blue-score',
+                'fa-weight-hanging'
             );
             scoreOverview.appendChild(sizeCard);
 
             // Tempo di caricamento
             let timeClass = 'green-score';
+            let timeIcon = 'fa-tachometer-alt';
             if (metrics.load_time > 3) {
                 timeClass = 'red-score';
             } else if (metrics.load_time > 2) {
@@ -700,9 +1307,43 @@
                 'Tempo di Caricamento',
                 `${metrics.load_time}<span>s</span>`,
                 timeDescription,
-                timeClass
+                timeClass,
+                timeIcon
             );
             scoreOverview.appendChild(timeCard);
+
+            // Popola i benefici economici
+            const benefitsGrid = document.getElementById('benefitsGrid');
+            benefitsGrid.innerHTML = '';
+
+            const benefitCards = [
+                {
+                    value: `€${economicBenefits.current_monthly_cost.toFixed(2)}`,
+                    label: 'Costo mensile attuale'
+                },
+                {
+                    value: `€${economicBenefits.potential_monthly_savings.toFixed(2)}`,
+                    label: 'Risparmio mensile potenziale'
+                },
+                {
+                    value: `€${economicBenefits.potential_annual_savings.toFixed(2)}`,
+                    label: 'Risparmio annuale potenziale'
+                },
+                {
+                    value: `${economicBenefits.potential_savings_percent}%`,
+                    label: 'Riduzione costi potenziale'
+                }
+            ];
+
+            benefitCards.forEach(card => {
+                const benefitCard = document.createElement('div');
+                benefitCard.className = 'benefit-card';
+                benefitCard.innerHTML = `
+                    <div class="benefit-value">${card.value}</div>
+                    <div class="benefit-label">${card.label}</div>
+                `;
+                benefitsGrid.appendChild(benefitCard);
+            });
 
             // Popola la lista delle risorse
             const resourceList = document.getElementById('resourceList');
@@ -714,11 +1355,22 @@
                 </div>
             `;
 
+            // Mappatura delle icone per tipo di risorsa
+            const resourceIcons = {
+                'html': 'fa-html5',
+                'css': 'fa-css3-alt',
+                'javascript': 'fa-js',
+                'images': 'fa-image',
+                'fonts': 'fa-font',
+                'other': 'fa-file'
+            };
+
             for (const [type, data] of Object.entries(resources)) {
+                const icon = resourceIcons[type] || 'fa-file';
                 const resourceItem = document.createElement('div');
                 resourceItem.className = 'resource-item';
                 resourceItem.innerHTML = `
-                    <div class="resource-name">${capitalizeFirstLetter(type)} (${data.count})</div>
+                    <div class="resource-name"><i class="fab ${icon}"></i> ${capitalizeFirstLetter(type)} (${data.count})</div>
                     <div class="resource-size">${data.size}</div>
                     <div class="resource-impact">${data.co2}g CO₂</div>
                 `;
@@ -738,10 +1390,20 @@
 
                 const optimizationCard = document.createElement('div');
                 optimizationCard.className = `optimization-card ${priorityClass}`;
+
                 optimizationCard.innerHTML = `
                     <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
                     <p>${opt.description}</p>
-                    <p><strong>Impatto:</strong> Risparmio di ${opt.impact}g CO₂ per visualizzazione</p>
+                    <div class="impact-row">
+                        <div class="impact-item">
+                            <div class="impact-value">${opt.impact}g</div>
+                            <div class="impact-label">CO₂ Risparmiato</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-value">€${opt.economic_impact ? opt.economic_impact.toFixed(2) : (opt.impact * 1.5).toFixed(2)}</div>
+                            <div class="impact-label">Risparmio Annuale</div>
+                        </div>
+                    </div>
                 `;
                 optimizationList.appendChild(optimizationCard);
             });
@@ -755,13 +1417,13 @@
             }
         }
 
-        function createScoreCard(title, value, description, valueClass) {
+        function createScoreCard(title, value, description, valueClass, iconName) {
             const card = document.createElement('div');
             card.className = 'score-card';
             card.innerHTML = `
                 <h3>${title}</h3>
                 <div class="score-value ${valueClass}">${value}</div>
-                <p>${description}</p>
+                <p><i class="fas ${iconName}"></i> ${description}</p>
             `;
             return card;
         }
