@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sustainable Web Analyzer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Carica Chart.js nell'head per garantire che sia disponibile prima dell'uso -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         :root {
             --primary-color: #2ecc71;
@@ -465,68 +467,87 @@
     </div>
 </footer>
 
-<!-- Carica prima Chart.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
-
 <script>
+    // Verifica che Chart.js sia caricato correttamente
+    window.addEventListener('DOMContentLoaded', function() {
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js non è stato caricato. Utilizzo fallback');
+            fallbackChartImplementation();
+        } else {
+            console.log('Chart.js caricato correttamente');
+        }
+    });
+
     // Funzione per confrontare le metriche del sito con la media di settore
     function createComparisonChart(data) {
-        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        try {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
 
-        // Distruggi eventuali grafici precedenti
-        if (window.comparisonChart && typeof window.comparisonChart.destroy === 'function') {
-            window.comparisonChart.destroy();
-        }
-
-        const metrics = [
-            {
-                label: 'Emissioni CO₂ (g/view)',
-                yourValue: data.metrics.co2_emissions,
-                industryAvg: data.industry_comparison.average_co2
-            },
-            {
-                label: 'Tempo di Caricamento (s)',
-                yourValue: data.metrics.load_time,
-                industryAvg: data.industry_comparison.average_load_time
-            },
-            {
-                label: 'Punteggio Sostenibilità (/100)',
-                yourValue: data.metrics.sustainability_score,
-                industryAvg: 75 // Valore di esempio
+            // Verifica ancora che Chart sia disponibile
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js non disponibile. Utilizzo fallback');
+                fallbackChartImplementation();
+                return;
             }
-        ];
 
-        window.comparisonChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: metrics.map(m => m.label),
-                datasets: [
-                    {
-                        label: 'Il tuo sito',
-                        data: metrics.map(m => m.yourValue),
-                        backgroundColor: '#2ecc71',
-                        borderColor: '#27ae60',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Media di settore',
-                        data: metrics.map(m => m.industryAvg),
-                        backgroundColor: '#95a5a6',
-                        borderColor: '#7f8c8d',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
+            // Distruggi eventuali grafici precedenti
+            if (window.comparisonChart && typeof window.comparisonChart.destroy === 'function') {
+                window.comparisonChart.destroy();
+            }
+
+            const metrics = [
+                {
+                    label: 'Emissioni CO₂ (g/view)',
+                    yourValue: data.metrics.co2_emissions,
+                    industryAvg: data.industry_comparison.average_co2
+                },
+                {
+                    label: 'Tempo di Caricamento (s)',
+                    yourValue: data.metrics.load_time,
+                    industryAvg: data.industry_comparison.average_load_time
+                },
+                {
+                    label: 'Punteggio Sostenibilità (/100)',
+                    yourValue: data.metrics.sustainability_score,
+                    industryAvg: 75 // Valore di esempio
+                }
+            ];
+
+            window.comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: metrics.map(m => m.label),
+                    datasets: [
+                        {
+                            label: 'Il tuo sito',
+                            data: metrics.map(m => m.yourValue),
+                            backgroundColor: '#2ecc71',
+                            borderColor: '#27ae60',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Media di settore',
+                            data: metrics.map(m => m.industryAvg),
+                            backgroundColor: '#95a5a6',
+                            borderColor: '#7f8c8d',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Errore durante la creazione del grafico:', error);
+            fallbackChartImplementation();
+        }
     }
 
     // Funzione di fallback per quando Chart.js non può essere caricato
@@ -725,8 +746,13 @@
                 optimizationList.appendChild(optimizationCard);
             });
 
-            // Crea il grafico di confronto
-            createComparisonChart(data);
+            // Crea il grafico di confronto con gestione degli errori
+            try {
+                createComparisonChart(data);
+            } catch (error) {
+                console.error('Errore durante la creazione del grafico:', error);
+                fallbackChartImplementation();
+            }
         }
 
         function createScoreCard(title, value, description, valueClass) {
