@@ -1496,7 +1496,7 @@
             'bandwidth': 'Costi di Banda',
             'energy': 'Costi Energetici',
             'seo_impact': 'Impatto SEO',
-            'bounce_impact': 'Utenti Persi',
+            'bounce_impact': 'Utenti Persi',  // Assicurati che questo sia scritto correttamente
             'extra_maintenance': 'Manutenzione Extra',
             'extra_infrastructure': 'Infrastruttura'
         };
@@ -1511,6 +1511,16 @@
             'extra_infrastructure': 'Costi aggiuntivi per server più potenti'
         };
 
+        // Mappatura diretta tra chiavi di costo e chiavi di risparmio
+        const costToSavingKeyMap = {
+            'bandwidth': 'bandwidth',
+            'energy': 'energy',
+            'seo_impact': 'seo_conversions',
+            'bounce_impact': 'reduced_bounce',
+            'extra_maintenance': 'maintenance',
+            'extra_infrastructure': 'infrastructure'
+        };
+
         const costsData = economicBenefits.costs_breakdown;
         const savingsData = economicBenefits.savings_breakdown;
 
@@ -1519,12 +1529,8 @@
 
         // Itera su tutte le categorie di costo
         for (const [key, value] of Object.entries(costsData)) {
-            // Trova il corrispondente valore di risparmio
-            const savingKey = key === 'seo_impact' ? 'seo_conversions' :
-                            key === 'bounce_impact' ? 'reduced_bounce' :
-                            key === 'extra_maintenance' ? 'maintenance' :
-                            key === 'extra_infrastructure' ? 'infrastructure' : key;
-
+            // Usa la mappatura diretta invece di una espressione condizionale
+            const savingKey = costToSavingKeyMap[key] || key;
             const savingValue = savingsData[savingKey] || 0;
 
             totalCurrent += value;

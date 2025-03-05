@@ -377,7 +377,7 @@ class WebAnalyzer:
                 'priority': 'high' if self.resources['javascript']['count'] > 10 else 'medium',
                 'impact': round(self.co2_emissions * 0.2, 2),
                 'resource_type': 'javascript',
-                'economic_impact': round(self.economic_benefits["bounce_impact"] * 0.4, 2)  # 40% dell'impatto del bounce rate
+                'economic_impact': round(self.economic_benefits["costs_breakdown"]["bounce_impact"] * 0.4, 2) # 40% dell'impatto del bounce rate
             })
 
     def create_report(self):
