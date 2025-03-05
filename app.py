@@ -161,16 +161,14 @@ class WebAnalyzer:
             print(f"Errore nell'analizzare la risorsa {url}: {str(e)}")
 
     def calculate_metrics(self):
-        # Calcola la CO2 in grammi basandosi sulla dimensione totale
-        # Stima approssimativa: 0.2g CO2 per MB di dati trasferiti
+        # Calcoli esistenti
         total_mb = self.total_size / (1024 * 1024)
         self.co2_emissions = round(total_mb * 0.2, 2)
 
-        # Calcola il punteggio di sostenibilità (0-100)
-        # Punteggio base: 100
+        # Punteggi penalità (codice esistente)
         score = 100
 
-        # Punteggi penalità
+        # Penalità per dimensione
         if total_mb > 5:  # Più di 5MB
             score -= 30
         elif total_mb > 3:  # Tra 3 e 5MB
@@ -197,27 +195,93 @@ class WebAnalyzer:
         # Limita il punteggio tra 0 e 100
         self.sustainability_score = max(0, min(100, score))
 
-        # Calcola il beneficio economico potenziale
-        # Assumiamo un costo medio di €0.05 per GB di traffico dati
-        monthly_visits = self.monthly_visits  # Usa il valore personalizzato
-        current_cost_per_visit = (total_mb / 1024) * 0.05  # Costo in euro per visita
-        monthly_data_cost = current_cost_per_visit * monthly_visits
+        # CALCOLI ECONOMICI MIGLIORATI
+        monthly_visits = self.monthly_visits
 
-        # Stima di risparmio potenziale (40% per siti con score basso, 20% per siti con score medio)
+        # 1. Costo larghezza di banda (già presente)
+        current_cost_per_visit = (total_mb / 1024) * 0.05  # Costo in euro per visita
+        monthly_bandwidth_cost = current_cost_per_visit * monthly_visits
+
+        # 2. Costi energetici del data center
+        # Stima: 0.001 kWh per MB di dati, 0.20€ per kWh
+        energy_consumption_kwh = total_mb * 0.001 * monthly_visits
+        monthly_energy_cost = energy_consumption_kwh * 0.20
+
+        # 3. Impatto SEO e conversioni
+        # Stima: perdita dell'1% del valore per ogni 0.5s oltre 2s di caricamento
+        avg_conversion_value = 30  # Valore medio di una conversione in euro
+        conversion_rate = 0.02  # Tasso di conversione base
+        seo_penalty = max(0, (self.load_time - 2) / 0.5) * 0.01
+
+        potential_conversions = monthly_visits * conversion_rate
+        lost_value_seo = potential_conversions * seo_penalty * avg_conversion_value
+
+        # 4. Costo di abbandono
+        # Stima: aumento del 10% del tasso di rimbalzo per ogni secondo oltre 3s
+        bounce_increase = max(0, (self.load_time - 3) * 0.1)
+        additional_bounces = monthly_visits * bounce_increase
+        lost_value_bounce = additional_bounces * conversion_rate * avg_conversion_value
+
+        # 5. Costi di manutenzione
+        # Stima: 10% in più di tempo di sviluppo per ogni 500KB extra oltre 1MB
+        excess_size_factor = max(0, (total_mb - 1) / 0.5) * 0.1
+        hourly_dev_rate = 50  # Costo orario sviluppatore (euro)
+        monthly_dev_hours = 10  # Ore mensili di manutenzione base
+        additional_maintenance_cost = monthly_dev_hours * excess_size_factor * hourly_dev_rate
+
+        # 6. Costi infrastruttura scalabile
+        # Stima: incremento 5% nei costi di server per ogni 1MB oltre 2MB
+        infrastructure_cost_base = 100  # Costo base mensile dell'infrastruttura
+        infrastructure_penalty = max(0, (total_mb - 2)) * 0.05
+        additional_infrastructure_cost = infrastructure_cost_base * infrastructure_penalty
+
+        # Calcolo del totale dei costi attuali
+        total_current_monthly_cost = (
+                monthly_bandwidth_cost +
+                monthly_energy_cost +
+                lost_value_seo +
+                lost_value_bounce +
+                additional_maintenance_cost +
+                additional_infrastructure_cost
+        )
+
+        # Calcolo del potenziale risparmio
         if self.sustainability_score < 50:
             potential_savings_percent = 0.40
         elif self.sustainability_score < 80:
-            potential_savings_percent = 0.20
+            potential_savings_percent = 0.25
         else:
             potential_savings_percent = 0.10
 
+        # Dettaglio dei risparmi per categoria
+        savings_detail = {
+            "bandwidth": round(monthly_bandwidth_cost * potential_savings_percent, 2),
+            "energy": round(monthly_energy_cost * potential_savings_percent, 2),
+            "seo_conversions": round(lost_value_seo * 0.7, 2),  # 70% di recupero
+            "reduced_bounce": round(lost_value_bounce * 0.6, 2),  # 60% di recupero
+            "maintenance": round(additional_maintenance_cost * 0.8, 2),  # 80% di recupero
+            "infrastructure": round(additional_infrastructure_cost * 0.9, 2)  # 90% di recupero
+        }
+
+        # Calcolo totale dei risparmi potenziali
+        total_potential_savings = sum(savings_detail.values())
+
         self.economic_benefits = {
-            "current_monthly_cost": round(monthly_data_cost, 2),
-            "potential_savings_percent": int(potential_savings_percent * 100),
-            "potential_monthly_savings": round(monthly_data_cost * potential_savings_percent, 2),
-            "potential_annual_savings": round(monthly_data_cost * potential_savings_percent * 12, 2),
+            "current_monthly_cost": round(total_current_monthly_cost, 2),
+            "potential_savings_percent": int(100 * total_potential_savings / max(1, total_current_monthly_cost)),
+            "potential_monthly_savings": round(total_potential_savings, 2),
+            "potential_annual_savings": round(total_potential_savings * 12, 2),
             "bandwidth_cost_per_visit": round(current_cost_per_visit * 1000, 4),  # in centesimi di euro
-            "estimated_monthly_visits": monthly_visits
+            "estimated_monthly_visits": monthly_visits,
+            "savings_breakdown": savings_detail,
+            "costs_breakdown": {
+                "bandwidth": round(monthly_bandwidth_cost, 2),
+                "energy": round(monthly_energy_cost, 2),
+                "seo_impact": round(lost_value_seo, 2),
+                "bounce_impact": round(lost_value_bounce, 2),
+                "extra_maintenance": round(additional_maintenance_cost, 2),
+                "extra_infrastructure": round(additional_infrastructure_cost, 2)
+            }
         }
 
     def generate_optimizations(self):
@@ -281,6 +345,40 @@ class WebAnalyzer:
             'resource_type': 'general',
             'economic_impact': round(self.economic_benefits["potential_annual_savings"] * 0.10, 2)  # Minor impatto economico ma grande impatto ecologico
         })
+
+        # 6. Nuova ottimizzazione: Font Web
+        font_size_mb = self.resources['fonts']['size'] / (1024 * 1024)
+        if font_size_mb > 0.1:
+            potential_savings = round(font_size_mb * 0.5, 1)  # Stima: si può risparmiare il 50%
+            self.optimizations.append({
+                'title': 'Ottimizzazione Font Web',
+                'description': f'I font web aggiungono {round(font_size_mb, 1)}MB al tuo sito. Considera l\'uso di font di sistema o subset di caratteri per ridurre il peso del 50%.',
+                'priority': 'medium' if font_size_mb > 0.3 else 'low',
+                'impact': round(potential_savings * 0.2, 2),
+                'resource_type': 'fonts',
+                'economic_impact': round((potential_savings / (self.total_size / (1024 * 1024))) * self.economic_benefits["potential_annual_savings"], 2)
+            })
+
+        # 7. Nuova ottimizzazione: HTTP/2 o HTTP/3
+        self.optimizations.append({
+            'title': 'Aggiornamento Protocollo HTTP',
+            'description': 'L\'utilizzo di HTTP/2 o HTTP/3 può ridurre il tempo di caricamento fino al 30% riducendo la latenza e ottimizzando le connessioni.',
+            'priority': 'medium',
+            'impact': round(self.co2_emissions * 0.15, 2),
+            'resource_type': 'general',
+            'economic_impact': round(self.economic_benefits["potential_annual_savings"] * 0.15, 2)
+        })
+
+        # 8. Nuova ottimizzazione: Riduzione script di terze parti
+        if self.resources['javascript']['count'] > 5:
+            self.optimizations.append({
+                'title': 'Riduzione Script di Terze Parti',
+                'description': f'Il tuo sito utilizza {self.resources["javascript"]["count"]} script. Riducendo gli script di analytics, social media e pubblicità si può migliorare notevolmente il caricamento.',
+                'priority': 'high' if self.resources['javascript']['count'] > 10 else 'medium',
+                'impact': round(self.co2_emissions * 0.2, 2),
+                'resource_type': 'javascript',
+                'economic_impact': round(self.economic_benefits["bounce_impact"] * 0.4, 2)  # 40% dell'impatto del bounce rate
+            })
 
     def create_report(self):
         # Converti i byte in formato più leggibile

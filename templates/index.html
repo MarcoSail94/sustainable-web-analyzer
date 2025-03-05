@@ -593,6 +593,7 @@
             position: relative;
         }
 
+        /* Stili aggiuntivi per le nuove sezioni economiche */
         .economic-benefits {
             background-color: white;
             border-radius: var(--rounded-xl);
@@ -654,6 +655,137 @@
         .benefit-label {
             color: var(--gray-500);
             font-size: 0.875rem;
+        }
+
+        /* Stili aggiuntivi per le nuove sezioni */
+        .charts-row {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-container {
+            flex: 1;
+            height: 350px;
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .costs-table-container {
+            margin-top: 2rem;
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .costs-table-container h4 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+            font-size: 1.25rem;
+        }
+
+        .costs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .costs-table th,
+        .costs-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .costs-table th {
+            background-color: var(--gray-100);
+            font-weight: 600;
+        }
+
+        .costs-table tfoot td {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .parameters-info {
+            margin-top: 3rem;
+        }
+
+        .parameters-info h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+        }
+
+        .parameters-info h3 i {
+            margin-right: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .parameter-card {
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .parameter-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .parameter-icon {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(22, 163, 74, 0.1);
+            border-radius: var(--rounded-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .parameter-icon i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .parameter-card h4 {
+            margin-bottom: 0.75rem;
+            color: var(--dark-color);
+            font-size: 1.125rem;
+        }
+
+        .parameter-card p {
+            color: var(--gray-500);
+            font-size: 0.9375rem;
+        }
+
+        .cost-breakdown-section {
+            margin-top: 2rem;
+        }
+
+        .cost-breakdown-section h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+        }
+
+        .cost-breakdown-section h3 i {
+            margin-right: 0.75rem;
+            color: var(--primary-color);
         }
 
         .action-buttons {
@@ -898,6 +1030,14 @@
             .social-links {
                 justify-content: center;
             }
+
+            .charts-row {
+                flex-direction: column;
+            }
+
+            .chart-container {
+                margin-bottom: 1.5rem;
+            }
         }
 
         @media (max-width: 640px) {
@@ -983,10 +1123,82 @@
     </div>
 
     <div class="economic-benefits" id="economicBenefits">
-        <h2><i class="fas fa-chart-line"></i> Benefici Economici</h2>
-        <p>Ottimizzare il tuo sito web non solo riduce l'impatto ambientale, ma porta anche a significativi risparmi economici.</p>
+        <h2><i class="fas fa-chart-line"></i> Benefici Economici Completi</h2>
+        <p>Scopri quanto puoi risparmiare ottimizzando il tuo sito web, considerando tutti i fattori di costo.</p>
+
+        <!-- Card con i valori principali -->
         <div class="benefits-grid" id="benefitsGrid">
             <!-- Contenuto generato dinamicamente -->
+        </div>
+
+        <!-- Sezione dei grafici dettagliati -->
+        <div class="cost-breakdown-section">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Analisi Dettagliata dei Costi</h3>
+            <p>Ecco una suddivisione dei costi attuali e dei potenziali risparmi del tuo sito web.</p>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <canvas id="costsBreakdownChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="savingsBreakdownChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabella con i costi dettagliati -->
+            <div class="costs-table-container">
+                <h4>Dettaglio dei costi mensili</h4>
+                <table class="costs-table">
+                    <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Costo Attuale</th>
+                        <th>Risparmio Potenziale</th>
+                        <th>Descrizione</th>
+                    </tr>
+                    </thead>
+                    <tbody id="costsTableBody">
+                    <!-- Contenuto generato dinamicamente -->
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td><strong>Totale</strong></td>
+                        <td id="totalCurrentCost"><strong>€0.00</strong></td>
+                        <td id="totalPotentialSavings"><strong>€0.00</strong></td>
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sezione informativa sui parametri considerati -->
+        <div class="parameters-info">
+            <h3><i class="fas fa-info-circle"></i> Parametri Considerati</h3>
+            <p>L'analisi include diversi fattori oltre ai semplici costi di hosting e larghezza di banda:</p>
+
+            <div class="parameters-grid">
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <h4>Prestazioni e SEO</h4>
+                    <p>Siti più veloci ottengono posizionamenti migliori e hanno tassi di conversione più elevati.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-users"></i></div>
+                    <h4>Tassi di Abbandono</h4>
+                    <p>Ogni secondo di ritardo aumenta il tasso di abbandono, con conseguente perdita di potenziali clienti.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-code"></i></div>
+                    <h4>Costi di Manutenzione</h4>
+                    <p>Siti più leggeri e puliti richiedono meno tempo di sviluppo e debug.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-server"></i></div>
+                    <h4>Costi Infrastruttura</h4>
+                    <p>Un sito ottimizzato richiede meno risorse di server, con risparmio sui costi di hosting.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1104,6 +1316,237 @@
             });
         }
     });
+
+    // Funzione per creare i grafici di suddivisione dei costi
+    function createCostBreakdownCharts(economicBenefits) {
+        // Verifica che Chart.js sia disponibile
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js non disponibile per i grafici di costo');
+            fallbackEconomicCharts();
+            return;
+        }
+
+        // Crea il grafico di suddivisione dei costi
+        const costsData = economicBenefits.costs_breakdown;
+        const costsCtx = document.getElementById('costsBreakdownChart').getContext('2d');
+
+        // Distruggi eventuali grafici precedenti
+        if (window.costsChart && typeof window.costsChart.destroy === 'function') {
+            window.costsChart.destroy();
+        }
+
+        window.costsChart = new Chart(costsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Costi di Banda',
+                    'Costi Energetici',
+                    'Impatto SEO',
+                    'Utenti Persi',
+                    'Costi Manutenzione',
+                    'Infrastruttura Extra'
+                ],
+                datasets: [{
+                    data: [
+                        costsData.bandwidth,
+                        costsData.energy,
+                        costsData.seo_impact,
+                        costsData.bounce_impact,
+                        costsData.extra_maintenance,
+                        costsData.extra_infrastructure
+                    ],
+                    backgroundColor: [
+                        '#3b82f6', // blu
+                        '#10b981', // verde
+                        '#f59e0b', // arancione
+                        '#ef4444', // rosso
+                        '#8b5cf6', // viola
+                        '#6b7280'  // grigio
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                return `${label}: €${value.toFixed(2)}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Suddivisione dei Costi Mensili',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+
+        // Crea il grafico di suddivisione dei risparmi
+        const savingsData = economicBenefits.savings_breakdown;
+        const savingsCtx = document.getElementById('savingsBreakdownChart').getContext('2d');
+
+        // Distruggi eventuali grafici precedenti
+        if (window.savingsChart && typeof window.savingsChart.destroy === 'function') {
+            window.savingsChart.destroy();
+        }
+
+        window.savingsChart = new Chart(savingsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Risparmio Banda',
+                    'Risparmio Energia',
+                    'Migliore SEO',
+                    'Meno Rimbalzi',
+                    'Meno Manutenzione',
+                    'Infrastruttura Ottimizzata'
+                ],
+                datasets: [{
+                    data: [
+                        savingsData.bandwidth,
+                        savingsData.energy,
+                        savingsData.seo_conversions,
+                        savingsData.reduced_bounce,
+                        savingsData.maintenance,
+                        savingsData.infrastructure
+                    ],
+                    backgroundColor: [
+                        '#3b82f6', // blu
+                        '#10b981', // verde
+                        '#f59e0b', // arancione
+                        '#ef4444', // rosso
+                        '#8b5cf6', // viola
+                        '#6b7280'  // grigio
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                return `${label}: €${value.toFixed(2)}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Potenziali Risparmi Mensili',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Funzione di fallback per quando Chart.js non può essere caricato
+    function fallbackEconomicCharts() {
+        const costsChart = document.getElementById('costsBreakdownChart');
+        const savingsChart = document.getElementById('savingsBreakdownChart');
+
+        if (costsChart) {
+            costsChart.parentNode.innerHTML = `
+                <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                    <p><strong>Grafico non disponibile</strong></p>
+                    <p>Non è stato possibile caricare i grafici di suddivisione dei costi.</p>
+                </div>
+            `;
+        }
+
+        if (savingsChart) {
+            savingsChart.parentNode.innerHTML = `
+                <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                    <p><strong>Grafico non disponibile</strong></p>
+                    <p>Non è stato possibile caricare i grafici di suddivisione dei risparmi.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Funzione per popolare la tabella dei costi dettagliati
+    function populateEconomicDetails(economicBenefits) {
+        // Popola la tabella dei costi
+        const costsTableBody = document.getElementById('costsTableBody');
+        costsTableBody.innerHTML = '';
+
+        // Mappatura dei nomi delle categorie
+        const categoryNames = {
+            'bandwidth': 'Costi di Banda',
+            'energy': 'Costi Energetici',
+            'seo_impact': 'Impatto SEO',
+            'bounce_impact': 'Utenti Persi',
+            'extra_maintenance': 'Manutenzione Extra',
+            'extra_infrastructure': 'Infrastruttura'
+        };
+
+        // Mappatura delle descrizioni
+        const categoryDescriptions = {
+            'bandwidth': 'Costi di trasferimento dati mensili',
+            'energy': 'Consumo energetico dei server',
+            'seo_impact': 'Perdita di valore dalle conversioni mancate per peggiore posizionamento',
+            'bounce_impact': 'Valore perso da utenti che abbandonano per lentezza',
+            'extra_maintenance': 'Costi aggiuntivi per mantenere codice complesso',
+            'extra_infrastructure': 'Costi aggiuntivi per server più potenti'
+        };
+
+        const costsData = economicBenefits.costs_breakdown;
+        const savingsData = economicBenefits.savings_breakdown;
+
+        let totalCurrent = 0;
+        let totalSavings = 0;
+
+        // Itera su tutte le categorie di costo
+        for (const [key, value] of Object.entries(costsData)) {
+            // Trova il corrispondente valore di risparmio
+            const savingKey = key === 'seo_impact' ? 'seo_conversions' :
+                            key === 'bounce_impact' ? 'reduced_bounce' :
+                            key === 'extra_maintenance' ? 'maintenance' :
+                            key === 'extra_infrastructure' ? 'infrastructure' : key;
+
+            const savingValue = savingsData[savingKey] || 0;
+
+            totalCurrent += value;
+            totalSavings += savingValue;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${categoryNames[key] || key}</td>
+                <td>€${value.toFixed(2)}</td>
+                <td>€${savingValue.toFixed(2)}</td>
+                <td>${categoryDescriptions[key] || ''}</td>
+            `;
+            costsTableBody.appendChild(row);
+        }
+
+        // Aggiorna i totali
+        document.getElementById('totalCurrentCost').textContent = `€${totalCurrent.toFixed(2)}`;
+        document.getElementById('totalPotentialSavings').textContent = `€${totalSavings.toFixed(2)}`;
+
+        // Crea i grafici di suddivisione
+        createCostBreakdownCharts(economicBenefits);
+    }
 
     // Funzione per confrontare le metriche del sito con la media di settore
     function createComparisonChart(data) {
@@ -1241,6 +1684,249 @@
         }
     }
 
+    function populateDashboard(data) {
+        const metrics = data.metrics;
+        const resources = data.resources;
+        const optimizations = data.optimizations;
+        const comparison = data.industry_comparison;
+        const economicBenefits = metrics.economic_benefits || {
+            current_monthly_cost: 5.20,
+            potential_savings_percent: 30,
+            potential_monthly_savings: 1.56,
+            potential_annual_savings: 18.72,
+            bandwidth_cost_per_visit: 0.52,
+            estimated_monthly_visits: 10000,
+            costs_breakdown: {
+                bandwidth: 2.10,
+                energy: 0.60,
+                seo_impact: 1.20,
+                bounce_impact: 0.80,
+                extra_maintenance: 0.30,
+                extra_infrastructure: 0.20
+            },
+            savings_breakdown: {
+                bandwidth: 0.63,
+                energy: 0.18,
+                seo_conversions: 0.84,
+                reduced_bounce: 0.48,
+                maintenance: 0.24,
+                infrastructure: 0.18
+            }
+        };
+
+        // Popola le metriche principali
+        const scoreOverview = document.getElementById('scoreOverview');
+        scoreOverview.innerHTML = '';
+
+        // Punteggio sostenibilità
+        let scoreClass = 'red-score';
+        let scoreIcon = 'fa-exclamation-circle';
+        if (metrics.sustainability_score >= 80) {
+            scoreClass = 'green-score';
+            scoreIcon = 'fa-check-circle';
+        } else if (metrics.sustainability_score >= 50) {
+            scoreClass = 'yellow-score';
+            scoreIcon = 'fa-exclamation-triangle';
+        }
+
+        let scoreDescription = "Il tuo sito necessita di miglioramenti";
+        if (metrics.sustainability_score >= 80) {
+            scoreDescription = "Il tuo sito è molto efficiente";
+        } else if (metrics.sustainability_score >= 50) {
+            scoreDescription = "Il tuo sito è abbastanza efficiente";
+        }
+
+        const sustainabilityCard = createScoreCard(
+            'Punteggio Sostenibilità',
+            `${metrics.sustainability_score}<span>/100</span>`,
+            scoreDescription,
+            scoreClass,
+            scoreIcon
+        );
+        scoreOverview.appendChild(sustainabilityCard);
+
+        // Emissioni CO2
+        let co2Class = 'green-score';
+        let co2Icon = 'fa-leaf';
+        if (metrics.co2_emissions > 1) {
+            co2Class = 'red-score';
+            co2Icon = 'fa-smog';
+        } else if (metrics.co2_emissions > 0.5) {
+            co2Class = 'yellow-score';
+            co2Icon = 'fa-wind';
+        }
+
+        const co2Card = createScoreCard(
+            'Emissioni CO₂',
+            `${metrics.co2_emissions}<span>g/view</span>`,
+            `Meglio del ${comparison.better_than_percent}% dei siti web`,
+            co2Class,
+            co2Icon
+        );
+        scoreOverview.appendChild(co2Card);
+
+        // Peso totale
+        const sizeCard = createScoreCard(
+            'Peso Totale',
+            `${metrics.total_size}`,
+            'Dimensione delle risorse del sito',
+            'blue-score',
+            'fa-weight-hanging'
+        );
+        scoreOverview.appendChild(sizeCard);
+
+        // Tempo di caricamento
+        let timeClass = 'green-score';
+        let timeIcon = 'fa-tachometer-alt';
+        if (metrics.load_time > 3) {
+            timeClass = 'red-score';
+        } else if (metrics.load_time > 2) {
+            timeClass = 'yellow-score';
+        }
+
+        let timeDescription = `Veloce rispetto alla media (${comparison.average_load_time}s)`;
+        if (metrics.load_time > comparison.average_load_time) {
+            timeDescription = `Lento rispetto alla media (${comparison.average_load_time}s)`;
+        }
+
+        const timeCard = createScoreCard(
+            'Tempo di Caricamento',
+            `${metrics.load_time}<span>s</span>`,
+            timeDescription,
+            timeClass,
+            timeIcon
+        );
+        scoreOverview.appendChild(timeCard);
+
+        // Popola i benefici economici - Card principali
+        const benefitsGrid = document.getElementById('benefitsGrid');
+        benefitsGrid.innerHTML = '';
+
+        // Calcola importi annuali per le card principali
+        const annualCost = economicBenefits.current_monthly_cost * 12;
+        const annualSavings = economicBenefits.potential_annual_savings;
+        const savingsPercent = economicBenefits.potential_savings_percent;
+        const savingsPerVisit = (economicBenefits.potential_monthly_savings / economicBenefits.estimated_monthly_visits) * 100; // in centesimi di euro
+
+        const benefitCards = [
+            {
+                value: `€${annualCost.toFixed(2)}`,
+                label: 'Costo annuale attuale'
+            },
+            {
+                value: `€${annualSavings.toFixed(2)}`,
+                label: 'Risparmio annuale potenziale'
+            },
+            {
+                value: `${savingsPercent}%`,
+                label: 'Riduzione costi potenziale'
+            },
+            {
+                value: `${savingsPerVisit.toFixed(2)}¢`,
+                label: 'Risparmio per visita'
+            }
+        ];
+
+        benefitCards.forEach(card => {
+            const benefitCard = document.createElement('div');
+            benefitCard.className = 'benefit-card';
+            benefitCard.innerHTML = `
+                <div class="benefit-value">${card.value}</div>
+                <div class="benefit-label">${card.label}</div>
+            `;
+            benefitsGrid.appendChild(benefitCard);
+        });
+
+        // Popola la lista delle risorse
+        const resourceList = document.getElementById('resourceList');
+        resourceList.innerHTML = `
+            <div class="resource-item">
+                <div class="resource-name"><strong>Tipo</strong></div>
+                <div class="resource-size"><strong>Dimensione</strong></div>
+                <div class="resource-impact"><strong>Impatto</strong></div>
+            </div>
+        `;
+
+        // Mappatura delle icone per tipo di risorsa
+        const resourceIcons = {
+            'html': 'fa-html5',
+            'css': 'fa-css3-alt',
+            'javascript': 'fa-js',
+            'images': 'fa-image',
+            'fonts': 'fa-font',
+            'other': 'fa-file'
+        };
+
+        for (const [type, data] of Object.entries(resources)) {
+            const icon = resourceIcons[type] || 'fa-file';
+            const resourceItem = document.createElement('div');
+            resourceItem.className = 'resource-item';
+            resourceItem.innerHTML = `
+                <div class="resource-name"><i class="fab ${icon}"></i> ${capitalizeFirstLetter(type)} (${data.count})</div>
+                <div class="resource-size">${data.size}</div>
+                <div class="resource-impact">${data.co2}g CO₂</div>
+            `;
+            resourceList.appendChild(resourceItem);
+        }
+
+        // Popola i suggerimenti di ottimizzazione
+        const optimizationList = document.getElementById('optimizationList');
+        optimizationList.innerHTML = '';
+
+        optimizations.forEach(opt => {
+            const priorityClass = opt.priority === 'high' ? 'high-priority' :
+                                opt.priority === 'medium' ? 'medium-priority' : '';
+
+            const priorityIcon = opt.priority === 'high' ? 'exclamation-circle' :
+                                opt.priority === 'medium' ? 'exclamation-triangle' : 'info-circle';
+
+            const optimizationCard = document.createElement('div');
+            optimizationCard.className = `optimization-card ${priorityClass}`;
+
+            optimizationCard.innerHTML = `
+                <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
+                <p>${opt.description}</p>
+                <div class="impact-row">
+                    <div class="impact-item">
+                        <div class="impact-value">${opt.impact}g</div>
+                        <div class="impact-label">CO₂ Risparmiato</div>
+                    </div>
+                    <div class="impact-item">
+                        <div class="impact-value">€${opt.economic_impact ? opt.economic_impact.toFixed(2) : (opt.impact * 1.5).toFixed(2)}</div>
+                        <div class="impact-label">Risparmio Annuale</div>
+                    </div>
+                </div>
+            `;
+            optimizationList.appendChild(optimizationCard);
+        });
+
+        // Crea il grafico di confronto con gestione degli errori
+        try {
+            createComparisonChart(data);
+        } catch (error) {
+            console.error('Errore durante la creazione del grafico:', error);
+            fallbackChartImplementation();
+        }
+
+        // Popola i dettagli economici
+        populateEconomicDetails(economicBenefits);
+    }
+
+    function createScoreCard(title, value, description, valueClass, iconName) {
+        const card = document.createElement('div');
+        card.className = 'score-card';
+        card.innerHTML = `
+            <h3>${title}</h3>
+            <div class="score-value ${valueClass}">${value}</div>
+            <p><i class="fas ${iconName}"></i> ${description}</p>
+        `;
+        return card;
+    }
+
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const analyzerForm = document.getElementById('analyzerForm');
         const loadingSection = document.getElementById('loadingSection');
@@ -1327,224 +2013,6 @@
         shareReportBtn.addEventListener('click', function() {
             alert('Funzionalità di condivisione risultati in arrivo a breve!');
         });
-
-        function populateDashboard(data) {
-            const metrics = data.metrics;
-            const resources = data.resources;
-            const optimizations = data.optimizations;
-            const comparison = data.industry_comparison;
-            const economicBenefits = metrics.economic_benefits || {
-                current_monthly_cost: 5.20,
-                potential_savings_percent: 30,
-                potential_monthly_savings: 1.56,
-                potential_annual_savings: 18.72,
-                bandwidth_cost_per_visit: 0.52,
-                estimated_monthly_visits: 10000
-            };
-
-            // Popola le metriche principali
-            const scoreOverview = document.getElementById('scoreOverview');
-            scoreOverview.innerHTML = '';
-
-            // Punteggio sostenibilità
-            let scoreClass = 'red-score';
-            let scoreIcon = 'fa-exclamation-circle';
-            if (metrics.sustainability_score >= 80) {
-                scoreClass = 'green-score';
-                scoreIcon = 'fa-check-circle';
-            } else if (metrics.sustainability_score >= 50) {
-                scoreClass = 'yellow-score';
-                scoreIcon = 'fa-exclamation-triangle';
-            }
-
-            let scoreDescription = "Il tuo sito necessita di miglioramenti";
-            if (metrics.sustainability_score >= 80) {
-                scoreDescription = "Il tuo sito è molto efficiente";
-            } else if (metrics.sustainability_score >= 50) {
-                scoreDescription = "Il tuo sito è abbastanza efficiente";
-            }
-
-            const sustainabilityCard = createScoreCard(
-                'Punteggio Sostenibilità',
-                `${metrics.sustainability_score}<span>/100</span>`,
-                scoreDescription,
-                scoreClass,
-                scoreIcon
-            );
-            scoreOverview.appendChild(sustainabilityCard);
-
-            // Emissioni CO2
-            let co2Class = 'green-score';
-            let co2Icon = 'fa-leaf';
-            if (metrics.co2_emissions > 1) {
-                co2Class = 'red-score';
-                co2Icon = 'fa-smog';
-            } else if (metrics.co2_emissions > 0.5) {
-                co2Class = 'yellow-score';
-                co2Icon = 'fa-wind';
-            }
-
-            const co2Card = createScoreCard(
-                'Emissioni CO₂',
-                `${metrics.co2_emissions}<span>g/view</span>`,
-                `Meglio del ${comparison.better_than_percent}% dei siti web`,
-                co2Class,
-                co2Icon
-            );
-            scoreOverview.appendChild(co2Card);
-
-            // Peso totale
-            const sizeCard = createScoreCard(
-                'Peso Totale',
-                `${metrics.total_size}`,
-                'Dimensione delle risorse del sito',
-                'blue-score',
-                'fa-weight-hanging'
-            );
-            scoreOverview.appendChild(sizeCard);
-
-            // Tempo di caricamento
-            let timeClass = 'green-score';
-            let timeIcon = 'fa-tachometer-alt';
-            if (metrics.load_time > 3) {
-                timeClass = 'red-score';
-            } else if (metrics.load_time > 2) {
-                timeClass = 'yellow-score';
-            }
-
-            let timeDescription = `Veloce rispetto alla media (${comparison.average_load_time}s)`;
-            if (metrics.load_time > comparison.average_load_time) {
-                timeDescription = `Lento rispetto alla media (${comparison.average_load_time}s)`;
-            }
-
-            const timeCard = createScoreCard(
-                'Tempo di Caricamento',
-                `${metrics.load_time}<span>s</span>`,
-                timeDescription,
-                timeClass,
-                timeIcon
-            );
-            scoreOverview.appendChild(timeCard);
-
-            // Popola i benefici economici
-            const benefitsGrid = document.getElementById('benefitsGrid');
-            benefitsGrid.innerHTML = '';
-
-            const benefitCards = [
-                {
-                    value: `€${economicBenefits.current_monthly_cost.toFixed(2)}`,
-                    label: 'Costo mensile attuale'
-                },
-                {
-                    value: `€${economicBenefits.potential_monthly_savings.toFixed(2)}`,
-                    label: 'Risparmio mensile potenziale'
-                },
-                {
-                    value: `€${economicBenefits.potential_annual_savings.toFixed(2)}`,
-                    label: 'Risparmio annuale potenziale'
-                },
-                {
-                    value: `${economicBenefits.potential_savings_percent}%`,
-                    label: 'Riduzione costi potenziale'
-                }
-            ];
-
-            benefitCards.forEach(card => {
-                const benefitCard = document.createElement('div');
-                benefitCard.className = 'benefit-card';
-                benefitCard.innerHTML = `
-                    <div class="benefit-value">${card.value}</div>
-                    <div class="benefit-label">${card.label}</div>
-                `;
-                benefitsGrid.appendChild(benefitCard);
-            });
-
-            // Popola la lista delle risorse
-            const resourceList = document.getElementById('resourceList');
-            resourceList.innerHTML = `
-                <div class="resource-item">
-                    <div class="resource-name"><strong>Tipo</strong></div>
-                    <div class="resource-size"><strong>Dimensione</strong></div>
-                    <div class="resource-impact"><strong>Impatto</strong></div>
-                </div>
-            `;
-
-            // Mappatura delle icone per tipo di risorsa
-            const resourceIcons = {
-                'html': 'fa-html5',
-                'css': 'fa-css3-alt',
-                'javascript': 'fa-js',
-                'images': 'fa-image',
-                'fonts': 'fa-font',
-                'other': 'fa-file'
-            };
-
-            for (const [type, data] of Object.entries(resources)) {
-                const icon = resourceIcons[type] || 'fa-file';
-                const resourceItem = document.createElement('div');
-                resourceItem.className = 'resource-item';
-                resourceItem.innerHTML = `
-                    <div class="resource-name"><i class="fab ${icon}"></i> ${capitalizeFirstLetter(type)} (${data.count})</div>
-                    <div class="resource-size">${data.size}</div>
-                    <div class="resource-impact">${data.co2}g CO₂</div>
-                `;
-                resourceList.appendChild(resourceItem);
-            }
-
-            // Popola i suggerimenti di ottimizzazione
-            const optimizationList = document.getElementById('optimizationList');
-            optimizationList.innerHTML = '';
-
-            optimizations.forEach(opt => {
-                const priorityClass = opt.priority === 'high' ? 'high-priority' :
-                                    opt.priority === 'medium' ? 'medium-priority' : '';
-
-                const priorityIcon = opt.priority === 'high' ? 'exclamation-circle' :
-                                    opt.priority === 'medium' ? 'exclamation-triangle' : 'info-circle';
-
-                const optimizationCard = document.createElement('div');
-                optimizationCard.className = `optimization-card ${priorityClass}`;
-
-                optimizationCard.innerHTML = `
-                    <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
-                    <p>${opt.description}</p>
-                    <div class="impact-row">
-                        <div class="impact-item">
-                            <div class="impact-value">${opt.impact}g</div>
-                            <div class="impact-label">CO₂ Risparmiato</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-value">€${opt.economic_impact ? opt.economic_impact.toFixed(2) : (opt.impact * 1.5).toFixed(2)}</div>
-                            <div class="impact-label">Risparmio Annuale</div>
-                        </div>
-                    </div>
-                `;
-                optimizationList.appendChild(optimizationCard);
-            });
-
-            // Crea il grafico di confronto con gestione degli errori
-            try {
-                createComparisonChart(data);
-            } catch (error) {
-                console.error('Errore durante la creazione del grafico:', error);
-                fallbackChartImplementation();
-            }
-        }
-
-        function createScoreCard(title, value, description, valueClass, iconName) {
-            const card = document.createElement('div');
-            card.className = 'score-card';
-            card.innerHTML = `
-                <h3>${title}</h3>
-                <div class="score-value ${valueClass}">${value}</div>
-                <p><i class="fas ${iconName}"></i> ${description}</p>
-            `;
-            return card;
-        }
-
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
     });
 </script>
 
