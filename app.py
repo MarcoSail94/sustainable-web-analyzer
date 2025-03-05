@@ -161,14 +161,12 @@ class WebAnalyzer:
             print(f"Errore nell'analizzare la risorsa {url}: {str(e)}")
 
     def calculate_metrics(self):
-        # Calcoli esistenti
+        # Calcoli esistenti per punteggio sostenibilità
         total_mb = self.total_size / (1024 * 1024)
         self.co2_emissions = round(total_mb * 0.2, 2)
 
-        # Punteggi penalità (codice esistente)
+        # Calcolo del punteggio di sostenibilità (invariato)
         score = 100
-
-        # Penalità per dimensione
         if total_mb > 5:  # Più di 5MB
             score -= 30
         elif total_mb > 3:  # Tra 3 e 5MB
@@ -176,7 +174,6 @@ class WebAnalyzer:
         elif total_mb > 1:  # Tra 1 e 3MB
             score -= 10
 
-        # Penalità per il tempo di caricamento
         if self.load_time > 5:  # Più di 5 secondi
             score -= 30
         elif self.load_time > 3:  # Tra 3 e 5 secondi
@@ -184,55 +181,53 @@ class WebAnalyzer:
         elif self.load_time > 1:  # Tra 1 e 3 secondi
             score -= 10
 
-        # Penalità per troppe immagini
         if self.resources['images']['count'] > 30:
             score -= 10
 
-        # Penalità per troppi script
         if self.resources['javascript']['count'] > 20:
             score -= 10
 
-        # Limita il punteggio tra 0 e 100
         self.sustainability_score = max(0, min(100, score))
 
-        # CALCOLI ECONOMICI MIGLIORATI
+        # CALCOLI ECONOMICI MIGLIORATI CON VALORI REALISTICI
         monthly_visits = self.monthly_visits
 
-        # 1. Costo larghezza di banda (già presente)
-        current_cost_per_visit = (total_mb / 1024) * 0.05  # Costo in euro per visita
+        # 1. Costo larghezza di banda (ridotto a valori attuali di mercato)
+        current_cost_per_visit = (total_mb / 1024) * 0.015  # €0.015 per GB (più realistico)
         monthly_bandwidth_cost = current_cost_per_visit * monthly_visits
 
-        # 2. Costi energetici del data center
-        # Stima: 0.001 kWh per MB di dati, 0.20€ per kWh
-        energy_consumption_kwh = total_mb * 0.001 * monthly_visits
-        monthly_energy_cost = energy_consumption_kwh * 0.20
+        # 2. Costi energetici del data center (ridotto per riflettere l'efficienza moderna)
+        energy_consumption_kwh = total_mb * 0.0002 * monthly_visits  # 0.0002 kWh per MB (più realistico)
+        monthly_energy_cost = energy_consumption_kwh * 0.20  # €0.20 per kWh è realistico
 
-        # 3. Impatto SEO e conversioni
-        # Stima: perdita dell'1% del valore per ogni 0.5s oltre 2s di caricamento
-        avg_conversion_value = 30  # Valore medio di una conversione in euro
-        conversion_rate = 0.02  # Tasso di conversione base
-        seo_penalty = max(0, (self.load_time - 2) / 0.5) * 0.01
+        # 3. Impatto SEO e conversioni (valori più conservativi)
+        avg_conversion_value = 25  # Valore medio di conversione in euro (leggermente ridotto)
+        conversion_rate = 0.018  # 1.8% è un tasso di conversione medio più realistico
+        # Riduzione dell'impatto della velocità (0.75% per ogni 0.5s oltre 2s)
+        seo_penalty = max(0, (self.load_time - 2) / 0.5) * 0.0075
 
         potential_conversions = monthly_visits * conversion_rate
         lost_value_seo = potential_conversions * seo_penalty * avg_conversion_value
 
-        # 4. Costo di abbandono
-        # Stima: aumento del 10% del tasso di rimbalzo per ogni secondo oltre 3s
-        bounce_increase = max(0, (self.load_time - 3) * 0.1)
+        # 4. Costo di abbandono (bounce rate con impatto più realistico)
+        # 7% di aumento del bounce rate per secondo oltre 3s (invece di 10%)
+        bounce_increase = max(0, (self.load_time - 3) * 0.07)
         additional_bounces = monthly_visits * bounce_increase
         lost_value_bounce = additional_bounces * conversion_rate * avg_conversion_value
 
-        # 5. Costi di manutenzione
-        # Stima: 10% in più di tempo di sviluppo per ogni 500KB extra oltre 1MB
-        excess_size_factor = max(0, (total_mb - 1) / 0.5) * 0.1
-        hourly_dev_rate = 50  # Costo orario sviluppatore (euro)
-        monthly_dev_hours = 10  # Ore mensili di manutenzione base
-        additional_maintenance_cost = monthly_dev_hours * excess_size_factor * hourly_dev_rate
+        # 5. Costi di manutenzione (ridotto l'impatto delle dimensioni)
+        # 5% in più di tempo per ogni MB extra oltre 1MB (invece di 10% per 500KB)
+        excess_size_factor = max(0, (total_mb - 1)) * 0.05
+        hourly_dev_rate = 45  # €45/ora è una tariffa media più realistica
+        # Ore di manutenzione scalate in base alle dimensioni del sito
+        base_monthly_dev_hours = min(10, max(4, total_mb * 1.5))
+        additional_maintenance_cost = base_monthly_dev_hours * excess_size_factor * hourly_dev_rate
 
-        # 6. Costi infrastruttura scalabile
-        # Stima: incremento 5% nei costi di server per ogni 1MB oltre 2MB
-        infrastructure_cost_base = 100  # Costo base mensile dell'infrastruttura
-        infrastructure_penalty = max(0, (total_mb - 2)) * 0.05
+        # 6. Costi infrastruttura scalabile (ridotto l'impatto)
+        # Base del costo infrastruttura scalato per dimensione del sito
+        infrastructure_cost_base = min(100, max(40, total_mb * 20))
+        # 3% di aumento per ogni MB oltre 2MB (invece di 5%)
+        infrastructure_penalty = max(0, (total_mb - 2)) * 0.03
         additional_infrastructure_cost = infrastructure_cost_base * infrastructure_penalty
 
         # Calcolo del totale dei costi attuali
@@ -245,22 +240,22 @@ class WebAnalyzer:
                 additional_infrastructure_cost
         )
 
-        # Calcolo del potenziale risparmio
+        # Calcolo del potenziale risparmio (valori più conservativi)
         if self.sustainability_score < 50:
-            potential_savings_percent = 0.40
+            potential_savings_percent = 0.30  # 30% invece di 40%
         elif self.sustainability_score < 80:
-            potential_savings_percent = 0.25
+            potential_savings_percent = 0.20  # 20% invece di 25%
         else:
-            potential_savings_percent = 0.10
+            potential_savings_percent = 0.08  # 8% invece di 10%
 
-        # Dettaglio dei risparmi per categoria
+        # Dettaglio dei risparmi per categoria (percentuali di recupero più realistiche)
         savings_detail = {
             "bandwidth": round(monthly_bandwidth_cost * potential_savings_percent, 2),
             "energy": round(monthly_energy_cost * potential_savings_percent, 2),
-            "seo_conversions": round(lost_value_seo * 0.7, 2),  # 70% di recupero
-            "reduced_bounce": round(lost_value_bounce * 0.6, 2),  # 60% di recupero
-            "maintenance": round(additional_maintenance_cost * 0.8, 2),  # 80% di recupero
-            "infrastructure": round(additional_infrastructure_cost * 0.9, 2)  # 90% di recupero
+            "seo_conversions": round(lost_value_seo * 0.55, 2),  # 55% di recupero invece di 70%
+            "reduced_bounce": round(lost_value_bounce * 0.45, 2),  # 45% di recupero invece di 60%
+            "maintenance": round(additional_maintenance_cost * 0.65, 2),  # 65% di recupero invece di 80%
+            "infrastructure": round(additional_infrastructure_cost * 0.75, 2)  # 75% di recupero invece di 90%
         }
 
         # Calcolo totale dei risparmi potenziali
