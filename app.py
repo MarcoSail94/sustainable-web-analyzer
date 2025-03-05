@@ -15,6 +15,7 @@ class WebAnalyzer:
     def __init__(self, url):
         self.url = url
         self.domain = urlparse(url).netloc
+        self.monthly_visits = 10000  # Default value, can be overridden
         self.resources = {
             'html': {'size': 0, 'count': 0},
             'css': {'size': 0, 'count': 0},
@@ -198,8 +199,7 @@ class WebAnalyzer:
 
         # Calcola il beneficio economico potenziale
         # Assumiamo un costo medio di €0.05 per GB di traffico dati
-        # e una media di 10,000 visite mensili per un sito web standard
-        monthly_visits = 10000
+        monthly_visits = self.monthly_visits  # Usa il valore personalizzato
         current_cost_per_visit = (total_mb / 1024) * 0.05  # Costo in euro per visita
         monthly_data_cost = current_cost_per_visit * monthly_visits
 
@@ -340,6 +340,15 @@ def analyze():
     try:
         data = request.get_json()
         url = data.get('url')
+        monthly_visits = data.get('monthly_visits', 10000)  # Default a 10000 se non specificato
+
+        # Valida il numero di visite mensili
+        try:
+            monthly_visits = int(monthly_visits)
+            if monthly_visits <= 0:
+                monthly_visits = 10000
+        except (ValueError, TypeError):
+            monthly_visits = 10000
 
         if not url:
             return jsonify({'success': False, 'error': 'URL non specificato'}), 400
@@ -348,8 +357,9 @@ def analyze():
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
 
-        # Esegui l'analisi
+        # Esegui l'analisi con il parametro visite mensili
         analyzer = WebAnalyzer(url)
+        analyzer.monthly_visits = monthly_visits  # Imposta il valore personalizzato
         result = analyzer.analyze()
 
         return jsonify(result)
