@@ -986,6 +986,145 @@
             box-shadow: var(--shadow);
         }
 
+        /* Stili per Web Vitals */
+        .web-vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .web-vital-card {
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .web-vital-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .web-vital-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            color: var(--gray-600);
+        }
+
+        .web-vital-header i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .web-vital-header span {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .tooltip-icon {
+            margin-left: auto;
+            cursor: help;
+            color: var(--gray-400);
+            transition: color 0.3s ease;
+        }
+
+        .tooltip-icon:hover {
+            color: var(--primary-color);
+        }
+
+        .web-vital-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .web-vital-bar-container {
+            height: 8px;
+            background-color: var(--gray-200);
+            border-radius: var(--rounded-full);
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .web-vital-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: var(--rounded-full);
+            transition: width 1s ease, background-color 1s ease;
+        }
+
+        .web-vital-status {
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .status-good {
+            color: var(--success-color);
+        }
+
+        .status-needs-improvement {
+            color: var(--warning-color);
+        }
+
+        .status-poor {
+            color: var(--danger-color);
+        }
+
+        .web-vitals-chart-container {
+            height: 350px;
+            margin: 2rem 0;
+        }
+
+        .web-vitals-info {
+            margin-top: 2rem;
+            background-color: rgba(22, 163, 74, 0.05);
+            border-radius: var(--rounded-lg);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .web-vitals-info h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            color: var(--dark-color);
+        }
+
+        .web-vitals-info p {
+            margin-bottom: 1rem;
+        }
+
+        .web-vitals-info ul {
+            list-style-type: none;
+            padding-left: 1rem;
+        }
+
+        .web-vitals-info ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .web-vitals-info ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .footer-links-section {
@@ -1120,6 +1259,72 @@
 
     <div class="score-overview" id="scoreOverview">
         <!-- Contenuto generato dinamicamente -->
+    </div>
+
+    <div class="detail-section" id="webVitalsSection">
+        <h2><i class="fas fa-tachometer-alt"></i> Core Web Vitals</h2>
+        <p>Metriche avanzate di performance che misurano l'esperienza utente reale. Questi valori influenzano il posizionamento SEO e la sostenibilità del sito.</p>
+
+        <div class="web-vitals-grid">
+            <div class="web-vital-card" id="lcpCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>LCP</span>
+                    <span class="tooltip-icon" title="Largest Contentful Paint misura quanto tempo impiega il contenuto principale a diventare visibile.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="lcpValue">0.0s</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="lcpBar"></div>
+                </div>
+                <div class="web-vital-status" id="lcpStatus">In attesa</div>
+            </div>
+
+            <div class="web-vital-card" id="fidCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span>FID</span>
+                    <span class="tooltip-icon" title="First Input Delay misura il tempo di risposta alla prima interazione dell'utente.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="fidValue">0ms</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="fidBar"></div>
+                </div>
+                <div class="web-vital-status" id="fidStatus">In attesa</div>
+            </div>
+
+            <div class="web-vital-card" id="clsCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-arrows-alt"></i>
+                    <span>CLS</span>
+                    <span class="tooltip-icon" title="Cumulative Layout Shift misura la stabilità visiva durante il caricamento della pagina.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="clsValue">0.00</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="clsBar"></div>
+                </div>
+                <div class="web-vital-status" id="clsStatus">In attesa</div>
+            </div>
+        </div>
+
+        <div class="web-vitals-chart-container">
+            <canvas id="webVitalsChart"></canvas>
+        </div>
+
+        <div class="web-vitals-info">
+            <h3><i class="fas fa-leaf"></i> Impatto sulla Sostenibilità</h3>
+            <p>Le Core Web Vitals non influenzano solo l'esperienza utente, ma anche la sostenibilità del sito web:</p>
+            <ul>
+                <li><strong>LCP ottimizzato</strong>: Riduce il consumo di risorse caricando solo ciò che è necessario per l'utente.</li>
+                <li><strong>FID ottimizzato</strong>: Diminuisce i tassi di abbandono e quindi il consumo energetico dovuto a ricaricamenti inutili.</li>
+                <li><strong>CLS ottimizzato</strong>: Permette agli utenti di completare le attività più velocemente, riducendo il tempo di utilizzo e il consumo energetico.</li>
+            </ul>
+        </div>
     </div>
 
     <div class="economic-benefits" id="economicBenefits">
@@ -1690,6 +1895,258 @@
         }
     }
 
+    // Funzione per aggiornare la visualizzazione delle Web Vitals
+    function updateWebVitals(data) {
+        const webVitals = data.metrics.web_vitals;
+        if (!webVitals) return;
+
+        // LCP (Largest Contentful Paint)
+        const lcpValue = webVitals.lcp;
+        const lcpElement = document.getElementById('lcpValue');
+        const lcpBar = document.getElementById('lcpBar');
+        const lcpStatus = document.getElementById('lcpStatus');
+        const lcpCard = document.getElementById('lcpCard');
+
+        lcpElement.textContent = `${lcpValue.toFixed(2)}s`;
+
+        // Determina lo stato del LCP
+        let lcpStatusText, lcpStatusClass, lcpBarColor, lcpBarWidth;
+        if (lcpValue < 2.5) {
+            lcpStatusText = "Buono";
+            lcpStatusClass = "status-good";
+            lcpBarColor = "var(--success-color)";
+            lcpBarWidth = `${Math.min(100, (webVitals.scores.lcp))}%`;
+        } else if (lcpValue < 4) {
+            lcpStatusText = "Migliorabile";
+            lcpStatusClass = "status-needs-improvement";
+            lcpBarColor = "var(--warning-color)";
+            lcpBarWidth = `${Math.min(100, (webVitals.scores.lcp))}%`;
+        } else {
+            lcpStatusText = "Scarso";
+            lcpStatusClass = "status-poor";
+            lcpBarColor = "var(--danger-color)";
+            lcpBarWidth = `${Math.min(100, (webVitals.scores.lcp))}%`;
+        }
+
+        lcpStatus.textContent = lcpStatusText;
+        lcpStatus.className = `web-vital-status ${lcpStatusClass}`;
+        lcpBar.style.backgroundColor = lcpBarColor;
+        lcpBar.style.width = lcpBarWidth;
+
+        // FID (First Input Delay)
+        const fidValue = webVitals.fid;
+        const fidElement = document.getElementById('fidValue');
+        const fidBar = document.getElementById('fidBar');
+        const fidStatus = document.getElementById('fidStatus');
+
+        fidElement.textContent = `${fidValue.toFixed(0)}ms`;
+
+        // Determina lo stato del FID
+        let fidStatusText, fidStatusClass, fidBarColor, fidBarWidth;
+        if (fidValue < 100) {
+            fidStatusText = "Buono";
+            fidStatusClass = "status-good";
+            fidBarColor = "var(--success-color)";
+            fidBarWidth = `${Math.min(100, (webVitals.scores.fid))}%`;
+        } else if (fidValue < 300) {
+            fidStatusText = "Migliorabile";
+            fidStatusClass = "status-needs-improvement";
+            fidBarColor = "var(--warning-color)";
+            fidBarWidth = `${Math.min(100, (webVitals.scores.fid))}%`;
+        } else {
+            fidStatusText = "Scarso";
+            fidStatusClass = "status-poor";
+            fidBarColor = "var(--danger-color)";
+            fidBarWidth = `${Math.min(100, (webVitals.scores.fid))}%`;
+        }
+
+        fidStatus.textContent = fidStatusText;
+        fidStatus.className = `web-vital-status ${fidStatusClass}`;
+        fidBar.style.backgroundColor = fidBarColor;
+        fidBar.style.width = fidBarWidth;
+
+        // CLS (Cumulative Layout Shift)
+        const clsValue = webVitals.cls;
+        const clsElement = document.getElementById('clsValue');
+        const clsBar = document.getElementById('clsBar');
+        const clsStatus = document.getElementById('clsStatus');
+
+        clsElement.textContent = clsValue.toFixed(3);
+
+        // Determina lo stato del CLS
+        let clsStatusText, clsStatusClass, clsBarColor, clsBarWidth;
+        if (clsValue < 0.1) {
+            clsStatusText = "Buono";
+            clsStatusClass = "status-good";
+            clsBarColor = "var(--success-color)";
+            clsBarWidth = `${Math.min(100, (webVitals.scores.cls))}%`;
+        } else if (clsValue < 0.25) {
+            clsStatusText = "Migliorabile";
+            clsStatusClass = "status-needs-improvement";
+            clsBarColor = "var(--warning-color)";
+            clsBarWidth = `${Math.min(100, (webVitals.scores.cls))}%`;
+        } else {
+            clsStatusText = "Scarso";
+            clsStatusClass = "status-poor";
+            clsBarColor = "var(--danger-color)";
+            clsBarWidth = `${Math.min(100, (webVitals.scores.cls))}%`;
+        }
+
+        clsStatus.textContent = clsStatusText;
+        clsStatus.className = `web-vital-status ${clsStatusClass}`;
+        clsBar.style.backgroundColor = clsBarColor;
+        clsBar.style.width = clsBarWidth;
+
+        // Crea il grafico di confronto Web Vitals
+        createWebVitalsChart(data);
+    }
+
+    // Funzione per creare il grafico delle Web Vitals
+    function createWebVitalsChart(data) {
+        const webVitals = data.metrics.web_vitals;
+        const industryAvg = data.industry_comparison.average_web_vitals;
+
+        if (!webVitals || !industryAvg) return;
+
+        try {
+            const ctx = document.getElementById('webVitalsChart').getContext('2d');
+
+            // Verifica che Chart.js sia disponibile
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js non disponibile per il grafico Web Vitals');
+                return;
+            }
+
+            // Distruggi eventuali grafici precedenti
+            if (window.webVitalsChart && typeof window.webVitalsChart.destroy === 'function') {
+                window.webVitalsChart.destroy();
+            }
+
+            // Prepara i dati per il grafico
+            const lcpData = {
+                actual: webVitals.lcp,
+                target: 2.5,
+                industry: industryAvg.lcp,
+                label: 'LCP (s)'
+            };
+
+            const fidData = {
+                actual: webVitals.fid / 1000, // Converti in secondi per scala uniforme
+                target: 0.1,
+                industry: industryAvg.fid / 1000,
+                label: 'FID (s)'
+            };
+
+            const clsData = {
+                actual: webVitals.cls * 10, // Moltiplica per avere una scala comparabile
+                target: 0.1 * 10,
+                industry: industryAvg.cls * 10,
+                label: 'CLS (x10)'
+            };
+
+            window.webVitalsChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['LCP', 'FID', 'CLS'],
+                    datasets: [
+                        {
+                            label: 'Il tuo sito',
+                            data: [lcpData.actual, fidData.actual, clsData.actual],
+                            backgroundColor: 'rgba(22, 163, 74, 0.2)',
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Media di settore',
+                            data: [lcpData.industry, fidData.industry, clsData.industry],
+                            backgroundColor: 'rgba(107, 114, 128, 0.2)',
+                            borderColor: 'rgba(107, 114, 128, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(107, 114, 128, 1)',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Obiettivo',
+                            data: [lcpData.target, fidData.target, clsData.target],
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            min: 0,
+                            max: Math.max(
+                                lcpData.actual * 1.2,
+                                lcpData.industry * 1.2,
+                                fidData.actual * 1.2,
+                                fidData.industry * 1.2,
+                                clsData.actual * 1.2,
+                                clsData.industry * 1.2
+                            ),
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: 'rgba(0, 0, 0, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                boxWidth: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const datasetIndex = context.datasetIndex;
+                                    const index = context.dataIndex;
+
+                                    // Determina l'unità in base all'indice
+                                    let unit, displayValue;
+                                    if (index === 0) { // LCP
+                                        unit = 's';
+                                        displayValue = value;
+                                    } else if (index === 1) { // FID
+                                        unit = 'ms';
+                                        displayValue = value * 1000; // Riconverti in ms
+                                    } else { // CLS
+                                        unit = '';
+                                        displayValue = value / 10; // Riconverti al valore originale
+                                    }
+
+                                    return `${label}: ${displayValue.toFixed(2)}${unit}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Errore durante la creazione del grafico Web Vitals:', error);
+        }
+    }
+
     function populateDashboard(data) {
         const metrics = data.metrics;
         const resources = data.resources;
@@ -1916,6 +2373,12 @@
 
         // Popola i dettagli economici
         populateEconomicDetails(economicBenefits);
+
+        // Aggiorna la visualizzazione delle Web Vitals
+        updateWebVitals(data);
+
+        // Aggiorna la sezione Web Vitals
+        document.getElementById('webVitalsSection').style.display = 'block';
     }
 
     function createScoreCard(title, value, description, valueClass, iconName) {
