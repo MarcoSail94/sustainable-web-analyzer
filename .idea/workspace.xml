@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b27be5ef-28c1-45d8-91af-1ef6c3cc0a73" name="Changes" comment="reorganized the frontend part">
+    <list default="true" id="b27be5ef-28c1-45d8-91af-1ef6c3cc0a73" name="Changes" comment="fix path">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +67,10 @@
       <recent name="$PROJECT_DIR$/routes" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/static/js" />
+      <recent name="$PROJECT_DIR$/static/js/modules" />
+      <recent name="$PROJECT_DIR$/static/css" />
+      <recent name="$PROJECT_DIR$/static/css/utils" />
       <recent name="$PROJECT_DIR$/static/css /utils" />
     </key>
   </component>
@@ -93,7 +99,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741591845013</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="fix path">
+      <option name="closed" value="true" />
+      <created>1741592524128</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1741592524128</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -111,6 +125,7 @@
     <MESSAGE value="updated" />
     <MESSAGE value="logic split into multiple classes" />
     <MESSAGE value="reorganized the frontend part" />
-    <option name="LAST_COMMIT_MESSAGE" value="reorganized the frontend part" />
+    <MESSAGE value="fix path" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix path" />
   </component>
 </project>

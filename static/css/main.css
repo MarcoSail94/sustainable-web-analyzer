@@ -23,12 +23,12 @@ body {
 }
 
 /* Importa componenti e moduli */
-@import 'components/header.css';
-@import 'components/footer.css';
-@import 'components/buttons.css';
-@import 'components/cards.css';
-@import 'components/forms.css';
-@import 'components/tables.css';
+@import '/static/css/components/header.css';
+@import '/static/css/components/footer.css';
+@import '/static/css/components/buttons.css';
+@import '/static/css/components/cards.css';
+@import '/static/css/components/forms.css';
+@import '/static/css/components/tables.css';
 
 /* Importa utilità */
 @import 'utils/animations.css';
