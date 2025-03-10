@@ -1,0 +1,54 @@
+<footer>
+    <div class="footer-wave">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path>
+        </svg>
+    </div>
+    <div class="container footer-content">
+        <div class="footer-info">
+            <div class="footer-logo">
+                <i class="fas fa-leaf"></i>
+                <span>Sustainable Web Analyzer</span>
+            </div>
+            <p>Piacere di connetterti al futuro sostenibile. Aiutiamo le aziende a creare siti web sostenibili, riducendo l'impatto ambientale e migliorando l'efficienza economica.</p>
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="footer-links-section">
+            <div class="footer-links-column">
+                <h3>Link Utili</h3>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('main.about') }}">Chi Siamo</a></li>
+                    <li><a href="{{ url_for('main.methodology') }}">Metodologia</a></li>
+                    <li><a href="#contatti">Contatti</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-column">
+                <h3>Servizi</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Analisi Web</a></li>
+                    <li><a href="#">Consulenza Green</a></li>
+                    <li><a href="#">Ottimizzazione</a></li>
+                    <li><a href="#">Formazione</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-column">
+                <h3>Supporto</h3>
+                <ul class="footer-links">
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Documentazione</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="copyright container">
+        &copy; {{ now('Y') }} Sustainable Web Analyzer. Tutti i diritti riservati.
+    </div>
+</footer>

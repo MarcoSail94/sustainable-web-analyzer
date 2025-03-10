@@ -1,0 +1,65 @@
+<div class="detail-section" id="webVitalsSection">
+    <h2><i class="fas fa-tachometer-alt"></i> Core Web Vitals</h2>
+    <p>Metriche avanzate di performance che misurano l'esperienza utente reale. Questi valori influenzano il posizionamento SEO e la sostenibilità del sito.</p>
+
+    <div class="web-vitals-grid">
+        <div class="web-vital-card" id="lcpCard">
+            <div class="web-vital-header">
+                <i class="fas fa-paint-brush"></i>
+                <span>LCP</span>
+                <span class="tooltip-icon" title="Largest Contentful Paint misura quanto tempo impiega il contenuto principale a diventare visibile.">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+            </div>
+            <div class="web-vital-value" id="lcpValue">0.0s</div>
+            <div class="web-vital-bar-container">
+                <div class="web-vital-bar" id="lcpBar"></div>
+            </div>
+            <div class="web-vital-status" id="lcpStatus">In attesa</div>
+        </div>
+
+        <div class="web-vital-card" id="fidCard">
+            <div class="web-vital-header">
+                <i class="fas fa-mouse-pointer"></i>
+                <span>FID</span>
+                <span class="tooltip-icon" title="First Input Delay misura il tempo di risposta alla prima interazione dell'utente.">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+            </div>
+            <div class="web-vital-value" id="fidValue">0ms</div>
+            <div class="web-vital-bar-container">
+                <div class="web-vital-bar" id="fidBar"></div>
+            </div>
+            <div class="web-vital-status" id="fidStatus">In attesa</div>
+        </div>
+
+        <div class="web-vital-card" id="clsCard">
+            <div class="web-vital-header">
+                <i class="fas fa-arrows-alt"></i>
+                <span>CLS</span>
+                <span class="tooltip-icon" title="Cumulative Layout Shift misura la stabilità visiva durante il caricamento della pagina.">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+            </div>
+            <div class="web-vital-value" id="clsValue">0.00</div>
+            <div class="web-vital-bar-container">
+                <div class="web-vital-bar" id="clsBar"></div>
+            </div>
+            <div class="web-vital-status" id="clsStatus">In attesa</div>
+        </div>
+    </div>
+
+    <div class="web-vitals-chart-container">
+        <canvas id="webVitalsChart"></canvas>
+    </div>
+
+    <div class="web-vitals-info">
+        <h3><i class="fas fa-leaf"></i> Impatto sulla Sostenibilità</h3>
+        <p>Le Core Web Vitals non influenzano solo l'esperienza utente, ma anche la sostenibilità del sito web:</p>
+        <ul>
+            <li><strong>LCP ottimizzato</strong>: Riduce il consumo di risorse caricando solo ciò che è necessario per l'utente.</li>
+            <li><strong>FID ottimizzato</strong>: Diminuisce i tassi di abbandono e quindi il consumo energetico dovuto a ricaricamenti inutili.</li>
+            <li><strong>CLS ottimizzato</strong>: Permette agli utenti di completare le attività più velocemente, riducendo il tempo di utilizzo e il consumo energetico.</li>
+        </ul>
+    </div>
+</div>

@@ -11,14 +11,14 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """Render the main index page."""
-    return render_template('index.html')
+    return render_template('pages/index.html')
 
 @main_bp.route('/about')
 def about():
     """Render the about page."""
-    return render_template('about.html')
+    return render_template('pages/about.html')
 
 @main_bp.route('/methodology')
 def methodology():
     """Render the methodology page."""
-    return render_template('methodology.html')
+    return render_template('pages/methodology.html')

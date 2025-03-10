@@ -10,6 +10,7 @@ from flask import Flask, request, got_request_exception
 from modules.browser_manager import BrowserManager
 from routes.main import main_bp
 from routes.api import api_bp
+from utils.jinja_filters import register_filters
 from config import config
 
 def create_app(config_name='default'):
@@ -20,6 +21,9 @@ def create_app(config_name='default'):
     # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+
+    # Register Jinja filters
+    register_filters(app)
 
     # Register clean shutdown
     atexit.register(shutdown_browser)

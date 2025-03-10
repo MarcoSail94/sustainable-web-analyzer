@@ -1,0 +1,53 @@
+/**
+ * Stili per forms e input
+ */
+
+/* Form avanzato */
+.form-advanced {
+    max-width: 700px;
+    margin: 1.5rem auto 0;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: var(--rounded-lg);
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+
+.form-advanced h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+}
+
+.form-advanced h3 i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.number-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--rounded-md);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.number-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}

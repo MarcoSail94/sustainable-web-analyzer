@@ -5,24 +5,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b27be5ef-28c1-45d8-91af-1ef6c3cc0a73" name="Changes" comment="logic split into multiple classes">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/browser_manager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/economics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/resource_analyzer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/sustainability.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/web_vitals_analyzer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/api.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/formatters.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/helpers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/buttons.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/cards.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/footer.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/forms.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/header.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /components/tables.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /pages/about.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /pages/index.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /pages/methodology.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /utils/animations.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /utils/responsive.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css /utils/variables.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /modules/analyzer.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /modules/charts.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /modules/dashboard.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /modules/economics.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /modules/webVitals.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /utils/api.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js    /utils/formatters.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/layouts/default.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/pages/about.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/pages/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/pages/methodology.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/dashboard/economic.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/dashboard/optimizations.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/dashboard/overview.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/dashboard/resources.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/dashboard/webvitals.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/footer.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/header.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/partials/loading.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/jinja_filters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +52,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -63,6 +83,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "Python.app.executor": "Run",
     "Python.browser_manager.executor": "Run",
     "Python.web_vitals_analyzer.executor": "Run",
@@ -78,6 +99,9 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/routes" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/static/css /utils" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
