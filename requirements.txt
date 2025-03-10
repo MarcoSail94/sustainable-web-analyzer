@@ -3,6 +3,7 @@ flask>=2.0.0
 requests>=2.25.0
 beautifulsoup4>=4.9.0
 pyppeteer>=0.2.6
+psutil>=5.9.0     # Added for process management
 
 # Security
 markupsafe>=2.0.0

@@ -32,6 +32,7 @@ instance/
 
 # IDE files
 .idea/
+.idea/workspace.xml
 .vscode/
 *.swp
 *.swo

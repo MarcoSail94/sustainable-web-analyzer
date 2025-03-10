@@ -25,33 +25,29 @@ def create_app(config_name='default'):
     # Register Jinja filters
     register_filters(app)
 
-    # Register clean shutdown
-    atexit.register(shutdown_browser)
+    # Register clean shutdown handler
+    atexit.register(BrowserManager.shutdown)
 
-    # Initialize browser on first request (for Flask 2.3+)
-    # Note: This replaces the deprecated @app.before_first_request
-    with app.app_context():
-        initialize_browser()
+    # Configure logging for the app
+    if not app.debug:
+        import logging
+        from logging.handlers import RotatingFileHandler
+
+        # Create logs directory if it doesn't exist
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+
+        # Set up file handler for error logs
+        file_handler = RotatingFileHandler('logs/app.log', maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        ))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Sustainable Web Analyzer startup')
 
     return app
-
-def initialize_browser():
-    """Initialize headless browser."""
-    try:
-        print("Initializing headless browser...")
-        BrowserManager.initialize_browser()
-        print("Browser initialized successfully")
-    except Exception as e:
-        print(f"Error initializing browser: {e}")
-        # Log more details about the error
-
-def shutdown_browser():
-    """Close the browser properly when the application exits."""
-    try:
-        print("Shutting down headless browser...")
-        BrowserManager.shutdown()
-    except Exception as e:
-        print(f"Error shutting down browser: {e}")
 
 if __name__ == '__main__':
     # Get environment
