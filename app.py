@@ -40,8 +40,10 @@ def initialize_browser():
     try:
         print("Initializing headless browser...")
         BrowserManager.initialize_browser()
+        print("Browser initialized successfully")
     except Exception as e:
         print(f"Error initializing browser: {e}")
+        # Log more details about the error
 
 def shutdown_browser():
     """Close the browser properly when the application exits."""

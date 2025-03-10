@@ -22,18 +22,6 @@ body {
     padding: 0 1.5rem;
 }
 
-/* Importa componenti e moduli */
-@import '/static/css/components/header.css';
-@import '/static/css/components/footer.css';
-@import '/static/css/components/buttons.css';
-@import '/static/css/components/cards.css';
-@import '/static/css/components/forms.css';
-@import '/static/css/components/tables.css';
-
-/* Importa utilità */
-@import 'utils/animations.css';
-@import 'utils/responsive.css';
-
 /* Classi di utilità generali */
 .hidden {
     display: none !important;

@@ -1,65 +1,39 @@
 """
-Browser manager module for handling Pyppeteer browser instance.
-Provides thread-safe browser initialization, page creation, and cleanup.
+Browser manager module with browser per analysis approach.
+Creates a new browser for each analysis, avoiding signal handling issues.
 """
 
 import os
-import signal
 import asyncio
 import atexit
-import threading
-from concurrent.futures import ThreadPoolExecutor
+import logging
+import subprocess
 from pyppeteer import launch
 from pyppeteer.errors import NetworkError, TimeoutError
 
-# Global browser instance
-global_browser = None
-browser_lock = threading.Lock()
-browser_event = threading.Event()
+# Configura il logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class BrowserManager:
     """
-    Manages a global Pyppeteer browser instance in a thread-safe manner.
-    Handles initialization, page creation, and proper cleanup.
+    Manages browser instances for web analysis.
+    Creates a fresh browser for each analysis to ensure reliability.
     """
 
     @staticmethod
-    def initialize_browser():
-        """Initialize a browser instance in a thread-safe way."""
-        global global_browser
-
-        # Return if browser is already initialized
-        if global_browser is not None:
-            return
-
-        # Use lock to ensure only one thread initializes the browser
-        with browser_lock:
-            if global_browser is not None:
-                return
-
-            # Create a new thread for browser initialization
-            future = ThreadPoolExecutor(max_workers=1).submit(BrowserManager._create_browser_in_thread)
-            future.result()  # Wait for browser to be initialized
-
-            # Set cleanup handler
-            atexit.register(BrowserManager.shutdown)
-
-    @staticmethod
-    def _create_browser_in_thread():
-        """Create a browser in a dedicated thread."""
-        global global_browser, browser_event
-
-        # Create a new event loop for this thread
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
+    async def create_browser():
+        """
+        Create a new browser instance.
+        Returns the browser or None if failed.
+        """
         try:
-            # Launch browser with robust options
-            global_browser = loop.run_until_complete(launch(
+            logger.info("Creating new browser instance...")
+            browser = await launch(
                 headless=True,
-                handleSIGINT=False,
-                handleSIGTERM=False,
-                handleSIGHUP=False,
+                handleSIGINT=False,  # Disable signal handlers
+                handleSIGTERM=False, # Disable signal handlers
+                handleSIGHUP=False,  # Disable signal handlers
                 args=[
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -70,75 +44,91 @@ class BrowserManager:
                     '--single-process',
                     '--disable-gpu'
                 ]
-            ))
-            browser_event.set()  # Signal that browser is ready
+            )
+            logger.info("Browser created successfully")
+            return browser
         except Exception as e:
-            print(f"Error initializing browser: {e}")
-            global_browser = None
+            logger.error(f"Error creating browser instance: {str(e)}")
+            return None
 
     @staticmethod
-    def get_page():
-        """Get a new page from the global browser in a thread-safe way."""
-        global global_browser
+    async def analyze_with_new_browser(analyze_func, url):
+        """
+        Run analysis function with a fresh browser instance.
 
-        # Initialize browser if not initialized
-        if global_browser is None:
-            BrowserManager.initialize_browser()
-            if not browser_event.wait(timeout=30):  # Wait up to 30 seconds
-                raise Exception("Timeout during browser initialization")
+        Args:
+            analyze_func: Async function that accepts (browser, url) and performs analysis
+            url: URL to analyze
 
-        # Create a new loop for this thread
+        Returns:
+            Analysis results or None if failed
+        """
+        browser = None
+        try:
+            browser = await BrowserManager.create_browser()
+            if not browser:
+                logger.error("Failed to create browser")
+                return None
+
+            # Run the analysis function
+            return await analyze_func(browser, url)
+
+        except Exception as e:
+            logger.error(f"Error during analysis: {str(e)}")
+            return None
+        finally:
+            # Always close the browser
+            if browser:
+                try:
+                    logger.info("Closing browser...")
+                    await browser.close()
+                    logger.info("Browser closed successfully")
+                except Exception as e:
+                    logger.error(f"Error closing browser: {str(e)}")
+
+                    # Try to kill the process using OS-specific commands
+                    # instead of signals to avoid thread issues
+                    try:
+                        if hasattr(browser, 'process') and browser.process is not None:
+                            pid = browser.process.pid
+                            if pid:
+                                logger.info(f"Force killing browser process (PID: {pid})")
+                                if os.name == 'nt':  # Windows
+                                    subprocess.run(['taskkill', '/F', '/PID', str(pid)],
+                                                   shell=True, check=False,
+                                                   stderr=subprocess.DEVNULL,
+                                                   stdout=subprocess.DEVNULL)
+                                else:  # Unix/Linux/MacOS
+                                    subprocess.run(['pkill', '-9', '-P', str(pid)],
+                                                   shell=True, check=False,
+                                                   stderr=subprocess.DEVNULL,
+                                                   stdout=subprocess.DEVNULL)
+                    except Exception as kill_error:
+                        logger.error(f"Error force killing browser: {str(kill_error)}")
+
+    @staticmethod
+    def run_async_analysis(analyze_func, url):
+        """
+        Run async analysis in a new event loop.
+
+        Args:
+            analyze_func: Async function for browser analysis
+            url: URL to analyze
+
+        Returns:
+            Analysis results or None if failed
+        """
+        # Create a new event loop for this thread
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
         try:
-            # Open a new page in the browser
-            return loop.run_until_complete(global_browser.newPage())
+            # Run the analysis with a new browser
+            return loop.run_until_complete(
+                BrowserManager.analyze_with_new_browser(analyze_func, url)
+            )
         except Exception as e:
-            print(f"Error opening a new page: {e}")
-            # Try to reinitialize browser if error
-            global_browser = None
-            browser_event.clear()
-            BrowserManager.initialize_browser()
-            if not browser_event.wait(timeout=30):
-                raise Exception("Timeout during browser reinitialization")
-            return loop.run_until_complete(global_browser.newPage())
-
-    @staticmethod
-    def run_async(coro):
-        """Run an async coroutine in a safe manner."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(coro)
+            logger.error(f"Error running async analysis: {str(e)}")
+            return None
         finally:
             loop.close()
-
-    @staticmethod
-    def shutdown():
-        """Properly close the browser."""
-        global global_browser
-
-        if global_browser is None:
-            return
-
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(global_browser.close())
-        except Exception as e:
-            print(f"Error closing browser: {e}")
-            # In case of error, force kill the process
-            try:
-                if hasattr(global_browser, 'process') and global_browser.process is not None:
-                    pid = global_browser.process.pid
-                    if pid:
-                        if os.name == 'nt':  # Windows
-                            os.system(f'taskkill /F /PID {pid}')
-                        else:  # Unix/Linux/MacOS
-                            os.kill(pid, signal.SIGKILL)
-            except:
-                pass
-        finally:
-            global_browser = None
-            browser_event.clear()

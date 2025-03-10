@@ -17,8 +17,22 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-    <!-- CSS principale e componenti -->
+    <!-- CSS - Carica tutti i file individualmente invece di usare @import -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/variables.css') }}">
+
+    <!-- Componenti -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/tables.css') }}">
+
+    <!-- Utilities -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/responsive.css') }}">
+
+    <!-- Base CSS (senza gli @import) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
     <!-- CSS specifici per pagina -->

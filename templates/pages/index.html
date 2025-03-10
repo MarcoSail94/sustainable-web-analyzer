@@ -68,8 +68,8 @@
 {% endblock %}
 
 {% block js %}
-<script src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
-<script src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>
-<script src="{{ url_for('static', filename='js/modules/economics.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/economics.js') }}"></script>
 {% endblock %}

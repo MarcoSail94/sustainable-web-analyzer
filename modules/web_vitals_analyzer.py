@@ -1,11 +1,18 @@
 """
 Web Vitals Analyzer module for measuring Core Web Vitals metrics.
-Uses Pyppeteer to collect LCP, FID, and CLS via real browser measurements.
+Uses a fresh browser instance for each analysis to ensure reliability.
 """
 
 import json
+import logging
+import time
+from pyppeteer.errors import TimeoutError, NetworkError
 from .browser_manager import BrowserManager
 from config import Config
+
+# Configura il logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class WebVitalsAnalyzer:
     """
@@ -15,172 +22,237 @@ class WebVitalsAnalyzer:
 
     def measure_web_vitals(self, url):
         """
-        Measure Core Web Vitals for the given URL using robust browser handling.
+        Measure Core Web Vitals for the given URL using a fresh browser instance.
         Returns the metrics or fallback values in case of error.
         """
-        try:
-            # Get a page from browser manager
-            page = BrowserManager.get_page()
+        start_time = time.time()
+        logger.info(f"Measuring Web Vitals for: {url}")
 
-            # Setup viewport and page monitoring
-            BrowserManager.run_async(self._setup_page_monitoring(page))
+        # Run the analysis with a new browser
+        metrics = BrowserManager.run_async_analysis(self._analyze_web_vitals, url)
 
-            # Navigate to URL and measure metrics
-            metrics = BrowserManager.run_async(self._collect_metrics(page, url))
-
-            # Close page when done
-            BrowserManager.run_async(page.close())
-
+        if metrics:
+            elapsed = time.time() - start_time
+            logger.info(f"Successfully measured Web Vitals in {elapsed:.2f}s")
             return metrics
+        else:
+            logger.warning(f"Web Vitals measurement failed for {url}")
+            return self._fallback_values(url)
 
-        except Exception as e:
-            print(f"Error measuring Web Vitals: {str(e)}")
-            return self._fallback_values()
+    async def _analyze_web_vitals(self, browser, url):
+        """
+        Analyze Web Vitals using the provided browser instance.
 
-    async def _setup_page_monitoring(self, page):
-        """Set up performance monitoring on the page."""
-        # Set viewport to standard desktop size
-        await page.setViewport({'width': 1280, 'height': 800})
+        Args:
+            browser: Pyppeteer browser instance
+            url: URL to analyze
 
-        # Enable metrics and network monitoring
-        await page.setCacheEnabled(False)
-        client = await page.target.createCDPSession()
-        await client.send('Network.enable')
-        await client.send('Performance.enable')
+        Returns:
+            Web Vitals metrics or None if failed
+        """
+        page = None
+        try:
+            # Create a new page
+            page = await browser.newPage()
 
-        # Set up layout shift tracking for CLS
-        await page.evaluateOnNewDocument('''() => {
-            let cls = 0;
-            let shifts = [];
-            
-            new PerformanceObserver((list) => {
-                for (const entry of list.getEntries()) {
-                    if (!entry.hadRecentInput) {
-                        cls += entry.value;
-                        shifts.push({
-                            value: entry.value,
-                            timestamp: entry.startTime
-                        });
-                    }
+            # Set viewport
+            await page.setViewport({'width': 1280, 'height': 800})
+
+            # Disable cache
+            await page.setCacheEnabled(False)
+
+            # Set up layout shift tracking for CLS
+            await page.evaluateOnNewDocument('''() => {
+                let cls = 0;
+                try {
+                    new PerformanceObserver((list) => {
+                        for (const entry of list.getEntries()) {
+                            if (!entry.hadRecentInput) {
+                                cls += entry.value;
+                            }
+                        }
+                        window.cls = cls;
+                    }).observe({type: 'layout-shift', buffered: true});
+                } catch (e) {
+                    console.error('Error setting up CLS:', e);
                 }
-                window.cls = cls;
-                window.layoutShifts = shifts;
-            }).observe({type: 'layout-shift', buffered: true});
-        }''')
-
-    async def _collect_metrics(self, page, url):
-        """Navigate to the URL and collect all Core Web Vitals metrics."""
-        # Navigate to the URL
-        response = await page.goto(url, {
-            'waitUntil': 'networkidle2',
-            'timeout': Config.BROWSER_TIMEOUT * 1000
-        })
-
-        # Measure LCP
-        lcp = await page.evaluate('''() => {
-            return new Promise((resolve) => {
-                let lcp = 0;
-                new PerformanceObserver((entryList) => {
-                    const entries = entryList.getEntries();
-                    const lastEntry = entries[entries.length - 1];
-                    lcp = lastEntry.startTime;
-                    resolve(lcp);
-                }).observe({type: 'largest-contentful-paint', buffered: true});
                 
-                // Fallback in case of timeout
-                setTimeout(() => {
-                    if (lcp === 0) resolve(3000);
-                }, 8000);
-            });
-        }''')
+                // Set up LCP tracking
+                let lcp = 0;
+                try {
+                    new PerformanceObserver((entryList) => {
+                        const entries = entryList.getEntries();
+                        if (entries.length > 0) {
+                            const lastEntry = entries[entries.length - 1];
+                            lcp = lastEntry.startTime;
+                        }
+                        window.lcp = lcp;
+                    }).observe({type: 'largest-contentful-paint', buffered: true});
+                } catch (e) {
+                    console.error('Error setting up LCP:', e);
+                }
+            }''')
 
-        # Find first interactive element for FID measurement
-        first_clickable = await page.evaluate('''() => {
-            const elements = Array.from(document.querySelectorAll('button, a, input, select, textarea'));
-            const clickable = elements.filter(el => {
-                const style = window.getComputedStyle(el);
-                return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-            });
-            
-            if (clickable.length > 0) {
-                const rect = clickable[0].getBoundingClientRect();
-                return {
-                    x: rect.x + rect.width / 2,
-                    y: rect.y + rect.height / 2,
-                    found: true
-                };
-            }
-            return { found: false };
-        }''')
+            # Navigate to URL
+            logger.info(f"Navigating to {url}")
+            response = await page.goto(url, {
+                'waitUntil': 'networkidle2',
+                'timeout': Config.BROWSER_TIMEOUT * 1000
+            })
 
-        # Measure FID
-        fid = 0
-        if first_clickable.get('found', False):
+            if not response:
+                logger.warning(f"No response from navigation to {url}")
+                return None
+
+            logger.info(f"Page loaded: {url} (status: {response.status})")
+
+            # Wait for metrics to be collected
+            await page.waitForTimeout(2000)
+
+            # Get load time
+            timing_json = await page.evaluate('() => JSON.stringify(window.performance.timing)')
+            load_time = 0
             try:
-                # Set up FID observer
-                await page.evaluate('''() => {
-                    window.firstInputDelay = 0;
+                timing_obj = json.loads(timing_json)
+                load_time = (timing_obj['loadEventEnd'] - timing_obj['navigationStart']) / 1000
+                if load_time <= 0:
+                    load_time = 3.0
+            except (json.JSONDecodeError, KeyError):
+                load_time = 3.0
+
+            logger.info(f"Load time: {load_time}s")
+
+            # Get LCP
+            lcp = await page.evaluate('() => window.lcp || 0')
+            if lcp <= 0:
+                # Fallback calculation based on performance metrics
+                lcp = await page.evaluate('''() => {
+                    if (window.performance && window.performance.timing) {
+                        return window.performance.timing.domContentLoadedEventEnd - 
+                               window.performance.timing.navigationStart;
+                    }
+                    return 3000;
+                }''')
+            logger.info(f"LCP: {lcp}ms")
+
+            # Get CLS
+            cls = await page.evaluate('() => window.cls || 0')
+            logger.info(f"CLS: {cls}")
+
+            # Setup for FID measurement
+            await page.evaluate('''() => {
+                window.firstInputDelay = 0;
+                try {
                     new PerformanceObserver((list) => {
                         const entries = list.getEntries();
                         if (entries.length > 0) {
                             window.firstInputDelay = entries[0].processingStart - entries[0].startTime;
                         }
                     }).observe({type: 'first-input', buffered: true});
-                }''')
+                } catch (e) {
+                    console.error('Error setting up FID:', e);
+                }
+            }''')
 
-                # Simulate a click
-                await page.mouse.click(
-                    first_clickable.get('x', 0),
-                    first_clickable.get('y', 0)
-                )
+            # Find clickable element for FID
+            first_clickable = await page.evaluate('''() => {
+                const elements = Array.from(document.querySelectorAll('button, a, input, select, textarea'));
+                const clickable = elements.filter(el => {
+                    const style = window.getComputedStyle(el);
+                    const rect = el.getBoundingClientRect();
+                    return style.display !== 'none' && 
+                           style.visibility !== 'hidden' && 
+                           style.opacity !== '0' &&
+                           rect.width > 0 &&
+                           rect.height > 0;
+                });
+                
+                if (clickable.length > 0) {
+                    const rect = clickable[0].getBoundingClientRect();
+                    return {
+                        x: rect.x + rect.width / 2,
+                        y: rect.y + rect.height / 2,
+                        found: true
+                    };
+                }
+                return { found: false };
+            }''')
 
-                # Wait for FID to be recorded
-                await page.waitForTimeout(1000)
+            # Measure FID
+            fid = 0
+            if first_clickable.get('found', False):
+                try:
+                    # Simulate click
+                    await page.mouse.click(
+                        first_clickable.get('x', 0),
+                        first_clickable.get('y', 0)
+                    )
 
-                # Get FID value
-                fid = await page.evaluate('() => window.firstInputDelay || 0')
-            except Exception as click_error:
-                print(f"Error simulating click: {str(click_error)}")
-                fid = 100  # Fallback value
+                    # Wait for FID to be recorded
+                    await page.waitForTimeout(500)
 
-        # Get CLS
-        cls = await page.evaluate('() => window.cls || 0')
+                    # Get FID value
+                    fid = await page.evaluate('() => window.firstInputDelay || 0')
+                except Exception as e:
+                    logger.warning(f"Error measuring FID: {str(e)}")
+                    fid = 100  # fallback
+            else:
+                fid = 100  # fallback when no clickable element
 
-        # Get performance info
-        client = await page.target.createCDPSession()
-        perf_metrics = await client.send('Performance.getMetrics')
+            logger.info(f"FID: {fid}ms")
 
-        # Extract load time
-        timing = await page.evaluate('() => JSON.stringify(window.performance.timing)')
-        timing_obj = json.loads(timing)
-        load_time = (timing_obj['loadEventEnd'] - timing_obj['navigationStart']) / 1000
+            # Collect network statistics
+            network_stats = await page.evaluate('''() => {
+                try {
+                    const resources = performance.getEntriesByType('resource');
+                    const total = resources.reduce((acc, res) => acc + (res.transferSize || 0), 0);
+                    const js = resources.filter(r => r.name.endsWith('.js')).reduce((acc, res) => acc + (res.transferSize || 0), 0);
+                    const css = resources.filter(r => r.name.endsWith('.css')).reduce((acc, res) => acc + (res.transferSize || 0), 0);
+                    const img = resources.filter(r => ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].some(ext => r.name.endsWith('.' + ext))).reduce((acc, res) => acc + (res.transferSize || 0), 0);
+                    const font = resources.filter(r => ['woff', 'woff2', 'ttf', 'otf'].some(ext => r.name.endsWith('.' + ext))).reduce((acc, res) => acc + (res.transferSize || 0), 0);
+                    
+                    return { total, js, css, img, font };
+                } catch (e) {
+                    console.error('Error collecting network stats:', e);
+                    return { total: 0, js: 0, css: 0, img: 0, font: 0 };
+                }
+            }''')
 
-        # Collect network information
-        network_stats = await page.evaluate('''() => {
-            const resources = performance.getEntriesByType('resource');
-            const total = resources.reduce((acc, res) => acc + (res.transferSize || 0), 0);
-            const js = resources.filter(r => r.name.endsWith('.js')).reduce((acc, res) => acc + (res.transferSize || 0), 0);
-            const css = resources.filter(r => r.name.endsWith('.css')).reduce((acc, res) => acc + (res.transferSize || 0), 0);
-            const img = resources.filter(r => ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].some(ext => r.name.endsWith('.' + ext))).reduce((acc, res) => acc + (res.transferSize || 0), 0);
-            const font = resources.filter(r => ['woff', 'woff2', 'ttf', 'otf'].some(ext => r.name.endsWith('.' + ext))).reduce((acc, res) => acc + (res.transferSize || 0), 0);
-            
-            return { total, js, css, img, font };
-        }''')
+            # Calculate scores
+            web_vitals_scores = self.calculate_web_vitals_scores(lcp, fid, cls)
 
-        # Calculate scores
-        web_vitals_scores = self.calculate_web_vitals_scores(lcp, fid, cls)
+            # Prepare metrics
+            metrics = {
+                'lcp': round(lcp, 2),  # milliseconds
+                'fid': round(fid, 2),  # milliseconds
+                'cls': round(cls, 3),  # score
+                'scores': web_vitals_scores,
+                'load_time': round(load_time, 2),  # seconds
+                'network_stats': network_stats
+            }
 
-        return {
-            'lcp': round(lcp, 2),  # milliseconds
-            'fid': round(fid, 2),  # milliseconds
-            'cls': round(cls, 3),  # score
-            'scores': web_vitals_scores,
-            'load_time': round(load_time, 2),  # seconds
-            'network_stats': network_stats
-        }
+            return metrics
 
-    def _fallback_values(self):
+        except TimeoutError as e:
+            logger.warning(f"Timeout during analysis: {str(e)}")
+            return None
+        except NetworkError as e:
+            logger.warning(f"Network error during analysis: {str(e)}")
+            return None
+        except Exception as e:
+            logger.error(f"Error during Web Vitals analysis: {str(e)}")
+            return None
+        finally:
+            # Close the page
+            if page:
+                try:
+                    await page.close()
+                except Exception:
+                    pass
+
+    def _fallback_values(self, url):
         """Generate fallback values for Web Vitals when measurement fails."""
+        logger.warning(f"Using fallback values for Web Vitals for {url}")
         return {
             'lcp': 3000,  # 3 seconds
             'fid': 150,   # 150 ms
