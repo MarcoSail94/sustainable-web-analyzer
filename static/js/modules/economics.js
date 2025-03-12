@@ -47,7 +47,7 @@ function populateBenefitsGrid(economicBenefits) {
             label: 'Riduzione costi potenziale'
         },
         {
-            value: `${savingsPerVisit.toFixed(2)}¢`,
+            value: `€${savingsPerVisit.toFixed(2)}`,
             label: 'Risparmio per visita'
         }
     ];

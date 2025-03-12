@@ -349,6 +349,32 @@
     font-size: 1rem;
 }
 
+/* Aggiunto spazio tra le sezioni dei costi e dei parametri */
+.cost-breakdown-section {
+    margin-top: 3rem;
+}
+
+.cost-breakdown-section h3 {
+    margin-bottom: 1.25rem;
+}
+
+/* Soluzione migliorata per lo spaziamento tra le sezioni */
+.economic-benefits .parameters-info {
+    margin-top: 4rem !important; /* !important per superare altri stili */
+    padding-top: 2rem;
+}
+
+/* Miglioramento per la tabella dei costi */
+.costs-table-container {
+    margin-bottom: 3rem;
+}
+
+/* Rendere più distintivi i titoli delle sezioni parametri */
+.parameters-info h3 {
+    padding-bottom: 0.75rem;
+    width: fit-content;
+}
+
 /* Web Vitals Info */
 .web-vitals-info {
     margin-top: 2rem;

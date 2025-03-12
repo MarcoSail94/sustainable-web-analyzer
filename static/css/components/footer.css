@@ -9,6 +9,15 @@ footer {
     position: relative;
 }
 
+.copyright {
+    text-align: center;
+    padding-top: 2.5rem;
+    padding-bottom: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--gray-400);
+    font-size: 0.875rem;
+}
+
 .footer-wave {
     position: absolute;
     top: -10px;
@@ -33,7 +42,7 @@ footer {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .footer-logo {
@@ -112,6 +121,7 @@ footer {
 .social-links {
     display: flex;
     gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .social-link {
@@ -129,14 +139,6 @@ footer {
 .social-link:hover {
     background-color: var(--primary-color);
     transform: translateY(-3px);
-}
-
-.copyright {
-    text-align: center;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--gray-400);
-    font-size: 0.875rem;
 }
 
 /* Media queries */
