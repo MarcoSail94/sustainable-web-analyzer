@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Report di Sostenibilità Web - {{ data.domain }}</title>
+    <style>
+        @import url("{{ base_path }}/templates/pdf/css/report.css");
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img src="{{ base_path }}/static/img/logo.png" alt="Logo">
+        <h1>Sustainable Web Analyzer</h1>
+    </div>
+    <div class="report-date">
+        Report generato il {{ data.report_date|datetime }}
+    </div>
+</header>
+
+<section class="report-overview">
+    <h2>Analisi di {{ data.url }}</h2>
+    <div class="score-container">
+        <div class="score-box score-{{ data.metrics.sustainability_score|int }}">
+            <div class="score-value">{{ data.metrics.sustainability_score }}/100</div>
+            <div class="score-label">Punteggio Sostenibilità</div>
+        </div>
+    </div>
+
+    <div class="metrics-overview">
+        <div class="metric">
+            <div class="metric-value">{{ data.metrics.co2_emissions }} g</div>
+            <div class="metric-label">Emissioni CO₂</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ data.metrics.load_time }}s</div>
+            <div class="metric-label">Tempo di Caricamento</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{{ data.metrics.total_size }}</div>
+            <div class="metric-label">Dimensione Totale</div>
+        </div>
+    </div>
+</section>
+
+<section class="resources-section">
+    <h2>Risorse Analizzate</h2>
+    <table class="resources-table">
+        <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Quantità</th>
+            <th>Dimensione</th>
+            <th>Impatto CO₂</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for type, info in data.resources.items() %}
+        <tr>
+            <td>{{ type|capitalize }}</td>
+            <td>{{ info.count }}</td>
+            <td>{{ info.size }}</td>
+            <td>{{ info.co2 }} g</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td><strong>Totale</strong></td>
+            <td>{{ data.total_resources_count }}</td>
+            <td>{{ data.metrics.total_size }}</td>
+            <td>{{ data.metrics.co2_emissions }} g</td>
+        </tr>
+        </tfoot>
+    </table>
+</section>
+
+<section class="web-vitals-section">
+    <h2>Core Web Vitals</h2>
+    <div class="web-vitals-container">
+        <div class="web-vital">
+            <div class="web-vital-name">LCP</div>
+            <div class="web-vital-value">{{ data.metrics.web_vitals.lcp }}s</div>
+            <div class="web-vital-label">Largest Contentful Paint</div>
+        </div>
+        <div class="web-vital">
+            <div class="web-vital-name">FID</div>
+            <div class="web-vital-value">{{ data.metrics.web_vitals.fid }}ms</div>
+            <div class="web-vital-label">First Input Delay</div>
+        </div>
+        <div class="web-vital">
+            <div class="web-vital-name">CLS</div>
+            <div class="web-vital-value">{{ data.metrics.web_vitals.cls }}</div>
+            <div class="web-vital-label">Cumulative Layout Shift</div>
+        </div>
+    </div>
+</section>
+
+<section class="economic-section">
+    <h2>Benefici Economici</h2>
+    <div class="economic-overview">
+        <div class="economic-metric">
+            <div class="economic-value">€{{ data.metrics.economic_benefits.current_monthly_cost|format_currency }}</div>
+            <div class="economic-label">Costo Mensile Attuale</div>
+        </div>
+        <div class="economic-metric highlight">
+            <div class="economic-value">€{{ data.metrics.economic_benefits.potential_annual_savings|format_currency }}</div>
+            <div class="economic-label">Risparmio Annuale Potenziale</div>
+        </div>
+        <div class="economic-metric">
+            <div class="economic-value">{{ data.metrics.economic_benefits.potential_savings_percent }}%</div>
+            <div class="economic-label">Riduzione Costi Potenziale</div>
+        </div>
+    </div>
+</section>
+
+<section class="optimizations">
+    <h2>Suggerimenti di Ottimizzazione</h2>
+
+    {% for opt in data.optimizations %}
+    <div class="optimization {{ opt.priority }}">
+        <h3>{{ opt.title }}</h3>
+        <p>{{ opt.description }}</p>
+        <div class="impact">
+            <span class="co2">Risparmio CO₂: {{ opt.impact }}g</span>
+            <span class="economic">Risparmio Economico: €{{ opt.economic_impact }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+
+<footer>
+    <p>© {{ now().year }} Sustainable Web Analyzer | www.sustainableweb.app</p>
+    <p class="disclaimer">Questo report è stato generato automaticamente. I valori sono stime basate su modelli di calcolo.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,278 @@
+/* Stili per i report PDF */
+@page {
+  margin: 2cm;
+  @top-center {
+    content: "Sustainable Web Analyzer - Report di Sostenibilità";
+    font-size: 10pt;
+    color: #666;
+  }
+  @bottom-center {
+    content: "Pagina " counter(page) " di " counter(pages);
+    font-size: 10pt;
+    color: #666;
+  }
+}
+
+body {
+  font-family: sans-serif;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  font-size: 11pt;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 20px 0;
+  border-bottom: 2px solid #16a34a;
+  margin-bottom: 30px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.logo h1 {
+  font-size: 20px;
+  color: #16a34a;
+  margin: 0;
+}
+
+.report-date {
+  font-size: 12px;
+  color: #666;
+}
+
+section {
+  margin: 30px 0;
+  break-inside: avoid;
+}
+
+h2 {
+  color: #16a34a;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  font-size: 16pt;
+}
+
+h3 {
+  font-size: 13pt;
+  color: #333;
+  margin: 15px 0 10px 0;
+}
+
+.score-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.score-box {
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  width: 150px;
+  margin: 0 auto;
+  display: inline-block;
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.score-80 .score-value,
+.score-90 .score-value,
+.score-100 .score-value {
+  color: #16a34a;
+}
+
+.score-50 .score-value,
+.score-60 .score-value,
+.score-70 .score-value {
+  color: #f59e0b;
+}
+
+.score-0 .score-value,
+.score-10 .score-value,
+.score-20 .score-value,
+.score-30 .score-value,
+.score-40 .score-value {
+  color: #ef4444;
+}
+
+.metrics-overview {
+  display: flex;
+  justify-content: space-around;
+  margin: 30px 0;
+}
+
+.metric {
+  text-align: center;
+  flex: 1;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.resources-table,
+.costs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.resources-table th,
+.resources-table td,
+.costs-table th,
+.costs-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.resources-table th,
+.costs-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.resources-table tfoot td,
+.costs-table tfoot td {
+  font-weight: bold;
+  background-color: #f9f9f9;
+}
+
+.web-vitals-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+
+.web-vital {
+  text-align: center;
+  flex: 1;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 0 10px;
+}
+
+.web-vital-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #16a34a;
+}
+
+.web-vital-value {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.web-vital-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.economic-overview {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+
+.economic-metric {
+  text-align: center;
+  flex: 1;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 0 10px;
+}
+
+.economic-metric.highlight {
+  background-color: #ecfdf5;
+  border: 1px solid #16a34a;
+}
+
+.economic-value {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.economic-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.optimization {
+  background-color: #f9f9f9;
+  border-left: 4px solid #16a34a;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.optimization.high {
+  border-left-color: #ef4444;
+}
+
+.optimization.medium {
+  border-left-color: #f59e0b;
+}
+
+.optimization h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.optimization p {
+  margin: 10px 0;
+}
+
+.impact {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.impact .co2 {
+  color: #16a34a;
+}
+
+.impact .economic {
+  color: #4338ca;
+}
+
+footer {
+  margin-top: 50px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.disclaimer {
+  font-size: 10px;
+  color: #999;
+}

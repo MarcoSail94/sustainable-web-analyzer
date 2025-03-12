@@ -32,6 +32,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/animations.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/responsive.css') }}">
 
+    <!-- Sistema di tema -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/theme.css') }}">
+
     <!-- Base CSS (senza gli @import) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
@@ -39,14 +42,19 @@
     {% block css %}{% endblock %}
 </head>
 <body>
+<!-- Link per saltare al contenuto (accessibilità) -->
+<a href="#main-content" class="skip-link">Salta al contenuto principale</a>
+
 {% include 'partials/header.html' %}
 
-{% block content %}{% endblock %}
+<main id="main-content">
+    {% block content %}{% endblock %}
+</main>
 
 {% include 'partials/footer.html' %}
 
-<!-- JS principale -->
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<!-- JS principale (moduli ES) -->
+<script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 <!-- JS specifici per pagina -->
 {% block js %}{% endblock %}

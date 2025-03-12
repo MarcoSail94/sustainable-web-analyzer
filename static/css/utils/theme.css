@@ -1,0 +1,262 @@
+/**
+ * Sistema di theming con supporto per tema chiaro e scuro
+ */
+
+:root {
+  /* Tema chiaro (default) */
+  --primary-color: #16a34a;
+  --primary-light: #22c55e;
+  --primary-dark: #15803d;
+  --secondary-color: #4338ca;
+  --accent-color: #fbbf24;
+
+  --bg-main: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-alt: #f3f4f6;
+
+  --text-main: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Per conversione rgba */
+  --primary-color-rgb: 22, 163, 74;
+}
+
+/* Tema scuro */
+[data-theme="dark"] {
+  /* Colori primari */
+  --primary-color: #22c55e;  /* Verde più luminoso in tema scuro */
+  --primary-light: #4ade80;
+  --primary-dark: #16a34a;
+  --secondary-color: #6366f1;  /* Indaco più luminoso */
+  --accent-color: #fcd34d;  /* Giallo più luminoso */
+
+  /* Sfondi */
+  --bg-main: #111827;  /* Sfondo principale scuro */
+  --bg-card: #1f2937;  /* Card più chiare dello sfondo */
+  --bg-alt: #2a354b;   /* Superficie alternativa */
+
+  /* Testo */
+  --text-main: #f9fafb;  /* Testo principale quasi bianco */
+  --text-secondary: #d1d5db;  /* Testo secondario leggermente più scuro */
+  --text-muted: #9ca3af;  /* Testo disabilitato ancora più scuro */
+
+  /* Bordi */
+  --border-light: #374151;  /* Bordi più scuri */
+  --border-medium: #4b5563;
+
+  /* Colori semantici */
+  --success-color: #34d399;  /* Verde più luminoso */
+  --warning-color: #fbbf24;  /* Arancione più luminoso */
+  --danger-color: #f87171;   /* Rosso più luminoso */
+  --info-color: #60a5fa;     /* Blu più luminoso */
+
+  /* Ombre più scure e sottili */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+
+  /* Per conversione rgba */
+  --primary-color-rgb: 34, 197, 94;
+}
+
+/* Applica i colori del tema agli elementi appropriati */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Header */
+header {
+  background-color: var(--primary-color);
+  background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: white;
+}
+
+/* Sezioni e card */
+.detail-section,
+.score-card,
+.web-vital-card,
+.optimization-card,
+.benefit-card,
+.parameter-card {
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.detail-section:hover,
+.score-card:hover,
+.web-vital-card:hover,
+.optimization-card:hover,
+.benefit-card:hover,
+.parameter-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Footer */
+footer {
+  background-color: var(--text-main);
+  color: white;
+}
+
+/* Form elements */
+.url-input,
+.number-input {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-medium);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.url-input:focus,
+.number-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* Dashboard e tabelle */
+.web-vital-bar-container {
+  background-color: var(--bg-alt);
+}
+
+.costs-table th {
+  background-color: var(--bg-alt);
+}
+
+.costs-table td {
+  border-color: var(--border-light);
+}
+
+.web-vitals-info {
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+/* Toggle tema */
+.theme-switch {
+  display: flex;
+  align-items: center;
+  margin-left: 1.5rem;
+}
+
+.theme-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 56px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:checked {
+  background-color: var(--primary-dark);
+}
+
+.theme-toggle:checked::after {
+  left: 30px; /* 56px - 2px - 20px - 4px */
+}
+
+.theme-label {
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+  color: white;
+}
+
+.theme-icon {
+  margin-left: 0.5rem;
+  color: white;
+}
+
+/* Chart overrides per tema scuro */
+[data-theme="dark"] .chartjs-render-monitor {
+  filter: brightness(0.9) contrast(1.1);
+}
+
+[data-theme="dark"] .chartjs-tooltip {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-medium) !important;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .theme-label {
+    display: none;
+  }
+}
+
+/* Utility per elementi del DOM che usano colori CSS diretti */
+[data-theme="dark"] .primary-button {
+  background-color: var(--primary-color);
+}
+
+[data-theme="dark"] .secondary-button {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Colori per punteggi */
+[data-theme="dark"] .green-score {
+  color: var(--success-color);
+}
+
+[data-theme="dark"] .yellow-score {
+  color: var(--warning-color);
+}
+
+[data-theme="dark"] .red-score {
+  color: var(--danger-color);
+}
+
+[data-theme="dark"] .blue-score {
+  color: var(--info-color);
+}
+
+/* Tabelle */
+[data-theme="dark"] .costs-table th,
+[data-theme="dark"] .parameters-table th {
+  background-color: var(--bg-alt);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .costs-table td,
+[data-theme="dark"] .parameters-table td {
+  color: var(--text-secondary);
+}
+
+/* Hero section */
+[data-theme="dark"] .hero::before {
+  background: linear-gradient(to bottom, rgba(17, 24, 39, 0.8) 0%, rgba(17, 24, 39, 0.9) 100%);
+}

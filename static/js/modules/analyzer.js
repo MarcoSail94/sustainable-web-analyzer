@@ -1,164 +1,228 @@
 /**
- * Modulo Analyzer - Gestisce la form di analisi e il caricamento dei risultati
+ * modules/analyzer.js - Versione ottimizzata con migliore gestione degli eventi
  */
-
-import { callAnalyzeAPI } from '../utils/api.js';
-import { populateDashboard } from './dashboard.js';
-
-// Avvia l'inizializzazione quando il DOM è pronto
-document.addEventListener('DOMContentLoaded', function() {
-    initializeAnalyzer();
-    initializeAdvancedOptions();
-    initializeActionButtons();
-});
 
 /**
- * Inizializza il form di analisi e il processo di submit
+ * Inizializza l'analizzatore
  */
-function initializeAnalyzer() {
-    const analyzerForm = document.getElementById('analyzerForm');
-    const loadingSection = document.getElementById('loadingSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const errorMessage = document.getElementById('errorMessage');
+export function initializeAnalyzer() {
+  const analyzerForm = document.getElementById('analyzerForm');
+  if (!analyzerForm) return;
 
-    if (!analyzerForm) {
-        console.log('Form di analisi non trovato nella pagina corrente');
-        return;
+  // Implementa correttamente la delega degli eventi per un DOM più pulito
+  analyzerForm.addEventListener('submit', handleAnalysisSubmit);
+
+  // Gestisci altre interazioni del form
+  const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+  if (toggleAdvancedBtn) {
+    toggleAdvancedBtn.addEventListener('click', toggleAdvancedOptions);
+  }
+
+  // Pre-popola il form se ci sono parametri nell'URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToAnalyze = urlParams.get('url');
+  if (urlToAnalyze) {
+    const urlInput = document.getElementById('urlInput');
+    if (urlInput) {
+      urlInput.value = urlToAnalyze;
+      // Opzionalmente avvia automaticamente l'analisi
+      // analyzerForm.dispatchEvent(new Event('submit'));
+    }
+  }
+
+  // Aggiungi funzionalità al pulsante di download
+  const downloadReportBtn = document.getElementById('downloadReportBtn');
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener('click', handleReportDownload);
+  }
+
+  // Aggiungi funzionalità al pulsante di condivisione
+  const shareReportBtn = document.getElementById('shareReportBtn');
+  if (shareReportBtn) {
+    shareReportBtn.addEventListener('click', handleShareResults);
+  }
+}
+
+/**
+ * Gestisce l'invio del form di analisi
+ * @param {Event} e - Evento submit
+ */
+async function handleAnalysisSubmit(e) {
+  e.preventDefault();
+
+  const urlInput = document.getElementById('urlInput');
+  const loadingSection = document.getElementById('loadingSection');
+  const dashboardSection = document.getElementById('dashboardSection');
+  const errorMessage = document.getElementById('errorMessage');
+
+  // Valida l'input
+  if (!urlInput || !urlInput.value) {
+    showError(errorMessage, "Inserisci un URL valido");
+    return;
+  }
+
+  // Ottieni le visite mensili
+  const monthlyVisitsInput = document.getElementById('monthlyVisits');
+  let monthlyVisits = 10000; // Valore predefinito
+
+  if (monthlyVisitsInput && monthlyVisitsInput.value) {
+    const parsedValue = parseInt(monthlyVisitsInput.value, 10);
+    if (!isNaN(parsedValue) && parsedValue > 0) {
+      monthlyVisits = parsedValue;
+    }
+  }
+
+  // Nascondi errori precedenti
+  if (errorMessage) {
+    errorMessage.style.display = 'none';
+  }
+
+  // Mostra il caricamento
+  if (loadingSection) {
+    loadingSection.style.display = 'block';
+  }
+
+  if (dashboardSection) {
+    dashboardSection.style.display = 'none';
+  }
+
+  try {
+    // Chiama l'API per l'analisi
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: urlInput.value,
+        monthly_visits: monthlyVisits
+      }),
+    });
+
+    const data = await response.json();
+
+    // Nascondi il caricamento
+    if (loadingSection) {
+      loadingSection.style.display = 'none';
     }
 
-    analyzerForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    if (!data.success) {
+      // Mostra errore
+      showError(errorMessage, data.error || "Si è verificato un errore durante l'analisi");
+      return;
+    }
 
-        const urlInput = document.getElementById('urlInput');
-        if (!urlInput || !urlInput.value) {
-            showError(errorMessage, "Inserisci un URL valido");
-            return;
-        }
+    // Salva i dati per uso futuro
+    window.analysisData = data;
+    try {
+      localStorage.setItem('analysisData', JSON.stringify(data));
+    } catch (e) {
+      console.warn('Impossibile salvare i dati in localStorage:', e);
+    }
 
-        // Ottieni il valore delle visite mensili
-        const monthlyVisitsInput = document.getElementById('monthlyVisits');
-        let monthlyVisits = 10000; // Valore predefinito
+    // Carica dinamicamente la dashboard e mostra i risultati
+    const dashboardModule = await import('./dashboard.js');
 
-        if (monthlyVisitsInput && monthlyVisitsInput.value) {
-            const parsedValue = parseInt(monthlyVisitsInput.value, 10);
-            if (!isNaN(parsedValue) && parsedValue > 0) {
-                monthlyVisits = parsedValue;
-            }
-        }
+    if (dashboardModule.populateDashboard && dashboardSection) {
+      dashboardModule.populateDashboard(data);
 
-        // Nascondi eventuali errori precedenti
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
+      // Mostra la dashboard
+      dashboardSection.style.display = 'block';
+      dashboardSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  } catch (error) {
+    console.error('Errore durante l\'analisi:', error);
 
-        // Mostra il caricamento con animazione
-        if (loadingSection) {
-            loadingSection.style.display = 'block';
-            loadingSection.classList.add('animate__animated', 'animate__fadeIn');
-        }
+    // Nascondi il caricamento
+    if (loadingSection) {
+      loadingSection.style.display = 'none';
+    }
 
-        if (dashboardSection) {
-            dashboardSection.style.display = 'none';
-        }
+    // Mostra errore
+    showError(errorMessage, "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto'));
+  }
+}
 
-        try {
-            // Chiama l'API per l'analisi
-            const data = await callAnalyzeAPI(urlInput.value, monthlyVisits);
+/**
+ * Gestisce il download del report
+ */
+function handleReportDownload() {
+  const analysisData = window.analysisData;
+  if (!analysisData) {
+    alert('Nessuna analisi disponibile da scaricare!');
+    return;
+  }
 
-            // Nascondi il caricamento
-            if (loadingSection) {
-                loadingSection.style.display = 'none';
-            }
+  // Usa ID dell'analisi o un timestamp come fallback
+  const analysisId = analysisData.id || Date.now();
 
-            if (!data.success) {
-                // Mostra messaggio di errore
-                showError(errorMessage, data.error || "Si è verificato un errore durante l'analisi");
-                return;
-            }
+  // Reindirizza all'endpoint di download
+  window.location.href = `/api/report/${analysisId}`;
+}
 
-            // Popola i dati nella dashboard
-            if (typeof populateDashboard === 'function' && dashboardSection) {
-                populateDashboard(data);
+/**
+ * Gestisce la condivisione dei risultati
+ */
+function handleShareResults() {
+  const analysisData = window.analysisData;
+  if (!analysisData) {
+    alert('Nessuna analisi disponibile da condividere!');
+    return;
+  }
 
-                // Mostra la dashboard con animazione
-                dashboardSection.style.display = 'block';
-                dashboardSection.classList.add('animate__animated', 'animate__fadeIn');
-
-                // Scorri fino alla dashboard
-                dashboardSection.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                console.error('Funzione populateDashboard non disponibile o sezione dashboard non trovata');
-            }
-        } catch (error) {
-            console.error('Errore durante l\'analisi:', error);
-
-            // Nascondi il caricamento
-            if (loadingSection) {
-                loadingSection.style.display = 'none';
-            }
-
-            // Mostra messaggio di errore
-            showError(errorMessage, "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto'));
-        }
+  // Esempio base di condivisione
+  if (navigator.share) {
+    // API Web Share
+    navigator.share({
+      title: `Analisi di Sostenibilità Web: ${analysisData.domain}`,
+      text: `Il sito ${analysisData.domain} ha un punteggio di sostenibilità di ${analysisData.metrics.sustainability_score}/100.`,
+      url: window.location.href
+    }).catch(err => {
+      console.error('Errore nella condivisione:', err);
     });
+  } else {
+    // Fallback: copia l'URL negli appunti
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      alert('URL copiato negli appunti!');
+    }).catch(err => {
+      console.error('Errore nella copia URL:', err);
+      alert(`Copia manualmente questo URL: ${url}`);
+    });
+  }
 }
 
 /**
  * Mostra un messaggio di errore
- * @param {HTMLElement} errorElement - Elemento HTML per mostrare l'errore
+ * @param {HTMLElement} errorElement - Elemento HTML per l'errore
  * @param {string} message - Messaggio di errore
  */
 function showError(errorElement, message) {
-    if (!errorElement) return;
+  if (!errorElement) return;
 
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
+  errorElement.textContent = message;
+  errorElement.style.display = 'block';
 
-    if (typeof errorElement.classList !== 'undefined') {
-        errorElement.classList.add('animate__animated', 'animate__fadeIn');
-    }
-
-    // Scroll to error message
-    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Scroll fino al messaggio di errore
+  errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 /**
- * Inizializza le opzioni avanzate
+ * Gestisce il toggle delle opzioni avanzate
  */
-function initializeAdvancedOptions() {
-    const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
-    const advancedOptions = document.getElementById('advancedOptions');
+function toggleAdvancedOptions() {
+  const advancedOptions = document.getElementById('advancedOptions');
+  if (!advancedOptions) return;
 
-    if (toggleAdvancedBtn && advancedOptions) {
-        toggleAdvancedBtn.addEventListener('click', function() {
-            const isHidden = advancedOptions.style.display === 'none';
-            advancedOptions.style.display = isHidden ? 'block' : 'none';
-            toggleAdvancedBtn.innerHTML = isHidden ?
-                '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
-                '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
-        });
-    }
+  const isHidden = advancedOptions.style.display === 'none';
+  advancedOptions.style.display = isHidden ? 'block' : 'none';
+
+  // Aggiorna il testo del pulsante e l'attributo aria-expanded
+  this.innerHTML = isHidden ?
+    '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
+    '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
+  this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
 }
 
-/**
- * Inizializza i pulsanti di azione (download, condivisione)
- */
-function initializeActionButtons() {
-    const downloadReportBtn = document.getElementById('downloadReportBtn');
-    const shareReportBtn = document.getElementById('shareReportBtn');
-
-    if (downloadReportBtn) {
-        downloadReportBtn.addEventListener('click', function() {
-            alert('Funzionalità di download report in arrivo a breve!');
-        });
-    }
-
-    if (shareReportBtn) {
-        shareReportBtn.addEventListener('click', function() {
-            alert('Funzionalità di condivisione risultati in arrivo a breve!');
-        });
-    }
-}
-
-// Esporta le funzioni per l'uso in altri moduli
-export { initializeAnalyzer, showError };
+// Esporta funzioni aggiuntive se necessario
+export { showError, toggleAdvancedOptions, handleAnalysisSubmit };
