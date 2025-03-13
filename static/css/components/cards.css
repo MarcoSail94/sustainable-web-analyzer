@@ -11,6 +11,7 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
     text-align: center;
     border: 1px solid var(--border-light);
+    text-align: center;
 }
 
 .score-card:hover {
@@ -25,6 +26,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .score-value {
@@ -67,11 +69,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
 }
 
 .score-card p i {
     margin-right: 0.5rem;
     color: var(--primary-color);
+    flex-shrink: 0; /* Impedisce all'icona di contrarsi */
 }
 
 /* Detail Sections */
@@ -308,7 +312,7 @@
 
 .optimization-card .impact-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-top: auto;
     padding-top: 0.75rem;

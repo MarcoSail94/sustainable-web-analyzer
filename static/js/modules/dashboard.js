@@ -220,10 +220,6 @@ function populateOptimizations(optimizations) {
                     <div class="impact-value">${opt.impact}g</div>
                     <div class="impact-label">CO₂ Risparmiato</div>
                 </div>
-                <div class="impact-item">
-                    <div class="impact-value">€${opt.economic_impact ? opt.economic_impact.toFixed(2) : (opt.impact * 1.5).toFixed(2)}</div>
-                    <div class="impact-label">Risparmio Annuale</div>
-                </div>
             </div>
         `;
         optimizationList.appendChild(optimizationCard);
@@ -245,7 +241,7 @@ function createScoreCard(title, value, description, valueClass, iconName) {
     card.innerHTML = `
         <h3>${title}</h3>
         <div class="score-value ${valueClass}">${value}</div>
-        <p><i class="fas ${iconName}"></i> ${description}</p>
+        <p class="text-center"><i class="fas ${iconName}"></i> ${description}</p>
     `;
     return card;
 }
