@@ -1,5 +1,6 @@
 /**
  * Sistema di theming con supporto per tema chiaro e scuro
+ * Migliorato per contrasto ottimale
  */
 
 :root {
@@ -10,13 +11,13 @@
   --secondary-color: #4338ca;
   --accent-color: #fbbf24;
 
-  --bg-main: #f5f5f5;
+  --bg-main: #f3f4f6;
   --bg-card: #ffffff;
   --bg-alt: #f3f4f6;
 
   --text-main: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
 
   --border-light: #e5e7eb;
   --border-medium: #d1d5db;
@@ -33,6 +34,10 @@
 
   /* Per conversione rgba */
   --primary-color-rgb: 22, 163, 74;
+  --success-color-rgb: 16, 185, 129;
+  --warning-color-rgb: 245, 158, 11;
+  --danger-color-rgb: 239, 68, 68;
+  --info-color-rgb: 59, 130, 246;
 }
 
 /* Tema scuro */
@@ -51,7 +56,7 @@
 
   /* Testo */
   --text-main: #f9fafb;  /* Testo principale quasi bianco */
-  --text-secondary: #d1d5db;  /* Testo secondario leggermente più scuro */
+  --text-secondary: #e5e7eb;  /* Testo secondario più chiaro per contrasto */
   --text-muted: #9ca3af;  /* Testo disabilitato ancora più scuro */
 
   /* Bordi */
@@ -65,13 +70,17 @@
   --info-color: #60a5fa;     /* Blu più luminoso */
 
   /* Ombre più scure e sottili */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
 
   /* Per conversione rgba */
   --primary-color-rgb: 34, 197, 94;
+  --success-color-rgb: 52, 211, 153;
+  --warning-color-rgb: 251, 191, 36;
+  --danger-color-rgb: 248, 113, 113;
+  --info-color-rgb: 96, 165, 250;
 }
 
 /* Applica i colori del tema agli elementi appropriati */
@@ -97,7 +106,7 @@ header {
 .parameter-card {
   background-color: var(--bg-card);
   box-shadow: var(--shadow);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, color 0.3s ease;
 }
 
 .detail-section:hover,
@@ -107,6 +116,28 @@ header {
 .benefit-card:hover,
 .parameter-card:hover {
   box-shadow: var(--shadow-md);
+}
+
+/* Colori per i grafici e i contenitori */
+.chart-container {
+  background-color: var(--bg-card);
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+.web-vitals-chart-container {
+  background-color: var(--bg-card);
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+/* Dashboard header */
+.dashboard-header h2 {
+  color: var(--text-main);
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
 }
 
 /* Footer */
@@ -121,7 +152,7 @@ footer {
   background-color: var(--bg-card);
   color: var(--text-main);
   border-color: var(--border-medium);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .url-input:focus,
@@ -137,10 +168,17 @@ footer {
 
 .costs-table th {
   background-color: var(--bg-alt);
+  color: var(--text-main);
 }
 
 .costs-table td {
   border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+
+.costs-table tfoot td {
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .web-vitals-info {
@@ -224,24 +262,6 @@ footer {
   transition: transform 0.3s ease;
 }
 
-/* Chart overrides per tema scuro */
-[data-theme="dark"] .chartjs-render-monitor {
-  filter: brightness(0.9) contrast(1.1);
-}
-
-[data-theme="dark"] .chartjs-tooltip {
-  background-color: var(--bg-card) !important;
-  color: var(--text-main) !important;
-  border-color: var(--border-medium) !important;
-}
-
-/* Media queries */
-@media (max-width: 768px) {
-  .theme-label {
-    display: none;
-  }
-}
-
 /* Utility per elementi del DOM che usano colori CSS diretti */
 [data-theme="dark"] .primary-button {
   background-color: var(--primary-color);
@@ -255,30 +275,22 @@ footer {
 /* Colori per punteggi */
 [data-theme="dark"] .green-score {
   color: var(--success-color);
+  text-shadow: 0 0 20px rgba(var(--success-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .yellow-score {
   color: var(--warning-color);
+  text-shadow: 0 0 20px rgba(var(--warning-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .red-score {
   color: var(--danger-color);
+  text-shadow: 0 0 20px rgba(var(--danger-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .blue-score {
   color: var(--info-color);
-}
-
-/* Tabelle */
-[data-theme="dark"] .costs-table th,
-[data-theme="dark"] .parameters-table th {
-  background-color: var(--bg-alt);
-  color: var(--text-main);
-}
-
-[data-theme="dark"] .costs-table td,
-[data-theme="dark"] .parameters-table td {
-  color: var(--text-secondary);
+  text-shadow: 0 0 20px rgba(var(--info-color-rgb), 0.5);
 }
 
 /* Hero section */
@@ -313,11 +325,72 @@ footer {
   background-attachment: fixed;
 }
 
-/* Scegli carta migliorata per tema scuro */
-[data-theme="dark"] .card,
+/* Applicazione specifica a elementi problematici nel tema scuro */
+[data-theme="dark"] .score-card,
+[data-theme="dark"] .web-vital-card,
 [data-theme="dark"] .detail-section,
+[data-theme="dark"] .economic-benefits,
 [data-theme="dark"] .optimization-card {
+  background-color: var(--bg-card);
+  color: var(--text-main);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .chart-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .costs-table-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+}
+
+/* Migliora contrasto nei core web vitals */
+[data-theme="dark"] .web-vital-value {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .web-vital-header span {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .web-vital-header {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .web-vitals-info {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  border-left-color: var(--primary-color);
+}
+
+[data-theme="dark"] .web-vitals-info p,
+[data-theme="dark"] .web-vitals-info li {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .web-vitals-info strong {
+  color: var(--text-main);
+}
+
+/* Override specifico per gli indicatori di stato */
+[data-theme="dark"] .status-good {
+  color: var(--success-color);
+}
+
+[data-theme="dark"] .status-needs-improvement {
+  color: var(--warning-color);
+}
+
+[data-theme="dark"] .status-poor {
+  color: var(--danger-color);
+}
+
+/* Migliora background per le sezioni economiche */
+[data-theme="dark"] .economic-benefits {
+  background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.1) 0%, rgba(67, 56, 202, 0.1) 100%);
+  border-color: rgba(var(--primary-color-rgb), 0.2);
 }
 
 /* Effetti di hover più evidenti nel tema scuro */
@@ -328,27 +401,36 @@ footer {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--primary-color-rgb), 0.1);
 }
 
-/* Sfondi semitrasparenti per il tema scuro */
-[data-theme="dark"] .hero::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(10, 25, 50, 0.1) 0%, rgba(10, 25, 50, 0.4) 100%);
-  pointer-events: none;
+/* Migliora dashboard header */
+[data-theme="dark"] .dashboard-header h2 {
+  color: var(--text-main);
 }
 
-/* Miglioramenti ai form per tema scuro */
-[data-theme="dark"] .url-input,
-[data-theme="dark"] .number-input {
-  background-color: rgba(31, 41, 55, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
+[data-theme="dark"] .dashboard-header p {
+  color: var(--text-secondary);
 }
 
-[data-theme="dark"] .url-input:focus,
-[data-theme="dark"] .number-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3), 0 0 10px rgba(var(--primary-color-rgb), 0.1);
+/* Miglioramenti per la leggibilità generale */
+[data-theme="dark"] .score-card h3,
+[data-theme="dark"] .detail-section h2,
+[data-theme="dark"] .economic-benefits h2 {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .optimization-card p,
+[data-theme="dark"] .score-card p,
+[data-theme="dark"] .detail-section p {
+  color: var(--text-secondary);
+}
+
+/* Dashboard specifico per tema scuro */
+[data-theme="dark"] .dashboard {
+  color: var(--text-main);
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .theme-label {
+    display: none;
+  }
 }

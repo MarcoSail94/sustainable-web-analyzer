@@ -4,15 +4,16 @@
 
 .costs-table-container {
     margin-top: 2rem;
-    background-color: white;
+    background-color: var(--bg-card);
     border-radius: var(--rounded-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .costs-table-container h4 {
     margin-bottom: 1rem;
-    color: var(--dark-color);
+    color: var(--text-main);
     font-size: 1.25rem;
 }
 
@@ -25,12 +26,18 @@
 .costs-table td {
     padding: 0.75rem 1rem;
     text-align: left;
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--border-light);
+    transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease;
 }
 
 .costs-table th {
-    background-color: var(--gray-100);
+    background-color: var(--bg-alt);
     font-weight: 600;
+    color: var(--text-main);
+}
+
+.costs-table td {
+    color: var(--text-secondary);
 }
 
 .costs-table tfoot td {
@@ -49,18 +56,19 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 0;
-    border-bottom: 1px solid var(--gray-200);
-    transition: background-color 0.3s ease;
+    border-bottom: 1px solid var(--border-light);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .resource-item:hover {
-    background-color: var(--gray-100);
+    background-color: var(--bg-alt);
 }
 
 .resource-name {
     flex: 2;
     display: flex;
     align-items: center;
+    color: var(--text-main);
 }
 
 .resource-name i {
@@ -72,7 +80,7 @@
 .resource-size, .resource-impact {
     flex: 1;
     text-align: right;
-    color: var(--gray-700);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
