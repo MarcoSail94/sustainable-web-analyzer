@@ -105,8 +105,8 @@ class SustainabilityAnalyzer:
         if image_size_mb > 1:
             potential_savings = round(image_size_mb * 0.6, 1)  # Estimate: can save 60%
             optimizations.append({
-                'title': 'Image Compression',
-                'description': f'Images are too heavy. You can reduce overall size by {potential_savings}MB (60%) using modern formats like WebP and compression techniques.',
+                'title': 'Compressione Immagini',
+                'description': f'Le immagini sono troppo pesanti. Puoi ridurre la dimensione complessiva di {potential_savings}MB (60%) utilizzando formati moderni come WebP e tecniche di compressione.',
                 'priority': 'high' if image_size_mb > 2 else 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 saved
                 'resource_type': 'images',
@@ -118,8 +118,8 @@ class SustainabilityAnalyzer:
         if js_size_mb > 0.5:
             potential_savings = round(js_size_mb * 0.3, 1)  # Estimate: can save 30%
             optimizations.append({
-                'title': 'JavaScript Minification',
-                'description': f'JavaScript files can be reduced by {int(potential_savings * 1024)}KB (30%) through minification and unused code elimination.',
+                'title': 'Minificazione JavaScript',
+                'description': f'I file JavaScript possono essere ridotti di {int(potential_savings * 1024)}KB (30%) attraverso la minificazione e l\'eliminazione del codice inutilizzato.',
                 'priority': 'high' if js_size_mb > 1 else 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 saved
                 'resource_type': 'javascript',
@@ -131,8 +131,8 @@ class SustainabilityAnalyzer:
         if css_size_mb > 0.2:
             potential_savings = round(css_size_mb * 0.4, 1)  # Estimate: can save 40%
             optimizations.append({
-                'title': 'CSS Minification',
-                'description': f'CSS files can be reduced by {int(potential_savings * 1024)}KB (40%) through minification and unused rule elimination.',
+                'title': 'Minificazione CSS',
+                'description': f'I file CSS possono essere ridotti di {int(potential_savings * 1024)}KB (40%) attraverso la minificazione e l\'eliminazione delle regole inutilizzate.',
                 'priority': 'medium',
                 'impact': round(potential_savings * 0.2, 2),  # CO2 saved
                 'resource_type': 'css',
@@ -141,8 +141,8 @@ class SustainabilityAnalyzer:
 
         # 4. CDN suggestion (always recommended)
         optimizations.append({
-            'title': 'CDN Implementation',
-            'description': 'Implementing a Content Delivery Network (CDN) could reduce CO₂ emissions by 16% through optimized geographic distribution.',
+            'title': 'Implementazione CDN',
+            'description': 'L\'implementazione di una Content Delivery Network (CDN) potrebbe ridurre le emissioni di CO₂ del 16% attraverso una distribuzione geografica ottimizzata.',
             'priority': 'low',
             'impact': round(self.co2_emissions * 0.16, 2),  # CO2 saved: 16% of total
             'resource_type': 'general',
@@ -151,8 +151,8 @@ class SustainabilityAnalyzer:
 
         # 5. Green hosting (always recommended)
         optimizations.append({
-            'title': 'Green Hosting',
-            'description': 'Switching to a hosting provider that uses renewable energy could reduce your website\'s carbon footprint by up to 40%.',
+            'title': 'Hosting Verde',
+            'description': 'Passare a un provider di hosting che utilizza energia rinnovabile potrebbe ridurre l\'impronta di carbonio del tuo sito fino al 40%.',
             'priority': 'low',
             'impact': round(self.co2_emissions * 0.4, 2),  # CO2 saved: 40% of total
             'resource_type': 'general',
@@ -164,8 +164,8 @@ class SustainabilityAnalyzer:
         if font_size_mb > 0.1:
             potential_savings = round(font_size_mb * 0.5, 1)  # Estimate: can save 50%
             optimizations.append({
-                'title': 'Web Font Optimization',
-                'description': f'Web fonts add {round(font_size_mb, 1)}MB to your site. Consider using system fonts or character subsets to reduce weight by 50%.',
+                'title': 'Ottimizzazione Web Font',
+                'description': f'I web font aggiungono {round(font_size_mb, 1)}MB al tuo sito. Considera l\'utilizzo di font di sistema o subset di caratteri per ridurre il peso del 50%.',
                 'priority': 'medium' if font_size_mb > 0.3 else 'low',
                 'impact': round(potential_savings * 0.2, 2),
                 'resource_type': 'fonts',
@@ -174,8 +174,8 @@ class SustainabilityAnalyzer:
 
         # 7. HTTP/2 or HTTP/3 suggestion
         optimizations.append({
-            'title': 'HTTP Protocol Upgrade',
-            'description': 'Using HTTP/2 or HTTP/3 can reduce load time by up to 30% by reducing latency and optimizing connections.',
+            'title': 'Aggiornamento Protocollo HTTP',
+            'description': 'L\'utilizzo di HTTP/2 o HTTP/3 può ridurre il tempo di caricamento fino al 30% riducendo la latenza e ottimizzando le connessioni.',
             'priority': 'medium',
             'impact': round(self.co2_emissions * 0.15, 2),
             'resource_type': 'general',
@@ -186,8 +186,8 @@ class SustainabilityAnalyzer:
         js_count = self.resources.get('javascript', {}).get('count', 0)
         if js_count > 5:
             optimizations.append({
-                'title': 'Third-Party Script Reduction',
-                'description': f'Your site uses {js_count} scripts. Reducing analytics, social media, and advertising scripts can significantly improve loading time.',
+                'title': 'Riduzione Script di Terze Parti',
+                'description': f'Il tuo sito utilizza {js_count} script. Ridurre gli script di analytics, social media e pubblicità può migliorare significativamente il tempo di caricamento.',
                 'priority': 'high' if js_count > 10 else 'medium',
                 'impact': round(self.co2_emissions * 0.2, 2),
                 'resource_type': 'javascript',
@@ -204,8 +204,8 @@ class SustainabilityAnalyzer:
         # LCP optimization
         if self.web_vitals.get('lcp', 0) > 2500:  # LCP > 2.5s
             optimizations.append({
-                'title': 'Improve Largest Contentful Paint',
-                'description': f'LCP is {self.web_vitals["lcp"]/1000:.2f}s, above the recommended threshold of 2.5s. Optimize main content rendering by preloading critical resources and deferring non-essential ones.',
+                'title': 'Migliorare LCP (Largest Contentful Paint)',
+                'description': f'LCP è {self.web_vitals["lcp"]/1000:.2f}s, sopra la soglia raccomandata di 2.5s. Ottimizza il rendering dei contenuti principali precaricando le risorse critiche e posticipando quelle non essenziali.',
                 'priority': 'high' if self.web_vitals['lcp'] > 4000 else 'medium',
                 'impact': round(self.co2_emissions * 0.15, 2),  # 15% CO2 savings
                 'resource_type': 'performance',
@@ -215,8 +215,8 @@ class SustainabilityAnalyzer:
         # FID optimization
         if self.web_vitals.get('fid', 0) > 100:  # FID > 100ms
             optimizations.append({
-                'title': 'Improve First Input Delay',
-                'description': f'FID is {self.web_vitals["fid"]:.2f}ms, above the recommended threshold of 100ms. Reduce blocking JavaScript and break up long tasks to improve interactivity.',
+                'title': 'Migliorare FID (First Input Delay)',
+                'description': f'FID è {self.web_vitals["fid"]:.2f}ms, sopra la soglia raccomandata di 100ms. Riduci il JavaScript bloccante e suddividi le attività lunghe per migliorare l\'interattività.',
                 'priority': 'high' if self.web_vitals['fid'] > 300 else 'medium',
                 'impact': round(self.co2_emissions * 0.1, 2),  # 10% CO2 savings
                 'resource_type': 'performance',
@@ -226,8 +226,8 @@ class SustainabilityAnalyzer:
         # CLS optimization
         if self.web_vitals.get('cls', 0) > 0.1:  # CLS > 0.1
             optimizations.append({
-                'title': 'Improve Cumulative Layout Shift',
-                'description': f'CLS is {self.web_vitals["cls"]:.3f}, above the recommended threshold of 0.1. Specify dimensions for images and videos, avoid inserting dynamic content, and use skeleton screens.',
+                'title': 'Migliorare CLS (Cumulative Layout Shift)',
+                'description': f'CLS è {self.web_vitals["cls"]:.3f}, sopra la soglia raccomandata di 0.1. Specifica le dimensioni per immagini e video, evita l\'inserimento di contenuti dinamici e utilizza schermate scheletro.',
                 'priority': 'high' if self.web_vitals['cls'] > 0.25 else 'medium',
                 'impact': round(self.co2_emissions * 0.08, 2),  # 8% CO2 savings
                 'resource_type': 'performance',
