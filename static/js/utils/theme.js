@@ -10,13 +10,13 @@
 (function() {
   // Tenta di leggere il tema salvato dal localStorage subito
   const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  // Applica immediatamente il tema senza attendere che il DOM sia completamente caricato
+  // Imposta il tema light di default invece di usare le preferenze di sistema
   if (savedTheme) {
     document.documentElement.setAttribute('data-theme', savedTheme);
-  } else if (prefersDark) {
-    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    // Default a light mode
+    document.documentElement.setAttribute('data-theme', 'light');
   }
 })();
 
@@ -36,10 +36,11 @@ export function initTheme() {
   if (savedTheme) {
     themeToggle.checked = savedTheme === 'dark';
     updateThemeIcon(savedTheme === 'dark');
-  } else if (prefersDark) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    themeToggle.checked = true;
-    updateThemeIcon(true);
+  } else {
+    // Default a light mode invece di usare le preferenze di sistema
+    document.documentElement.setAttribute('data-theme', 'light');
+    themeToggle.checked = false;
+    updateThemeIcon(false);
   }
 
   // Aggiorna in base a cambiamenti nelle preferenze del sistema
@@ -47,13 +48,9 @@ export function initTheme() {
   darkModeMediaQuery.addEventListener('change', (e) => {
     // Solo se l'utente non ha già una preferenza salvata
     if (!localStorage.getItem('theme')) {
-      const isDark = e.matches;
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      if (themeToggle) themeToggle.checked = isDark;
-      if (themeIcon) updateThemeIcon(isDark);
-
-      // Aggiorna i grafici se esistono
-      updateCharts(isDark ? 'dark' : 'light');
+      // Non cambieremo più automaticamente il tema in base alle preferenze di sistema
+      // ma possiamo ancora tenere traccia di eventuali cambiamenti per scopi di debug
+      console.log('Preferenze di sistema cambiate, ma mantenuto il tema attuale');
     }
   });
 
@@ -88,8 +85,7 @@ export function initTheme() {
   });
 
   // Applica immediatamente il tema ai grafici all'avvio
-  const currentTheme = document.documentElement.getAttribute('data-theme') ||
-                      (prefersDark ? 'dark' : 'light');
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   updateCharts(currentTheme);
 }
 

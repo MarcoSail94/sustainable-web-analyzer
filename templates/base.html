@@ -7,15 +7,15 @@
 
     <!-- Previeni Flash Of Unstyled Content con theme init script -->
     <script>
-        // Inizializzazione tema precoce
+        // Inizializzazione tema precoce - defaulta a light mode
         (function() {
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+            // Usa il tema salvato, altrimenti defaulta a light
             if (savedTheme) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
-            } else if (prefersDark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
             }
         })();
     </script>
