@@ -275,22 +275,18 @@ footer {
 /* Colori per punteggi */
 [data-theme="dark"] .green-score {
   color: var(--success-color);
-  text-shadow: 0 0 20px rgba(var(--success-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .yellow-score {
   color: var(--warning-color);
-  text-shadow: 0 0 20px rgba(var(--warning-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .red-score {
   color: var(--danger-color);
-  text-shadow: 0 0 20px rgba(var(--danger-color-rgb), 0.5);
 }
 
 [data-theme="dark"] .blue-score {
   color: var(--info-color);
-  text-shadow: 0 0 20px rgba(var(--info-color-rgb), 0.5);
 }
 
 /* Hero section */
