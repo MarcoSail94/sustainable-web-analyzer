@@ -4,7 +4,7 @@ API routes with domain-specific settings and improved error handling.
 
 import time
 import traceback
-from flask import Blueprint, request, jsonify, current_app, g, send_file
+from flask import Blueprint, request, jsonify, current_app, g
 from urllib.parse import urlparse
 from datetime import datetime
 
@@ -12,7 +12,6 @@ from modules.resource_analyzer import ResourceAnalyzer
 from modules.web_vitals_analyzer import WebVitalsAnalyzer
 from modules.sustainability import SustainabilityAnalyzer
 from modules.economics import EconomicAnalyzer
-from utils.pdf_generator import generate_report_from_request
 from config import Config
 
 # Create blueprint
@@ -156,28 +155,10 @@ def analyze():
 
 @api_bp.route('/report/<string:analysis_id>', methods=['GET'])
 def download_report(analysis_id):
-    """Genera e scarica il report PDF di un'analisi."""
-    try:
-        # Ottieni i dati dell'analisi
-        # Per ora usiamo un ID fittizio e i dati dell'ultima analisi
-        # In un sistema reale dovresti recuperare i dati dal database
-        if hasattr(g, 'analysis_data'):
-            analysis_data = g.analysis_data
-        else:
-            # Se non ci sono dati dell'analisi, restituisci un errore
-            return jsonify({'success': False, 'error': 'Analisi non trovata'}), 404
-
-        # Genera il report PDF
-        domain = analysis_data.get('domain', 'website')
-        filename = f"report-{domain.replace('.', '-')}-{datetime.now().strftime('%Y%m%d')}.pdf"
-        report_path = generate_report_from_request(analysis_data, filename)
-
-        # Restituisci il file
-        return send_file(report_path,
-                         mimetype='application/pdf',
-                         as_attachment=True,
-                         download_name=filename)
-
-    except Exception as e:
-        current_app.logger.error(f"Errore nella generazione del report: {str(e)}")
-        return jsonify({'success': False, 'error': 'Errore nella generazione del report'}), 500
+    """Generate and download a report for an analysis."""
+    # Temporarily disabled PDF generation
+    return jsonify({
+        'success': False,
+        'error': 'PDF generation is temporarily disabled. Please try again later.',
+        'message': 'This feature requires additional system libraries (libgobject-2.0-0). PDF generation will be available in a future update.'
+    }), 501

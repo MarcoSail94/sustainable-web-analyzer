@@ -166,9 +166,10 @@ footer {
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
+  margin: 0 10px;
 }
 
-.theme-toggle::after {
+.theme-toggle::before {
   content: "";
   position: absolute;
   top: 2px;
@@ -178,14 +179,37 @@ footer {
   border-radius: 50%;
   background-color: var(--primary-color);
   transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(to right, #f0f9ff, #102a43);
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
 }
 
 .theme-toggle:checked {
   background-color: var(--primary-dark);
 }
 
+.theme-toggle:checked::before {
+  left: 30px;
+  background-color: white;
+}
+
 .theme-toggle:checked::after {
-  left: 30px; /* 56px - 2px - 20px - 4px */
+  opacity: 0.4;
+}
+
+.theme-toggle:hover::before {
+  transform: scale(1.1);
 }
 
 .theme-label {
@@ -197,6 +221,7 @@ footer {
 .theme-icon {
   margin-left: 0.5rem;
   color: white;
+  transition: transform 0.3s ease;
 }
 
 /* Chart overrides per tema scuro */
@@ -259,4 +284,71 @@ footer {
 /* Hero section */
 [data-theme="dark"] .hero::before {
   background: linear-gradient(to bottom, rgba(17, 24, 39, 0.8) 0%, rgba(17, 24, 39, 0.9) 100%);
+}
+
+/* Animazione transizione per cambio tema */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.5s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* Animazione per l'icona del tema */
+@keyframes icon-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.icon-spin {
+  animation: icon-spin 0.5s ease-in-out;
+}
+
+/* Miglioramenti specifici per il tema scuro */
+[data-theme="dark"] {
+  /* Sfondo con texture sottile */
+  --texture-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] body {
+  background-image: var(--texture-overlay);
+  background-attachment: fixed;
+}
+
+/* Scegli carta migliorata per tema scuro */
+[data-theme="dark"] .card,
+[data-theme="dark"] .detail-section,
+[data-theme="dark"] .optimization-card {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Effetti di hover più evidenti nel tema scuro */
+[data-theme="dark"] .action-button:hover,
+[data-theme="dark"] .optimization-card:hover,
+[data-theme="dark"] .score-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* Sfondi semitrasparenti per il tema scuro */
+[data-theme="dark"] .hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(10, 25, 50, 0.1) 0%, rgba(10, 25, 50, 0.4) 100%);
+  pointer-events: none;
+}
+
+/* Miglioramenti ai form per tema scuro */
+[data-theme="dark"] .url-input,
+[data-theme="dark"] .number-input {
+  background-color: rgba(31, 41, 55, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .url-input:focus,
+[data-theme="dark"] .number-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3), 0 0 10px rgba(var(--primary-color-rgb), 0.1);
 }

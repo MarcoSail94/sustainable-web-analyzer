@@ -147,6 +147,10 @@ async function handleAnalysisSubmit(e) {
  * Gestisce il download del report
  */
 function handleReportDownload() {
+  // Mostrar mensaje informativo de que la característica está deshabilitada temporalmente
+  alert('La funzionalità di download del report PDF è temporaneamente disabilitata. Questa funzione sarà disponibile in un aggiornamento futuro.');
+
+  /* Código anterior comentado
   const analysisData = window.analysisData;
   if (!analysisData) {
     alert('Nessuna analisi disponibile da scaricare!');
@@ -158,6 +162,7 @@ function handleReportDownload() {
 
   // Reindirizza all'endpoint di download
   window.location.href = `/api/report/${analysisId}`;
+  */
 }
 
 /**

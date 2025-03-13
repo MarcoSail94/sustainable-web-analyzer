@@ -1,9 +1,26 @@
 /**
- * Sistema di gestione temi (chiaro/scuro)
+ * Sistema di gestione temi (chiaro/scuro) migliorato
+ * - Aggiunta prevenzione "flash" iniziale
+ * - Migliorata l'integrazione con altre librerie
+ * - Aggiunto supporto per preferenze del sistema operativo
  */
 
+// IMPORTANTE: Questo script deve essere caricato prima degli altri per prevenire il "flash of unstyled content"
+(function() {
+  // Tenta di leggere il tema salvato dal localStorage subito
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  // Applica immediatamente il tema senza attendere che il DOM sia completamente caricato
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else if (prefersDark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+
 /**
- * Inizializza il sistema di temi
+ * Inizializza il sistema di temi completo
  */
 export function initTheme() {
   // Controlla se esiste una preferenza salvata
@@ -14,9 +31,8 @@ export function initTheme() {
 
   if (!themeToggle || !themeIcon) return;
 
-  // Imposta il tema iniziale
+  // Imposta lo stato del toggle in base al tema
   if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
     themeToggle.checked = savedTheme === 'dark';
     updateThemeIcon(savedTheme === 'dark');
   } else if (prefersDark) {
@@ -25,6 +41,21 @@ export function initTheme() {
     updateThemeIcon(true);
   }
 
+  // Aggiorna in base a cambiamenti nelle preferenze del sistema
+  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  darkModeMediaQuery.addEventListener('change', (e) => {
+    // Solo se l'utente non ha già una preferenza salvata
+    if (!localStorage.getItem('theme')) {
+      const isDark = e.matches;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      if (themeToggle) themeToggle.checked = isDark;
+      if (themeIcon) updateThemeIcon(isDark);
+
+      // Aggiorna i grafici se esistono
+      updateCharts(isDark ? 'dark' : 'light');
+    }
+  });
+
   // Toggle del tema
   themeToggle.addEventListener('change', function(e) {
     const isDark = e.target.checked;
@@ -32,6 +63,12 @@ export function initTheme() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     updateThemeIcon(isDark);
+
+    // Applica transizione fluida quando si cambia tema
+    document.documentElement.classList.add('theme-transition');
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transition');
+    }, 500);
 
     // Comunica il cambio agli eventuali iframe o componenti
     document.querySelectorAll('iframe').forEach(iframe => {
@@ -44,6 +81,9 @@ export function initTheme() {
 
     // Aggiorna i grafici se esistono
     updateCharts(theme);
+
+    // Evento personalizzato per consentire ad altri moduli di reagire al cambio tema
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
   });
 }
 
@@ -56,6 +96,12 @@ function updateThemeIcon(isDark) {
   if (!themeIcon) return;
 
   themeIcon.className = isDark ? 'fas fa-sun theme-icon' : 'fas fa-moon theme-icon';
+
+  // Animazione per l'icona
+  themeIcon.classList.add('icon-spin');
+  setTimeout(() => {
+    themeIcon.classList.remove('icon-spin');
+  }, 500);
 }
 
 /**

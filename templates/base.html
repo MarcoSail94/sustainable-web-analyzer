@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sustainable Web Analyzer | Analisi di Sostenibilità Web Professionale{% endblock %}</title>
 
+    <!-- Previeni Flash Of Unstyled Content con theme init script -->
+    <script>
+        // Inizializzazione tema precoce
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (prefersDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+
     <!-- Font moderni e professionali -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +35,9 @@
     <!-- CSS - Carica tutti i file individualmente invece di usare @import -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/variables.css') }}">
 
+    <!-- Tema - Caricato presto nel DOM per evitare FOUC (Flash of Unstyled Content) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/theme.css') }}">
+
     <!-- Componenti -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer.css') }}">
@@ -31,9 +49,7 @@
     <!-- Utilities -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/animations.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/responsive.css') }}">
-
-    <!-- Sistema di tema -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utils/loading.css') }}">
 
     <!-- Base CSS (senza gli @import) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">

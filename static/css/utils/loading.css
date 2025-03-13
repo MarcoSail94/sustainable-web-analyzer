@@ -1,0 +1,156 @@
+/**
+ * loading.css - Stili per gli indicatori di caricamento dell'applicazione
+ */
+
+/* Indicatore di caricamento globale dell'app */
+.app-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.app-loading.fade-out {
+  opacity: 0;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spinner 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+.app-loading p {
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  animation: pulse 1.5s infinite;
+}
+
+/* Indicatore per caricamento lazy di contenuti */
+.lazy-load-container {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+  border-radius: var(--rounded-lg);
+}
+
+.lazy-load-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(var(--primary-color-rgb), 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spinner 0.8s linear infinite;
+}
+
+/* Skeleton per caricamento di contenuti */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-alt) 25%,
+    var(--gray-200) 37%,
+    var(--bg-alt) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: var(--rounded-md);
+}
+
+.skeleton-text {
+  height: 16px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-title {
+  height: 24px;
+  margin-bottom: 12px;
+  width: 70%;
+}
+
+.skeleton-card {
+  padding: 20px;
+  border-radius: var(--rounded-lg);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.skeleton-image {
+  height: 200px;
+  margin-bottom: 12px;
+}
+
+.skeleton-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+/* Animazioni */
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* Stili per immagini con lazy loading */
+img.lazy {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+img.lazy-loaded {
+  opacity: 1;
+}
+
+/* Supporto tema scuro */
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-alt) 25%,
+    var(--gray-500) 37%,
+    var(--bg-alt) 63%
+  );
+}
+
+[data-theme="dark"] .lazy-load-container {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
