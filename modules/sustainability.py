@@ -151,7 +151,7 @@ class SustainabilityAnalyzer:
 
         # 5. Green hosting (always recommended)
         optimizations.append({
-            'title': 'Hosting Verde',
+            'title': 'Green Hosting',
             'description': 'Passare a un provider di hosting che utilizza energia rinnovabile potrebbe ridurre l\'impronta di carbonio del tuo sito fino al 40%.',
             'priority': 'low',
             'impact': round(self.co2_emissions * 0.4, 2),  # CO2 saved: 40% of total
