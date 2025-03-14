@@ -45,12 +45,24 @@ class Config:
     # For sites with known issues, use different strategies or shorter timeouts
     DOMAIN_SETTINGS = {
         # Format: 'domain': {'timeout': seconds, 'skip_web_vitals': boolean}
-        'tgcom.com': {'timeout': 20, 'skip_web_vitals': True},  # Known to time out frequently
-        'paginegialle.it': {'timeout': 20, 'skip_web_vitals': True},  # Known to time out
-        'virgilio.it': {'timeout': 20, 'skip_web_vitals': True},
-        'libero.it': {'timeout': 20, 'skip_web_vitals': True},
-        'google.com': {'timeout': 30, 'skip_web_vitals': False},
-        'youtube.com': {'timeout': 40, 'skip_web_vitals': False}
+        'tgcom.com': {'timeout': 20, 'skip_web_vitals': True} # Known to time out frequently
+    }
+
+    # Impostazioni Lighthouse
+    LIGHTHOUSE_ENABLED = True
+    LIGHTHOUSE_PATH = None  # Sarà rilevato automaticamente o impostato da local_config.py
+    LIGHTHOUSE_TIMEOUT = 60  # Timeout in secondi per l'analisi Lighthouse
+
+    # Opzioni avanzate per Lighthouse
+    LIGHTHOUSE_OPTIONS = {
+        'onlyCategories': ['performance'],
+        'throttling': {
+            'cpuSlowdownMultiplier': 1,
+            'requestLatencyMs': 0,
+            'downloadThroughputKbps': 0,
+            'uploadThroughputKbps': 0
+        },
+        'formFactor': 'desktop'  # Può essere 'mobile' o 'desktop'
     }
 
     @classmethod
@@ -81,6 +93,18 @@ class Config:
             'timeout': cls.BROWSER_TIMEOUT,
             'skip_web_vitals': False
         }
+
+    # Carica configurazioni locali se disponibili
+    @classmethod
+    def load_local_config(cls):
+        try:
+            import local_config
+            for attr in dir(local_config):
+                if not attr.startswith('__'):
+                    setattr(cls, attr, getattr(local_config, attr))
+            return True
+        except ImportError:
+            return False
 
 class DevelopmentConfig(Config):
     """Development configuration."""
@@ -121,3 +145,6 @@ config = {
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
+
+# Carica configurazioni locali
+Config.load_local_config()

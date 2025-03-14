@@ -1,5 +1,5 @@
 """
-API routes with domain-specific settings and improved error handling.
+API routes with Lighthouse integration for Web Vitals analysis.
 """
 
 import time
@@ -10,6 +10,7 @@ from datetime import datetime
 
 from modules.resource_analyzer import ResourceAnalyzer
 from modules.web_vitals_analyzer import WebVitalsAnalyzer
+from modules.lighthouse_analyzer import LighthouseAnalyzer  # Importa il nuovo analizzatore
 from modules.sustainability import SustainabilityAnalyzer
 from modules.economics import EconomicAnalyzer
 from config import Config
@@ -72,16 +73,40 @@ def analyze():
                 'error': resource_data['error']
             }), 500
 
-        # Analyze Web Vitals if not skipped for this domain
+        # Analyze Web Vitals
         if not skip_web_vitals:
             current_app.logger.info(f"Analyzing Web Vitals for URL: {url}")
-            web_vitals_analyzer = WebVitalsAnalyzer()
-            web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=analysis_timeout)
+
+            if Config.LIGHTHOUSE_ENABLED and not getattr(Config, 'SKIP_LIGHTHOUSE', False):
+                try:
+                    # Prova a usare Lighthouse per l'analisi
+                    lighthouse_analyzer = LighthouseAnalyzer()
+                    web_vitals_data = lighthouse_analyzer.measure_web_vitals(
+                        url,
+                        timeout=analysis_timeout,
+                        options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                    )
+                    web_vitals_data['analyzer_type'] = 'lighthouse'
+                    current_app.logger.info("Web Vitals analyzed using Lighthouse")
+                except Exception as e:
+                    current_app.logger.warning(f"Lighthouse analysis failed: {str(e)}")
+                    current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
+
+                    # Fallback al vecchio analizzatore
+                    web_vitals_analyzer = WebVitalsAnalyzer()
+                    web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=analysis_timeout)
+                    web_vitals_data['analyzer_type'] = 'pyppeteer'
+            else:
+                # Usa il vecchio analizzatore se Lighthouse è disabilitato
+                web_vitals_analyzer = WebVitalsAnalyzer()
+                web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=analysis_timeout)
+                web_vitals_data['analyzer_type'] = 'pyppeteer'
         else:
             current_app.logger.info(f"Skipping Web Vitals for {domain} (configured in domain settings)")
             web_vitals_analyzer = WebVitalsAnalyzer()
             web_vitals_data = web_vitals_analyzer._fallback_values(url)
             web_vitals_data['skipped'] = True
+            web_vitals_data['analyzer_type'] = 'none'
 
         # Calculate sustainability metrics
         current_app.logger.info("Calculating sustainability metrics")
@@ -130,15 +155,23 @@ def analyze():
             'fid': round(web_vitals_data.get('fid', 0), 2),  # Milliseconds
             'cls': round(web_vitals_data.get('cls', 0), 3),  # Score
             'scores': web_vitals_data.get('scores', {}),
+            'analyzer_type': web_vitals_data.get('analyzer_type', 'unknown'),
             'is_fallback': web_vitals_data.get('is_fallback', False),
             'skipped': web_vitals_data.get('skipped', False)
         }
+
+        # Add Lighthouse extra metrics if available
+        if web_vitals_data.get('analyzer_type') == 'lighthouse':
+            report['metrics']['web_vitals']['lighthouse_score'] = web_vitals_data.get('lighthouse_score', 0)
+            report['metrics']['web_vitals']['speed_index'] = web_vitals_data.get('speed_index', 0)
+            report['metrics']['web_vitals']['ttfb'] = web_vitals_data.get('ttfb', 0)
+            report['metrics']['web_vitals']['time_to_interactive'] = web_vitals_data.get('time_to_interactive', 0)
 
         # Store the report in the g object for later use
         g.analysis_data = report
 
         # Log successful completion
-        current_app.logger.info(f"Analysis completed for {url} in {report['analysis_time']}s")
+        current_app.logger.info(f"Analysis completed for {url} in {report['analysis_time']}s using {web_vitals_data.get('analyzer_type', 'unknown')} analyzer")
 
         return jsonify(report)
 
