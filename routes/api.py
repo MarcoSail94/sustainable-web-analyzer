@@ -134,64 +134,107 @@ def analyze():
         if not skip_web_vitals:
             current_app.logger.info(f"Analyzing Web Vitals for URL: {url} with enhanced={use_enhanced}, timeout={adaptive_timeout}s")
 
-            if Config.LIGHTHOUSE_ENABLED and use_enhanced:
+            # MIGLIORAMENTO: Utilizza un numero massimo di tentativi per l'analisi Lighthouse
+            max_retries = getattr(Config, 'LIGHTHOUSE_MAX_RETRIES', 2)
+            retry_count = 0
+            web_vitals_data = None
+
+            # Loop per tentativi multipli nell'analisi Lighthouse
+            while retry_count <= max_retries:
                 try:
-                    # Prova a usare l'analizzatore Lighthouse migliorato
-                    enhanced_analyzer = EnhancedLighthouseAnalyzer()
-                    web_vitals_data = enhanced_analyzer.measure_web_vitals(
-                        url,
-                        timeout=adaptive_timeout,
-                        options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                    )
-                    web_vitals_data['analyzer_type'] = 'lighthouse-enhanced'
-                    current_app.logger.info("Web Vitals analyzed using Enhanced Lighthouse Analyzer")
-                except Exception as e:
-                    current_app.logger.warning(f"Enhanced Lighthouse analysis failed: {str(e)}")
-                    current_app.logger.warning("Falling back to standard Lighthouse analyzer")
+                    if Config.LIGHTHOUSE_ENABLED and use_enhanced:
+                        try:
+                            # Prova a usare l'analizzatore Lighthouse migliorato
+                            enhanced_analyzer = EnhancedLighthouseAnalyzer()
+                            web_vitals_data = enhanced_analyzer.measure_web_vitals(
+                                url,
+                                timeout=adaptive_timeout,
+                                options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                            )
+                            web_vitals_data['analyzer_type'] = 'lighthouse-enhanced'
+                            current_app.logger.info("Web Vitals analyzed using Enhanced Lighthouse Analyzer")
+                            break  # Usciamo dal ciclo se l'analisi è riuscita
+                        except Exception as e:
+                            retry_count += 1
+                            current_app.logger.warning(f"Enhanced Lighthouse analysis failed (attempt {retry_count}/{max_retries+1}): {str(e)}")
 
-                    try:
-                        # Fallback a Lighthouse standard
-                        lighthouse_analyzer = LighthouseAnalyzer()
-                        web_vitals_data = lighthouse_analyzer.measure_web_vitals(
-                            url,
-                            timeout=adaptive_timeout,
-                            options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                        )
-                        web_vitals_data['analyzer_type'] = 'lighthouse'
-                        current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
-                    except Exception as e2:
-                        current_app.logger.warning(f"Standard Lighthouse analysis failed: {str(e2)}")
-                        current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
+                            if retry_count <= max_retries:
+                                current_app.logger.info(f"Retrying with modified options...")
+                                # Modifica le opzioni per il prossimo tentativo
+                                modified_options = dict(getattr(Config, 'LIGHTHOUSE_OPTIONS', {}))
+                                # Riduci i dati raccolti ad ogni tentativo
+                                if 'skipAudits' in modified_options:
+                                    modified_options['skipAudits'].extend(['network-requests', 'mainthread-work-breakdown'])
 
-                        # Fallback all'analizzatore tradizionale
+                                # Continua con il prossimo tentativo
+                                continue
+
+                            current_app.logger.warning("Maximum retry attempts reached. Falling back to standard Lighthouse analyzer")
+                            try:
+                                # Fallback a Lighthouse standard
+                                lighthouse_analyzer = LighthouseAnalyzer()
+                                web_vitals_data = lighthouse_analyzer.measure_web_vitals(
+                                    url,
+                                    timeout=adaptive_timeout,
+                                    options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                                )
+                                web_vitals_data['analyzer_type'] = 'lighthouse'
+                                current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
+                                break
+                            except Exception as e2:
+                                current_app.logger.warning(f"Standard Lighthouse analysis failed: {str(e2)}")
+                                current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
+
+                                # Fallback all'analizzatore tradizionale
+                                web_vitals_analyzer = WebVitalsAnalyzer()
+                                web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
+                                web_vitals_data['analyzer_type'] = 'pyppeteer'
+                                break
+                    elif Config.LIGHTHOUSE_ENABLED and not use_enhanced:
+                        # Usa Lighthouse standard se enhanced non è richiesto
+                        try:
+                            lighthouse_analyzer = LighthouseAnalyzer()
+                            web_vitals_data = lighthouse_analyzer.measure_web_vitals(
+                                url,
+                                timeout=adaptive_timeout,
+                                options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                            )
+                            web_vitals_data['analyzer_type'] = 'lighthouse'
+                            current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
+                            break
+                        except Exception as e:
+                            current_app.logger.warning(f"Lighthouse analysis failed: {str(e)}")
+                            current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
+
+                            # Fallback all'analizzatore tradizionale
+                            web_vitals_analyzer = WebVitalsAnalyzer()
+                            web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
+                            web_vitals_data['analyzer_type'] = 'pyppeteer'
+                            break
+                    else:
+                        # Usa l'analizzatore tradizionale se Lighthouse è disabilitato
                         web_vitals_analyzer = WebVitalsAnalyzer()
                         web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
                         web_vitals_data['analyzer_type'] = 'pyppeteer'
+                        break
+                except Exception as unhandled_error:
+                    current_app.logger.error(f"Unhandled error in Web Vitals analysis: {str(unhandled_error)}")
+                    retry_count += 1
+                    if retry_count > max_retries:
+                        # Se abbiamo esaurito i tentativi, utilizziamo un fallback sicuro
+                        web_vitals_analyzer = WebVitalsAnalyzer()
+                        web_vitals_data = web_vitals_analyzer._fallback_values(url)
+                        web_vitals_data['analyzer_type'] = 'fallback'
+                        web_vitals_data['is_fallback'] = True
+                        break
 
-            elif Config.LIGHTHOUSE_ENABLED and not use_enhanced:
-                # Usa Lighthouse standard se enhanced non è richiesto
-                try:
-                    lighthouse_analyzer = LighthouseAnalyzer()
-                    web_vitals_data = lighthouse_analyzer.measure_web_vitals(
-                        url,
-                        timeout=adaptive_timeout,
-                        options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                    )
-                    web_vitals_data['analyzer_type'] = 'lighthouse'
-                    current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
-                except Exception as e:
-                    current_app.logger.warning(f"Lighthouse analysis failed: {str(e)}")
-                    current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
-
-                    # Fallback all'analizzatore tradizionale
-                    web_vitals_analyzer = WebVitalsAnalyzer()
-                    web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
-                    web_vitals_data['analyzer_type'] = 'pyppeteer'
-            else:
-                # Usa l'analizzatore tradizionale se Lighthouse è disabilitato
+            # Se non siamo riusciti ad ottenere dati dopo tutti i tentativi
+            if not web_vitals_data:
                 web_vitals_analyzer = WebVitalsAnalyzer()
-                web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
-                web_vitals_data['analyzer_type'] = 'pyppeteer'
+                web_vitals_data = web_vitals_analyzer._fallback_values(url)
+                web_vitals_data['analyzer_type'] = 'fallback'
+                web_vitals_data['is_fallback'] = True
+
         else:
             current_app.logger.info(f"Skipping Web Vitals for {domain} (configured in domain settings)")
             web_vitals_analyzer = WebVitalsAnalyzer()

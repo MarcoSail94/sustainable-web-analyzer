@@ -163,8 +163,8 @@
               // Salva i dati
               window.analysisData = data;
 
-              // Carica il modulo dashboard
-              import('./modules/dashboard.js').then(module => {
+              // CORREZIONE: Carica il modulo dashboard con percorso assoluto corretto
+              import('/static/js/modules/dashboard.js').then(module => {
                 // Popola la dashboard
                 module.populateDashboard(data);
 
@@ -172,6 +172,14 @@
                 if (dashboardSection) {
                   dashboardSection.style.display = 'block';
                   dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }).catch(error => {
+                console.error('Errore nel caricamento del modulo dashboard:', error);
+                // Mostra un messaggio di errore
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                  errorMessage.textContent = "Errore nel caricamento della dashboard: " + error.message;
+                  errorMessage.style.display = 'block';
                 }
               });
             })
@@ -196,6 +204,7 @@
     });
 </script>
 
+<!-- Caricamento corretto dei moduli con percorsi assoluti -->
 <script type="module" src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>

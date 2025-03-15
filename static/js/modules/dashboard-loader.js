@@ -1,11 +1,4 @@
 /**
- * Script di caricamento per la dashboard avanzata
- * Questo script va inserito in static/js/modules/dashboard-loader.js
- */
-
-import { createRoot } from 'react-dom/client';
-
-/**
  * Carica la dashboard avanzata in modo asincrono
  * @param {Object} data - Dati di analisi del sito
  * @param {HTMLElement} container - Container per la dashboard
@@ -42,8 +35,8 @@ export async function loadEnhancedDashboard(data, container) {
       </div>
     `;
 
-    // Importa il componente EnhancedDashboard in modo dinamico
-    const EnhancedDashboardModule = await import('./enhanced-dashboard.js');
+    // Importa il componente EnhancedDashboard in modo dinamico - PERCORSO CORRETTO
+    const EnhancedDashboardModule = await import('/static/js/modules/enhanced-dashboard.js');
     const EnhancedDashboard = EnhancedDashboardModule.default;
 
     if (!EnhancedDashboard) {
