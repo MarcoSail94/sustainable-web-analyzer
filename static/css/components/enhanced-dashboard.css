@@ -1,0 +1,491 @@
+/**
+ * Stili per la dashboard avanzata con metriche Lighthouse
+ */
+
+.enhanced-dashboard {
+  background-color: var(--bg-card);
+  border-radius: var(--rounded-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 2.5rem;
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+/* Tabs della dashboard */
+.dashboard-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1rem;
+}
+
+.tab-button {
+  background: var(--bg-alt);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--rounded-lg);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.tab-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.tab-button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.tab-button i {
+  margin-right: 0.5rem;
+}
+
+/* Pannello dashboard */
+.dashboard-panel {
+  animation: fadeIn 0.4s ease-in;
+}
+
+.panel-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.panel-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.panel-header p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+}
+
+/* Panoramica metriche */
+.metrics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.metric-card {
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.metric-card.highlight {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+  color: var(--text-main);
+}
+
+.metric-card.highlight .metric-value {
+  color: white;
+}
+
+.metric-value span {
+  font-size: 1rem;
+  opacity: 0.8;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.metric-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.metric-card.highlight .metric-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.metric-explanation {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.metric-card.highlight .metric-explanation {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Sezione del radar */
+.performance-radar-container,
+.category-chart-container,
+.optimization-chart-container {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.performance-radar-container h3,
+.category-chart-container h3,
+.optimization-chart-container h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+/* Metriche energetiche */
+.energy-metrics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Impronta di carbonio */
+.carbon-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.carbon-section h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.carbon-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.carbon-metric {
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--bg-card);
+  border-radius: var(--rounded-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.carbon-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.carbon-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Metriche aggiuntive */
+.additional-metrics {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.additional-metrics h3 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.metrics-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.75rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-radius: var(--rounded-md);
+  border: 1px solid var(--border-light);
+}
+
+.metric-name {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Spiegazioni ottimizzazioni */
+.optimization-explanations {
+  margin-bottom: 2.5rem;
+}
+
+.optimization-explanations h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.explanations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.explanation-card {
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  position: relative;
+}
+
+.explanation-card h4 {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.explanation-card p {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  margin-bottom: 2rem;
+}
+
+.score-pill {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--rounded-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--primary-color);
+}
+
+/* Impatto energetico */
+.energy-impact-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.energy-impact-section h3 {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.energy-impact-section p {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.impact-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.impact-bar {
+  display: grid;
+  grid-template-columns: 200px 1fr 60px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.impact-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.impact-track {
+  height: 12px;
+  background-color: var(--bg-card);
+  border-radius: var(--rounded-full);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.impact-fill {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: var(--rounded-full);
+}
+
+.impact-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Tips energetici */
+.energy-tips {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.energy-tips h3 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tips-list li {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-radius: var(--rounded-md);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-light);
+}
+
+.tips-list li i {
+  color: var(--success-color);
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tips-list li strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* Utilities */
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+/* Animazioni */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .enhanced-dashboard {
+    padding: 1.5rem;
+  }
+
+  .dashboard-tabs {
+    gap: 0.5rem;
+  }
+
+  .tab-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+  }
+
+  .impact-bar {
+    grid-template-columns: 120px 1fr 50px;
+  }
+
+  .impact-label {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] .metric-card {
+  background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .metric-card.highlight {
+  background-color: var(--primary-color);
+}
+
+[data-theme="dark"] .metric-value {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .carbon-value {
+  color: var(--primary-light);
+}
+
+[data-theme="dark"] .metric-row,
+[data-theme="dark"] .carbon-metric,
+[data-theme="dark"] .tips-list li {
+  background-color: var(--bg-card);
+  border-color: var(--border-medium);
+}

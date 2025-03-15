@@ -13,7 +13,8 @@ class Config:
     PORT = int(os.environ.get('PORT', 8080))
 
     # Browser settings
-    BROWSER_TIMEOUT = 45  # seconds - increased from 30
+    BROWSER_TIMEOUT = 90  # Aumentato da 45 secondi a 90 secondi
+
 
     # Requests settings
     REQUEST_RETRIES = 3
@@ -44,26 +45,45 @@ class Config:
     # Domain-specific settings
     # For sites with known issues, use different strategies or shorter timeouts
     DOMAIN_SETTINGS = {
-        # Format: 'domain': {'timeout': seconds, 'skip_web_vitals': boolean}
-        'tgcom.com': {'timeout': 20, 'skip_web_vitals': True} # Known to time out frequently
+        'italiaonline.it': {'timeout': 180, 'lighthouse_timeout': 240, 'skip_web_vitals': False},
+        'repubblica.it': {'timeout': 120, 'lighthouse_timeout': 180, 'skip_web_vitals': False},
+        'corriere.it': {'timeout': 120, 'lighthouse_timeout': 180, 'skip_web_vitals': False},
+        'tgcom.com': {'timeout': 120, 'lighthouse_timeout': 180, 'skip_web_vitals': False}
+        # Aggiungi altri domini problematici secondo necessità
     }
 
     # Impostazioni Lighthouse
     LIGHTHOUSE_ENABLED = True
     LIGHTHOUSE_PATH = None  # Sarà rilevato automaticamente o impostato da local_config.py
-    LIGHTHOUSE_TIMEOUT = 60  # Timeout in secondi per l'analisi Lighthouse
+    LIGHTHOUSE_TIMEOUT = 180  # Timeout specifico per Lighthouse (3 minuti)
+    RESOURCE_FETCH_TIMEOUT = 45  # Timeout per il fetch delle singole risorse
+
+    # Timeout adattivo basato sulla dimensione stimata della pagina
+    ADAPTIVE_TIMEOUT = True  # Abilita il timeout adattivo
+    BASE_TIMEOUT = 60  # Timeout base in secondi
+    TIMEOUT_PER_MB = 20  # Secondi aggiuntivi per MB di dati
 
     # Opzioni avanzate per Lighthouse
     LIGHTHOUSE_OPTIONS = {
-        'onlyCategories': ['performance'],
+        'onlyCategories': ['performance', 'accessibility', 'best-practices', 'seo'],
         'throttling': {
-            'cpuSlowdownMultiplier': 1,
-            'requestLatencyMs': 0,
-            'downloadThroughputKbps': 0,
-            'uploadThroughputKbps': 0
+            'cpuSlowdownMultiplier': 1,  # No CPU throttling
+            'requestLatencyMs': 0,       # No network latency throttling
+            'downloadThroughputKbps': 0, # No download throttling
+            'uploadThroughputKbps': 0    # No upload throttling
         },
-        'formFactor': 'desktop'  # Può essere 'mobile' o 'desktop'
+        'formFactor': 'desktop',         # Analisi desktop
+        'maxWaitForLoad': 120000,        # 2 minuti massimo attesa caricamento (in ms)
+        'skipAudits': [                  # Salta audit non essenziali per accelerare
+            'full-page-screenshot',
+            'screenshot-thumbnails',
+            'final-screenshot',
+            'third-party-summary'
+        ]
     }
+    # Buffer di sicurezza per evitare che il processo termini proprio mentre sta per completare
+    TIMEOUT_BUFFER = 30  # Secondi aggiuntivi di buffer
+
 
     @classmethod
     def get_domain_settings(cls, domain):
