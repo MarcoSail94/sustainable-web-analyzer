@@ -1,17 +1,53 @@
 /**
- * EnhancedDashboard - Componente React per la visualizzazione avanzata dei dati
- * Compatibile con ES Modules
+ * Enhanced Dashboard component with improved theme compatibility
  */
 
-// Assicurarsi che React sia disponibile
+// Ensure we have access to React
 const React = window.React || (typeof React !== 'undefined' ? React : null);
 
-// Componente principale della dashboard avanzata
+// Enhanced Dashboard component with better theme handling
 const EnhancedDashboard = ({ data }) => {
-  // Stato per gestire il tab attivo
+  // State for active tab
   const [activeTab, setActiveTab] = React.useState('sustainability');
 
-  // Estrazione dei dati necessari
+  // State to track theme changes
+  const [theme, setTheme] = React.useState(
+    document.documentElement.getAttribute('data-theme') || 'light'
+  );
+
+  // Effect to listen for theme changes
+  React.useEffect(() => {
+    // Function to handle theme changes
+    const handleThemeChange = () => {
+      const newTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(newTheme);
+    };
+
+    // Set up event listener
+    window.addEventListener('themechange', handleThemeChange);
+
+    // Observe data-theme attribute changes using MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          handleThemeChange();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    // Clean up
+    return () => {
+      window.removeEventListener('themechange', handleThemeChange);
+      observer.disconnect();
+    };
+  }, []);
+
+  // Extract necessary data
   const metrics = data?.metrics || {};
   const webVitals = metrics?.web_vitals || {};
   const resources = data?.resources || {};
@@ -19,14 +55,14 @@ const EnhancedDashboard = ({ data }) => {
   const economicBenefits = metrics?.economic_benefits || {};
   const carbonFootprint = metrics?.carbon_footprint || {};
 
-  // Colori per i punteggi
+  // Colors for scores
   const getScoreColor = (score) => {
-    if (score >= 80) return '#10b981'; // verde
-    if (score >= 50) return '#f59e0b'; // giallo
-    return '#ef4444'; // rosso
+    if (score >= 80) return '#10b981'; // green
+    if (score >= 50) return '#f59e0b'; // yellow
+    return '#ef4444'; // red
   };
 
-  // Formatta i numeri grandi
+  // Format large numbers
   const formatNumber = (num) => {
     if (!num) return '0';
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -34,20 +70,13 @@ const EnhancedDashboard = ({ data }) => {
     return num.toString();
   };
 
-  // Verifica se i dati avanzati sono disponibili
+  // Check if enhanced data is available
   const hasEnhancedData = metrics.energy || carbonFootprint || metrics.performance_details;
 
-  console.log("Rendering EnhancedDashboard con dati:", {
-    sustainabilityScore: metrics.sustainability_score,
-    co2: metrics.co2_emissions,
-    webVitals: webVitals,
-    tabActive: activeTab
-  });
-
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-      {/* Banner che indica l'uso della dashboard avanzata */}
-      <div className="mb-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg border border-green-200 dark:border-green-700">
+    <div className={`p-6 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} rounded-xl shadow-lg`}>
+      {/* Banner indicating the use of the enhanced dashboard */}
+      <div className={`mb-6 p-4 ${theme === 'dark' ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'} rounded-lg border`}>
         <div className="flex items-center">
           <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 text-white">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,8 +84,8 @@ const EnhancedDashboard = ({ data }) => {
             </svg>
           </div>
           <div className="ml-4">
-            <h3 className="text-lg font-bold text-green-800 dark:text-green-200">Dashboard Avanzata</h3>
-            <p className="text-green-700 dark:text-green-300">
+            <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-green-200' : 'text-green-800'}`}>Dashboard Avanzata</h3>
+            <p className={theme === 'dark' ? 'text-green-300' : 'text-green-700'}>
               {hasEnhancedData
                 ? "Visualizzazione con dati avanzati di Lighthouse attiva"
                 : "Dashboard avanzata attiva, ma dati estesi non disponibili"}
@@ -65,13 +94,15 @@ const EnhancedDashboard = ({ data }) => {
         </div>
       </div>
 
-      {/* Tabs per navigare tra le sezioni */}
-      <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700 mb-6">
+      {/* Tabs for navigation */}
+      <div className={`flex flex-wrap border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} mb-6`}>
         <button
           className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
             activeTab === 'sustainability'
               ? 'bg-green-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-300'
+                : 'bg-gray-100 text-gray-700'
           }`}
           onClick={() => setActiveTab('sustainability')}
         >
@@ -84,7 +115,9 @@ const EnhancedDashboard = ({ data }) => {
           className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
             activeTab === 'performance'
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-300'
+                : 'bg-gray-100 text-gray-700'
           }`}
           onClick={() => setActiveTab('performance')}
         >
@@ -97,7 +130,9 @@ const EnhancedDashboard = ({ data }) => {
           className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
             activeTab === 'economics'
               ? 'bg-purple-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-300'
+                : 'bg-gray-100 text-gray-700'
           }`}
           onClick={() => setActiveTab('economics')}
         >
@@ -110,7 +145,9 @@ const EnhancedDashboard = ({ data }) => {
           className={`px-4 py-2 font-medium rounded-t-lg text-sm ${
             activeTab === 'optimizations'
               ? 'bg-amber-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-300'
+                : 'bg-gray-100 text-gray-700'
           }`}
           onClick={() => setActiveTab('optimizations')}
         >
@@ -121,10 +158,10 @@ const EnhancedDashboard = ({ data }) => {
         </button>
       </div>
 
-      {/* Pannello Sostenibilità */}
+      {/* Sustainability Panel */}
       {activeTab === 'sustainability' && (
         <div className="animate-fade-in">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
             Sostenibilità Digitale
           </h2>
 
@@ -135,6 +172,7 @@ const EnhancedDashboard = ({ data }) => {
               suffix="/100"
               color={getScoreColor(metrics.sustainability_score || 0)}
               icon={<SustainabilityIcon />}
+              theme={theme}
             />
             <MetricCard
               title="Emissioni CO₂"
@@ -142,12 +180,14 @@ const EnhancedDashboard = ({ data }) => {
               suffix="g/view"
               color="#3b82f6"
               icon={<CO2Icon />}
+              theme={theme}
             />
             <MetricCard
               title="Dimensione Totale"
               value={metrics.total_size || "0 KB"}
               color="#8b5cf6"
               icon={<SizeIcon />}
+              theme={theme}
             />
             <MetricCard
               title="Tempo di Caricamento"
@@ -155,48 +195,49 @@ const EnhancedDashboard = ({ data }) => {
               suffix="s"
               color={metrics.load_time > 3 ? "#ef4444" : "#10b981"}
               icon={<SpeedIcon />}
+              theme={theme}
             />
           </div>
 
           {carbonFootprint && (
-            <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 mb-6 border border-green-200 dark:border-green-800">
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-4">
+            <div className={`${theme === 'dark' ? 'bg-green-900/30 border-green-800' : 'bg-green-50 border-green-200'} rounded-lg p-4 mb-6 border`}>
+              <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-green-200' : 'text-green-800'} mb-4`}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Impronta di Carbonio Annuale
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg shadow text-center`}>
+                  <div className={`text-xl font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
                     {carbonFootprint.kg_co2 || 0} kg
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">CO₂ all'anno</div>
+                  <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>CO₂ all'anno</div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg shadow text-center`}>
+                  <div className={`text-xl font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
                     {carbonFootprint.equivalent_trees || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Alberi equivalenti</div>
+                  <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Alberi equivalenti</div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg shadow text-center`}>
+                  <div className={`text-xl font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
                     {formatNumber(carbonFootprint.comparison?.car_km || 0)} km
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Equivalenti in auto</div>
+                  <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Equivalenti in auto</div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg shadow text-center`}>
+                  <div className={`text-xl font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
                     {formatNumber(carbonFootprint.comparison?.smartphone_charges || 0)}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Ricariche smartphone</div>
+                  <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Ricariche smartphone</div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-md p-4 border`}>
+            <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
@@ -204,26 +245,28 @@ const EnhancedDashboard = ({ data }) => {
             </h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+                <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantità</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dimensione</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Impatto CO₂</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>Tipo</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>Quantità</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>Dimensione</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>Impatto CO₂</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                   {Object.entries(resources).map(([type, data]) => (
-                    <tr key={type} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={type} className={theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <ResourceIcon type={type} />
-                          <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                          <ResourceIcon type={type} theme={theme} />
+                          <span className={`ml-2 text-sm font-medium ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.count}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.size}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.co2}g</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{data.count}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{data.size}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{data.co2}g</td>
                     </tr>
                   ))}
                 </tbody>
@@ -233,10 +276,10 @@ const EnhancedDashboard = ({ data }) => {
         </div>
       )}
 
-      {/* Pannello Performance */}
+      {/* Performance Panel */}
       {activeTab === 'performance' && (
         <div className="animate-fade-in">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
             Core Web Vitals e Performance
           </h2>
 
@@ -248,6 +291,7 @@ const EnhancedDashboard = ({ data }) => {
               color={webVitals.lcp > 4 ? "#ef4444" : webVitals.lcp > 2.5 ? "#f59e0b" : "#10b981"}
               icon={<LCPIcon />}
               description="Largest Contentful Paint"
+              theme={theme}
             />
             <MetricCard
               title="FID"
@@ -256,6 +300,7 @@ const EnhancedDashboard = ({ data }) => {
               color={webVitals.fid > 300 ? "#ef4444" : webVitals.fid > 100 ? "#f59e0b" : "#10b981"}
               icon={<FIDIcon />}
               description="First Input Delay"
+              theme={theme}
             />
             <MetricCard
               title="CLS"
@@ -263,6 +308,7 @@ const EnhancedDashboard = ({ data }) => {
               color={webVitals.cls > 0.25 ? "#ef4444" : webVitals.cls > 0.1 ? "#f59e0b" : "#10b981"}
               icon={<CLSIcon />}
               description="Cumulative Layout Shift"
+              theme={theme}
             />
             <MetricCard
               title="Performance"
@@ -271,11 +317,12 @@ const EnhancedDashboard = ({ data }) => {
               color={getScoreColor(webVitals.lighthouse_score || 0)}
               icon={<PerformanceIcon />}
               isHighlighted={true}
+              theme={theme}
             />
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-md p-4 border mb-6`}>
+            <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -286,41 +333,47 @@ const EnhancedDashboard = ({ data }) => {
                 title="First Contentful Paint"
                 value={(webVitals.first_contentful_paint/1000).toFixed(2) || "N/A"}
                 suffix="s"
+                theme={theme}
               />
               <DetailMetric
                 title="Speed Index"
                 value={(webVitals.speed_index/1000).toFixed(2) || "N/A"}
                 suffix="s"
+                theme={theme}
               />
               <DetailMetric
                 title="Time to Interactive"
                 value={(webVitals.time_to_interactive/1000).toFixed(2) || "N/A"}
                 suffix="s"
+                theme={theme}
               />
               <DetailMetric
                 title="Total Blocking Time"
                 value={webVitals.total_blocking_time || "N/A"}
                 suffix="ms"
+                theme={theme}
               />
               <DetailMetric
                 title="Caricamento Server"
                 value={(webVitals.ttfb/1000).toFixed(2) || "N/A"}
                 suffix="s"
+                theme={theme}
               />
               <DetailMetric
                 title="Browser Connection"
                 value={metrics.performance_details?.network_rtt || "N/A"}
                 suffix="ms"
+                theme={theme}
               />
             </div>
           </div>
         </div>
       )}
 
-      {/* Pannello Economico */}
+      {/* Economic Panel */}
       {activeTab === 'economics' && (
         <div className="animate-fade-in">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
             Benefici Economici
           </h2>
 
@@ -331,6 +384,7 @@ const EnhancedDashboard = ({ data }) => {
               prefix="€"
               color="#ef4444"
               icon={<CostIcon />}
+              theme={theme}
             />
             <MetricCard
               title="Risparmio Potenziale"
@@ -340,6 +394,7 @@ const EnhancedDashboard = ({ data }) => {
               color="#10b981"
               icon={<SavingsIcon />}
               isHighlighted={true}
+              theme={theme}
             />
             <MetricCard
               title="Riduzione Costi"
@@ -347,21 +402,23 @@ const EnhancedDashboard = ({ data }) => {
               suffix="%"
               color="#3b82f6"
               icon={<PercentIcon />}
+              theme={theme}
             />
             <MetricCard
               title="Visite Mensili"
               value={formatNumber(economicBenefits.estimated_monthly_visits || 0)}
               color="#8b5cf6"
               icon={<VisitsIcon />}
+              theme={theme}
             />
           </div>
         </div>
       )}
 
-      {/* Pannello Ottimizzazioni */}
+      {/* Optimizations Panel */}
       {activeTab === 'optimizations' && (
         <div className="animate-fade-in">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-4`}>
             Opportunità di Ottimizzazione
           </h2>
 
@@ -369,7 +426,7 @@ const EnhancedDashboard = ({ data }) => {
             {optimizations.map((opt, index) => (
               <div
                 key={index}
-                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border-l-4 ${
+                className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-4 border-l-4 ${
                   opt.priority === 'high'
                     ? 'border-red-500'
                     : opt.priority === 'medium'
@@ -380,24 +437,24 @@ const EnhancedDashboard = ({ data }) => {
                 <div className="flex items-start">
                   <div className={`p-2 rounded-full mr-3 ${
                     opt.priority === 'high'
-                      ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                      ? theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
                       : opt.priority === 'medium'
-                      ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
-                      : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                      ? theme === 'dark' ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-100 text-amber-600'
+                      : theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'
                   }`}>
                     <PriorityIcon priority={opt.priority} />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-2">{opt.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{opt.description}</p>
+                    <h3 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-2`}>{opt.title}</h3>
+                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-3`}>{opt.description}</p>
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="px-2 py-1 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded">
+                      <span className={`px-2 py-1 ${theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'} rounded`}>
                         CO₂: {opt.impact}g
                       </span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+                      <span className={`px-2 py-1 ${theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'} rounded`}>
                         Risparmio: €{opt.economic_impact}
                       </span>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 rounded">
+                      <span className={`px-2 py-1 ${theme === 'dark' ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-600'} rounded`}>
                         {opt.resource_type}
                       </span>
                     </div>
@@ -412,34 +469,42 @@ const EnhancedDashboard = ({ data }) => {
   );
 };
 
-// Componenti di utilità
-const MetricCard = ({ title, value, prefix = '', suffix = '', color, icon, description = '', isHighlighted = false }) => (
-  <div className={`p-4 rounded-lg shadow-md ${isHighlighted ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' : 'bg-white dark:bg-gray-800'} transition-transform hover:transform hover:scale-105`}>
+// Utility components
+const MetricCard = ({ title, value, prefix = '', suffix = '', color, icon, description = '', isHighlighted = false, theme }) => (
+  <div className={`p-4 rounded-lg shadow-md ${isHighlighted
+    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
+    : theme === 'dark' ? 'bg-gray-800' : 'bg-white'} transition-transform hover:transform hover:scale-105`}>
     <div className="flex justify-between items-start mb-3">
-      <h3 className={`text-sm font-medium ${isHighlighted ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>{title}</h3>
-      <div className={`p-2 rounded-full ${isHighlighted ? 'bg-white/20' : `text-${color.replace('#', '')}`}`}>
+      <h3 className={`text-sm font-medium ${isHighlighted
+        ? 'text-green-100'
+        : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{title}</h3>
+      <div className={`p-2 rounded-full ${isHighlighted ? 'bg-white/20' : ''}`} style={!isHighlighted ? {color} : {}}>
         {icon}
       </div>
     </div>
     <div className="flex items-baseline">
-      <span className={`text-2xl font-bold ${isHighlighted ? 'text-white' : 'text-gray-800 dark:text-white'}`} style={!isHighlighted ? {color} : {}}>
+      <span className={`text-2xl font-bold ${isHighlighted
+        ? 'text-white'
+        : theme === 'dark' ? 'text-white' : 'text-gray-800'}`} style={!isHighlighted ? {color} : {}}>
         {prefix}{typeof value === 'number' ? value.toFixed(2).replace(/\.?0+$/, '') : value}{suffix}
       </span>
     </div>
     {description && (
-      <p className={`mt-1 text-xs ${isHighlighted ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>{description}</p>
+      <p className={`mt-1 text-xs ${isHighlighted
+        ? 'text-green-100'
+        : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{description}</p>
     )}
   </div>
 );
 
-const DetailMetric = ({ title, value, suffix = '' }) => (
-  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
-    <span className="text-sm text-gray-700 dark:text-gray-300">{title}</span>
-    <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">{value}{suffix}</span>
+const DetailMetric = ({ title, value, suffix = '', theme }) => (
+  <div className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3 flex justify-between items-center`}>
+    <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{title}</span>
+    <span className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>{value}{suffix}</span>
   </div>
 );
 
-// Icone
+// Icons
 const SustainabilityIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -512,20 +577,30 @@ const VisitsIcon = () => (
   </svg>
 );
 
-const ResourceIcon = ({ type }) => {
+const ResourceIcon = ({ type, theme }) => {
+  const bgClass = theme === 'dark' ? 'dark:bg-opacity-30' : '';
+
   switch (type) {
     case 'html':
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-500"><span className="text-xs font-semibold">HTML</span></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-500'}`}><span className="text-xs font-semibold">HTML</span></span>;
     case 'css':
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-500"><span className="text-xs font-semibold">CSS</span></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-500'}`}><span className="text-xs font-semibold">CSS</span></span>;
     case 'javascript':
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-yellow-100 dark:bg-yellow-900/30 text-yellow-500"><span className="text-xs font-semibold">JS</span></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-500'}`}><span className="text-xs font-semibold">JS</span></span>;
     case 'images':
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-green-100 dark:bg-green-900/30 text-green-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-500'}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </span>;
     case 'fonts':
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-500"><span className="text-xs font-semibold">Aa</span></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-500'}`}><span className="text-xs font-semibold">Aa</span></span>;
     default:
-      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></span>;
+      return <span className={`w-6 h-6 flex items-center justify-center rounded-md ${theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </span>;
   }
 };
 
@@ -552,10 +627,10 @@ const PriorityIcon = ({ priority }) => {
   }
 };
 
-// Register the component globally for accessibility
+// Make component available globally
 if (typeof window !== 'undefined') {
   window.EnhancedDashboard = EnhancedDashboard;
 }
 
-// Export the component for ES modules
+// Export for ES Modules
 export default EnhancedDashboard;

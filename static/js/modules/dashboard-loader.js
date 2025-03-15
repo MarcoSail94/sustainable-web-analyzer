@@ -1,11 +1,4 @@
 /**
- * Dashboard Loader - Carica la dashboard avanzata React in modo asincrono
- * - Versione corretta con gestione errori migliorata
- * - Supporto completo per ES Modules
- * - Garanzia di compatibilità cross-browser
- */
-
-/**
  * Carica la dashboard avanzata in modo asincrono
  * @param {Object} data - Dati di analisi del sito
  * @param {HTMLElement} container - Container per la dashboard
@@ -13,6 +6,10 @@
  */
 export async function loadEnhancedDashboard(data, container) {
   console.log("Inizializzazione dashboard avanzata...");
+
+  // IMPORTANTE: Nascondi immediatamente tutte le sezioni della dashboard standard
+  // per evitare che vengano visualizzate entrambe le dashboard
+  hideStandardDashboardSections();
 
   try {
     // Verifica che React e ReactDOM siano disponibili
@@ -23,12 +20,19 @@ export async function loadEnhancedDashboard(data, container) {
       // Verifica di nuovo dopo il caricamento
       if (!window.React || !window.ReactDOM) {
         console.error("Impossibile caricare React. Fallback alla dashboard standard.");
+        showStandardDashboardSections();
         return false;
       }
     }
 
     // Visualizza un indicatore di caricamento
     showLoadingIndicator(container);
+
+    // Aggiungi classe per il tema corrente al container
+    updateContainerThemeClass(container);
+
+    // Aggiungi un listener per i cambiamenti di tema
+    addThemeChangeListener(container);
 
     // Verifica che il componente EnhancedDashboard sia già stato definito
     if (window.EnhancedDashboard) {
@@ -59,8 +63,161 @@ export async function loadEnhancedDashboard(data, container) {
   } catch (error) {
     console.error("Errore durante il caricamento della dashboard avanzata:", error);
     showErrorMessage(container, error);
+    showStandardDashboardSections();
     return false;
   }
+}
+
+/**
+ * Nasconde tutte le sezioni della dashboard standard
+ */
+function hideStandardDashboardSections() {
+  const standardSections = [
+    'scoreOverview',
+    'webVitalsSection',
+    'economicBenefits',
+    'resourceList',
+    'optimizationList'
+  ];
+
+  standardSections.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      if (element.parentElement && element.parentElement.tagName !== 'BODY') {
+        element.parentElement.style.display = 'none';
+      } else if (element) {
+        element.style.display = 'none';
+      }
+    }
+  });
+
+  // Nasconde anche eventuali sezioni detail-section
+  document.querySelectorAll('.detail-section').forEach(section => {
+    if (!section.id || !section.id.includes('enhancedDashboard')) {
+      section.style.display = 'none';
+    }
+  });
+}
+
+/**
+ * Mostra le sezioni della dashboard standard
+ */
+function showStandardDashboardSections() {
+  const standardSections = [
+    'scoreOverview',
+    'webVitalsSection',
+    'economicBenefits',
+    'resourceList',
+    'optimizationList'
+  ];
+
+  standardSections.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      if (element.parentElement && element.parentElement.tagName !== 'BODY') {
+        element.parentElement.style.display = 'block';
+      } else if (element) {
+        element.style.display = 'block';
+      }
+    }
+  });
+
+  // Mostra anche eventuali sezioni detail-section
+  document.querySelectorAll('.detail-section').forEach(section => {
+    section.style.display = 'block';
+  });
+}
+
+/**
+ * Aggiunge classe per il tema corrente al container
+ */
+function updateContainerThemeClass(container) {
+  // Rimuovi prima le classi di tema esistenti
+  container.classList.remove('theme-light', 'theme-dark');
+
+  // Aggiungi la classe appropriata in base al tema corrente
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  container.classList.add(`theme-${currentTheme}`);
+}
+
+/**
+ * Aggiunge un listener per i cambiamenti di tema
+ */
+function addThemeChangeListener(container) {
+  // Definisci una funzione per gestire i cambiamenti di tema
+  const handleThemeChange = (event) => {
+    updateContainerThemeClass(container);
+
+    // Aggiorna anche la classe del body per garantire la coerenza
+    document.body.classList.remove('theme-light', 'theme-dark');
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    document.body.classList.add(`theme-${currentTheme}`);
+
+    // Forza un re-render aggiornando una proprietà di data-theme su tutti i componenti React
+    const reactComponents = container.querySelectorAll('[data-reactroot]');
+    reactComponents.forEach(component => {
+      component.setAttribute('data-theme', currentTheme);
+    });
+  };
+
+  // Rimuovi eventuali listener esistenti per evitare duplicati
+  window.removeEventListener('themechange', handleThemeChange);
+
+  // Aggiungi il listener
+  window.addEventListener('themechange', handleThemeChange);
+
+  // Aggiorna immediatamente
+  handleThemeChange();
+}
+
+/**
+ * Mostra un indicatore di caricamento nella dashboard
+ * @param {HTMLElement} container - Container per la dashboard
+ */
+function showLoadingIndicator(container) {
+  container.innerHTML = `
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg animate-pulse">
+      <div class="flex justify-center items-center h-64">
+        <div class="text-center">
+          <svg class="animate-spin h-10 w-10 text-green-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">Caricamento dashboard avanzata...</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Mostra un messaggio di errore nella dashboard
+ * @param {HTMLElement} container - Container per la dashboard
+ * @param {Error} error - Errore da mostrare
+ */
+function showErrorMessage(container, error) {
+  container.innerHTML = `
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+      <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+          <div class="w-10 h-10 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-bold text-red-800 dark:text-red-200">Errore di Caricamento</h3>
+            <p class="text-red-700 dark:text-red-300">
+              Si è verificato un errore durante il caricamento della dashboard avanzata. Verrà utilizzata la dashboard standard.
+            </p>
+            <p class="text-red-700 dark:text-red-300 text-sm mt-2">
+              Dettaglio errore: ${error.message || 'Errore sconosciuto'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /**
