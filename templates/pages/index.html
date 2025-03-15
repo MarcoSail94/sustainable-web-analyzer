@@ -44,7 +44,10 @@
         <p>Ecco i risultati dell'analisi di sostenibilità per il tuo sito web. Scopri come migliorarne l'efficienza.</p>
     </div>
 
-    <!-- Include components di dashboard -->
+    <!-- Container per la Dashboard Avanzata - Nuovo elemento! -->
+    <div id="enhancedDashboardContainer"></div>
+
+    <!-- Include components di dashboard standard (visualizzati solo se non si usa la dashboard avanzata) -->
     {% include 'partials/dashboard/overview.html' %}
     {% include 'partials/dashboard/webvitals.html' %}
     {% include 'partials/dashboard/economic.html' %}
@@ -68,6 +71,10 @@
 {% endblock %}
 
 {% block js %}
+<!-- Aggiunta di React e ReactDOM per il supporto ai componenti -->
+<script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+
 <script type="module" src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>

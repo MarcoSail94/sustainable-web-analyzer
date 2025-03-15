@@ -41,30 +41,75 @@ export function populateDashboard(data) {
         }
     };
 
-    // Popola le metriche principali
-    populateScoreOverview(metrics, comparison);
+    // Verifica se usare la dashboard avanzata
+    const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
 
-    // Popola la lista delle risorse
-    populateResourceList(resources);
+    if (isEnhanced && document.getElementById('enhancedDashboardContainer')) {
+        // Utilizza la dashboard avanzata se disponibile
+        renderEnhancedDashboard(data);
+    } else {
+        // Altrimenti utilizza la dashboard standard
 
-    // Popola i suggerimenti di ottimizzazione
-    populateOptimizations(optimizations);
+        // Popola le metriche principali
+        populateScoreOverview(metrics, comparison);
 
-    // Crea il grafico di confronto con gestione degli errori
-    try {
-        createComparisonChart(data);
-    } catch (error) {
-        console.error('Errore durante la creazione del grafico:', error);
+        // Popola la lista delle risorse
+        populateResourceList(resources);
+
+        // Popola i suggerimenti di ottimizzazione
+        populateOptimizations(optimizations);
+
+        // Crea il grafico di confronto con gestione degli errori
+        try {
+            createComparisonChart(data);
+        } catch (error) {
+            console.error('Errore durante la creazione del grafico:', error);
+        }
+
+        // Popola i dettagli economici
+        populateEconomicDetails(economicBenefits);
+
+        // Aggiorna la visualizzazione delle Web Vitals
+        updateWebVitals(data);
+
+        // Mostra la sezione Web Vitals
+        document.getElementById('webVitalsSection').style.display = 'block';
     }
+}
 
-    // Popola i dettagli economici
-    populateEconomicDetails(economicBenefits);
+/**
+ * Renderizza la dashboard avanzata utilizzando React
+ * @param {Object} data - Dati di analisi
+ */
+async function renderEnhancedDashboard(data) {
+    try {
+        // Importa la dashboard avanzata dinamicamente
+        const { default: EnhancedDashboard } = await import('./enhanced-dashboard.js');
 
-    // Aggiorna la visualizzazione delle Web Vitals
-    updateWebVitals(data);
+        // Renderizza il componente React
+        const container = document.getElementById('enhancedDashboardContainer');
 
-    // Mostra la sezione Web Vitals
-    document.getElementById('webVitalsSection').style.display = 'block';
+        // Utilizza ReactDOM.render o React.createElement in base alla disponibilità
+        if (window.ReactDOM && window.React) {
+            window.ReactDOM.render(
+                window.React.createElement(EnhancedDashboard, { data }),
+                container
+            );
+            console.log('Enhanced dashboard rendered successfully with ReactDOM');
+        } else {
+            console.error('ReactDOM or React not found. Make sure they are loaded.');
+            // Fallback alla dashboard standard
+            populateScoreOverview(data.metrics, data.industry_comparison);
+            populateResourceList(data.resources);
+            populateOptimizations(data.optimizations);
+        }
+    } catch (error) {
+        console.error('Error rendering enhanced dashboard:', error);
+        // Fallback alla dashboard standard in caso di errore
+        populateScoreOverview(data.metrics, data.industry_comparison);
+        populateResourceList(data.resources);
+        populateOptimizations(data.optimizations);
+    }
 }
 
 /**
