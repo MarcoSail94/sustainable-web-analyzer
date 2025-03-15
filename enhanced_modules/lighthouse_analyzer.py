@@ -62,6 +62,14 @@ class EnhancedLighthouseAnalyzer:
                 'requestLatencyMs': 0,
                 'downloadThroughputKbps': 0,
                 'uploadThroughputKbps': 0
+            },
+            'formFactor': 'desktop',
+            'screenEmulation': {
+                'mobile': False,  # CRITICAL: Must match formFactor setting
+                'width': 1350,
+                'height': 940,
+                'deviceScaleFactor': 1,
+                'disabled': False
             }
         }
 
@@ -128,6 +136,25 @@ class EnhancedLighthouseAnalyzer:
             if 'maxWaitForLoad' in options:
                 cmd.append(f"--max-wait-for-load={options['maxWaitForLoad']}")
 
+            # Add form factor (CRITICAL)
+            if 'formFactor' in options:
+                cmd.append(f"--form-factor={options['formFactor']}")
+
+            # IMPORTANT: Include screen emulation settings (these must match formFactor)
+            if 'screenEmulation' in options:
+                screen_emulation = options['screenEmulation']
+                # Ensure mobile setting matches form factor
+                if 'mobile' in screen_emulation:
+                    cmd.append(f"--screenEmulation.mobile={str(screen_emulation['mobile']).lower()}")
+                if 'width' in screen_emulation:
+                    cmd.append(f"--screenEmulation.width={screen_emulation['width']}")
+                if 'height' in screen_emulation:
+                    cmd.append(f"--screenEmulation.height={screen_emulation['height']}")
+                if 'deviceScaleFactor' in screen_emulation:
+                    cmd.append(f"--screenEmulation.deviceScaleFactor={screen_emulation['deviceScaleFactor']}")
+                if 'disabled' in screen_emulation:
+                    cmd.append(f"--screenEmulation.disabled={str(screen_emulation['disabled']).lower()}")
+
             # Add throttling settings if specified
             if 'throttling' in options and options['throttling'] is not None:
                 throttling = options['throttling']
@@ -141,10 +168,6 @@ class EnhancedLighthouseAnalyzer:
                     cmd.append(f"--throttling.downloadThroughputKbps={throttling['downloadThroughputKbps']}")
                 if 'uploadThroughputKbps' in throttling:
                     cmd.append(f"--throttling.uploadThroughputKbps={throttling['uploadThroughputKbps']}")
-
-            # Add form factor if specified
-            if 'formFactor' in options:
-                cmd.append(f"--form-factor={options['formFactor']}")
 
             # Skip specific audits if specified for faster analysis
             if 'skipAudits' in options and options['skipAudits']:
@@ -196,6 +219,7 @@ class EnhancedLighthouseAnalyzer:
                 except Exception as e:
                     logger.warning(f"Failed to delete temporary file {temp_filename}: {str(e)}")
 
+    # Rest of the code remains unchanged
     def _extract_comprehensive_metrics(self, lighthouse_data):
         """
         Estrae TUTTE le metriche disponibili dal rapporto Lighthouse.
