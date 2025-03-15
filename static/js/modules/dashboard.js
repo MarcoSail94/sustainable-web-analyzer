@@ -1,5 +1,5 @@
 /**
- * Modulo Dashboard ottimizzato - Percorsi di importazione corretti
+ * Modulo Dashboard ottimizzato - Percorsi di importazione corretti e miglior gestione dati
  */
 
 // Importazioni corrette con percorsi assoluti
@@ -14,6 +14,13 @@ import { formatFileSize } from '/static/js/utils/formatters.js';
  */
 export async function populateDashboard(data) {
   console.log("Popolamento dashboard con dati:", data);
+
+  // Verifica e assicura che i dati esistano
+  if (!data) {
+    console.error("Dati mancanti per il popolamento dashboard");
+    showError("Errore nel caricamento dei dati di analisi");
+    return;
+  }
 
   // Verifica se usare la dashboard avanzata o standard
   const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
@@ -50,8 +57,11 @@ export async function populateDashboard(data) {
         // Mostra il container della dashboard avanzata
         enhancedDashboardContainer.style.display = 'block';
 
+        // Copia profonda dei dati per prevenire problemi di riferimento
+        const dataCopy = JSON.parse(JSON.stringify(data));
+
         // Tenta di caricare la dashboard avanzata
-        const success = await dashboardLoader.loadEnhancedDashboard(data, enhancedDashboardContainer);
+        const success = await dashboardLoader.loadEnhancedDashboard(dataCopy, enhancedDashboardContainer);
 
         if (success) {
           console.log("Dashboard avanzata caricata con successo.");
@@ -86,11 +96,16 @@ export async function populateDashboard(data) {
     }
   });
 
-  // Estrai i dati necessari
-  const metrics = data.metrics;
-  const resources = data.resources;
-  const optimizations = data.optimizations;
-  const comparison = data.industry_comparison;
+  // Estrai i dati necessari e verifica che esistano
+  const metrics = data.metrics || {};
+  const resources = data.resources || {};
+  const optimizations = data.optimizations || [];
+  const comparison = data.industry_comparison || {
+    better_than_percent: 50,
+    average_load_time: 2.5
+  };
+
+  // Verifica che metrics.economic_benefits esista o crea dei valori di default
   const economicBenefits = metrics.economic_benefits || {
     current_monthly_cost: 5.20,
     potential_savings_percent: 30,
@@ -139,10 +154,25 @@ export async function populateDashboard(data) {
   updateWebVitals(data);
 }
 
-// Il resto delle funzioni rimane invariato
-// [Le altre funzioni di supporto sono qui...]
+/**
+ * Mostra un messaggio di errore all'utente
+ * @param {string} message - Messaggio di errore
+ */
+function showError(message) {
+  const errorContainer = document.createElement('div');
+  errorContainer.className = 'error-message';
+  errorContainer.style.display = 'block';
+  errorContainer.textContent = message;
 
-// Implementazione della funzione showAnalysisTypeBanner e altre funzioni di supporto...
+  const dashboard = document.getElementById('dashboardSection');
+  if (dashboard) {
+    dashboard.insertBefore(errorContainer, dashboard.firstChild);
+  } else {
+    document.body.appendChild(errorContainer);
+  }
+}
+
+// Il resto delle funzioni rimane invariato
 function showAnalysisTypeBanner(analyzerType) {
   // Cerca un container esistente o creane uno nuovo
   let bannerContainer = document.getElementById('analyzerTypeBanner');

@@ -5,7 +5,7 @@
  * @returns {Promise<boolean>} - Promise che si risolve a true se il caricamento è avvenuto con successo
  */
 export async function loadEnhancedDashboard(data, container) {
-  console.log("Inizializzazione dashboard avanzata...");
+  console.log("Inizializzazione dashboard avanzata...", data);
 
   try {
     // Verifica che React e ReactDOM siano disponibili
@@ -42,6 +42,18 @@ export async function loadEnhancedDashboard(data, container) {
     if (!EnhancedDashboard) {
       console.error("Componente EnhancedDashboard non trovato.");
       return false;
+    }
+
+    // Log per debug
+    console.log("Componente EnhancedDashboard importato:", EnhancedDashboard);
+    console.log("Dati per il rendering:", JSON.stringify(data).substring(0, 500) + "...");
+
+    // DEBUG: Garantisce che i dati non siano undefined o vuoti
+    if (!data || !data.metrics || Object.keys(data.metrics).length === 0) {
+      console.error("Dati invalidi o mancanti per EnhancedDashboard", data);
+
+      // Fix temporaneo: garantisce che ci siano almeno i dati minimi
+      data = ensureMinimumData(data);
     }
 
     // Crea l'elemento React
@@ -90,6 +102,46 @@ export async function loadEnhancedDashboard(data, container) {
     `;
     return false;
   }
+}
+
+/**
+ * Funzione per garantire che ci siano dati minimi per il rendering
+ * @param {Object} data - Dati originali che potrebbero essere incompleti
+ * @returns {Object} - Dati con valori minimi garantiti
+ */
+function ensureMinimumData(data) {
+  // Crea un oggetto base se mancante
+  data = data || {};
+
+  // Garantisce valori base per metrics
+  data.metrics = data.metrics || {};
+  data.metrics.sustainability_score = data.metrics.sustainability_score || 0;
+  data.metrics.co2_emissions = data.metrics.co2_emissions || 0;
+  data.metrics.total_size = data.metrics.total_size || "0 KB";
+  data.metrics.load_time = data.metrics.load_time || 0;
+
+  // Garantisce Web Vitals
+  data.metrics.web_vitals = data.metrics.web_vitals || {
+    lcp: 0,
+    fid: 0,
+    cls: 0,
+    scores: { lcp: 0, fid: 0, cls: 0, overall: 0 },
+    lighthouse_score: 0
+  };
+
+  // Garantisce dati economici
+  data.metrics.economic_benefits = data.metrics.economic_benefits || {
+    current_monthly_cost: 0,
+    potential_annual_savings: 0,
+    potential_savings_percent: 0,
+    estimated_monthly_visits: 0
+  };
+
+  // Garantisce risorse e ottimizzazioni
+  data.resources = data.resources || {};
+  data.optimizations = data.optimizations || [];
+
+  return data;
 }
 
 /**
