@@ -1,8 +1,10 @@
-// Assicuriamoci che React sia importato correttamente
+/**
+ * EnhancedDashboard - Componente React per la visualizzazione avanzata dei dati
+ * Compatibile con ES Modules
+ */
+
+// Assicurarsi che React sia disponibile
 const React = window.React || (typeof React !== 'undefined' ? React : null);
-if (!React) {
-  console.error("React non è disponibile! L'app non funzionerà correttamente.");
-}
 
 // Componente principale della dashboard avanzata
 const EnhancedDashboard = ({ data }) => {
@@ -353,75 +355,6 @@ const EnhancedDashboard = ({ data }) => {
               icon={<VisitsIcon />}
             />
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              Suddivisione Costi e Risparmi
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoria</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Costo Attuale</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Risparmio Potenziale</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {economicBenefits.costs_breakdown && economicBenefits.savings_breakdown && Object.entries(economicBenefits.costs_breakdown).map(([key, value]) => {
-                    const savingsKey = {
-                      'bandwidth': 'bandwidth',
-                      'energy': 'energy',
-                      'seo_impact': 'seo_conversions',
-                      'bounce_impact': 'reduced_bounce',
-                      'extra_maintenance': 'maintenance',
-                      'extra_infrastructure': 'infrastructure'
-                    }[key] || key;
-
-                    const savingValue = economicBenefits.savings_breakdown[savingsKey] || 0;
-
-                    // Formatta i nomi per visualizzazione
-                    const categoryNames = {
-                      'bandwidth': 'Costi di Banda',
-                      'energy': 'Costi Energetici',
-                      'seo_impact': 'Impatto SEO',
-                      'bounce_impact': 'Utenti Persi',
-                      'extra_maintenance': 'Manutenzione Extra',
-                      'extra_infrastructure': 'Infrastruttura'
-                    };
-
-                    return (
-                      <tr key={key} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {categoryNames[key] || key}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          €{value.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
-                          €{savingValue.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <td className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Totale</td>
-                    <td className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                      €{economicBenefits.current_monthly_cost?.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">
-                      €{economicBenefits.potential_monthly_savings?.toFixed(2) || '0.00'}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
         </div>
       )}
 
@@ -619,4 +552,10 @@ const PriorityIcon = ({ priority }) => {
   }
 };
 
+// Register the component globally for accessibility
+if (typeof window !== 'undefined') {
+  window.EnhancedDashboard = EnhancedDashboard;
+}
+
+// Export the component for ES modules
 export default EnhancedDashboard;
