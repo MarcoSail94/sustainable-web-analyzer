@@ -1,5 +1,5 @@
 /**
- * modules/analyzer.js - Versione ottimizzata con migliore gestione degli eventi
+ * modules/analyzer.js - Versione ottimizzata con gestione dell'opzione use_enhanced
  */
 
 /**
@@ -7,10 +7,15 @@
  */
 export function initializeAnalyzer() {
   const analyzerForm = document.getElementById('analyzerForm');
+  const useEnhancedCheckbox = document.getElementById('useEnhanced');
   if (!analyzerForm) return;
 
-  // Implementa correttamente la delega degli eventi per un DOM più pulito
-  analyzerForm.addEventListener('submit', handleAnalysisSubmit);
+  // Verifica se l'handler è già impostato per evitare duplicazioni
+  if (!analyzerForm._handlerInitialized) {
+    // Implementa correttamente la delega degli eventi per un DOM più pulito
+    analyzerForm.addEventListener('submit', handleAnalysisSubmit);
+    analyzerForm._handlerInitialized = true;
+  }
 
   // Gestisci altre interazioni del form
   const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
@@ -51,6 +56,7 @@ async function handleAnalysisSubmit(e) {
   e.preventDefault();
 
   const urlInput = document.getElementById('urlInput');
+  const useEnhancedCheckbox = document.getElementById('useEnhanced');
   const loadingSection = document.getElementById('loadingSection');
   const dashboardSection = document.getElementById('dashboardSection');
   const errorMessage = document.getElementById('errorMessage');
@@ -71,6 +77,9 @@ async function handleAnalysisSubmit(e) {
       monthlyVisits = parsedValue;
     }
   }
+
+  // Ottieni l'opzione per l'analizzatore avanzato
+  const useEnhanced = useEnhancedCheckbox && useEnhancedCheckbox.checked;
 
   // Nascondi errori precedenti
   if (errorMessage) {
@@ -95,7 +104,8 @@ async function handleAnalysisSubmit(e) {
       },
       body: JSON.stringify({
         url: urlInput.value,
-        monthly_visits: monthlyVisits
+        monthly_visits: monthlyVisits,
+        use_enhanced: useEnhanced // Aggiungi l'opzione per l'analizzatore avanzato
       }),
     });
 
@@ -124,7 +134,11 @@ async function handleAnalysisSubmit(e) {
     const dashboardModule = await import('./dashboard.js');
 
     if (dashboardModule.populateDashboard && dashboardSection) {
-      dashboardModule.populateDashboard(data);
+      try {
+        await dashboardModule.populateDashboard(data);
+      } catch (err) {
+        console.error('Errore durante il popolamento della dashboard:', err);
+      }
 
       // Mostra la dashboard
       dashboardSection.style.display = 'block';

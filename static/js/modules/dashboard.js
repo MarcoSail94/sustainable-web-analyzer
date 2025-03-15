@@ -1,5 +1,6 @@
 /**
- * Modulo Dashboard corretto - Gestisce la popolazione della dashboard con i dati di analisi
+ * Modulo Dashboard ottimizzato - Gestisce la popolazione della dashboard con i dati di analisi
+ * Questa versione implementa una migliore gestione della dashboard avanzata/standard
  */
 
 import { createComparisonChart } from './charts.js';
@@ -11,200 +12,189 @@ import { formatFileSize } from '../utils/formatters.js';
  * Funzione principale per popolare la dashboard completa
  * @param {Object} data - Dati di analisi
  */
-export function populateDashboard(data) {
-    console.log("Popolamento dashboard con dati:", data);
-    const metrics = data.metrics;
-    const resources = data.resources;
-    const optimizations = data.optimizations;
-    const comparison = data.industry_comparison;
-    const economicBenefits = metrics.economic_benefits || {
-        current_monthly_cost: 5.20,
-        potential_savings_percent: 30,
-        potential_monthly_savings: 1.56,
-        potential_annual_savings: 18.72,
-        bandwidth_cost_per_visit: 0.52,
-        estimated_monthly_visits: 10000,
-        costs_breakdown: {
-            bandwidth: 2.10,
-            energy: 0.60,
-            seo_impact: 1.20,
-            bounce_impact: 0.80,
-            extra_maintenance: 0.30,
-            extra_infrastructure: 0.20
-        },
-        savings_breakdown: {
-            bandwidth: 0.63,
-            energy: 0.18,
-            seo_conversions: 0.84,
-            reduced_bounce: 0.48,
-            maintenance: 0.24,
-            infrastructure: 0.18
-        }
-    };
+export async function populateDashboard(data) {
+  console.log("Popolamento dashboard con dati:", data);
 
-    // Verifica se usare la dashboard avanzata
-    const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
-    const enhancedDashboardContainer = document.getElementById('enhancedDashboardContainer');
+  // Verifica se usare la dashboard avanzata o standard
+  const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
+  const enhancedDashboardContainer = document.getElementById('enhancedDashboardContainer');
 
-    // Nascondi prima tutti i componenti della dashboard standard
-    document.getElementById('scoreOverview').parentElement.style.display = 'none';
-    document.getElementById('webVitalsSection').style.display = 'none';
-    document.getElementById('economicBenefits').parentElement.style.display = 'none';
-    document.getElementById('resourceList').parentElement.style.display = 'none';
-    document.getElementById('optimizationList').parentElement.style.display = 'none';
+  // Banner informativo per il tipo di analisi
+  showAnalysisTypeBanner(data.analyzer_type);
 
-    if (isEnhanced && enhancedDashboardContainer) {
-        console.log("Rendering enhanced dashboard...");
-        // Rendi visibile solo il container enhanced
+  // Nascondi tutte le sezioni della dashboard standard inizialmente
+  const standardSections = [
+    'scoreOverview',
+    'webVitalsSection',
+    'economicBenefits',
+    'resourceList',
+    'optimizationList'
+  ];
+
+  standardSections.forEach(id => {
+    const element = document.getElementById(id);
+    if (element && element.parentElement) {
+      element.parentElement.style.display = 'none';
+    }
+  });
+
+  // Se dovremmo usare la dashboard avanzata e il container esiste
+  if (isEnhanced && enhancedDashboardContainer) {
+    console.log("Tentativo di rendering dashboard avanzata React...");
+
+    try {
+      // Importa dinamicamente il loader della dashboard avanzata
+      const dashboardLoader = await import('./dashboard-loader.js');
+
+      if (dashboardLoader && dashboardLoader.loadEnhancedDashboard) {
+        // Mostra il container della dashboard avanzata
         enhancedDashboardContainer.style.display = 'block';
 
-        // Utilizza la dashboard avanzata
-        renderEnhancedDashboard(data);
-    } else {
-        console.log("Rendering standard dashboard...");
-        // Rendi visibili tutti i componenti della dashboard standard
-        document.getElementById('scoreOverview').parentElement.style.display = 'block';
-        document.getElementById('webVitalsSection').style.display = 'block';
-        document.getElementById('economicBenefits').parentElement.style.display = 'block';
-        document.getElementById('resourceList').parentElement.style.display = 'block';
-        document.getElementById('optimizationList').parentElement.style.display = 'block';
+        // Tenta di caricare la dashboard avanzata
+        const success = await dashboardLoader.loadEnhancedDashboard(data, enhancedDashboardContainer);
 
-        // Popola le metriche principali
-        populateScoreOverview(metrics, comparison);
-
-        // Popola la lista delle risorse
-        populateResourceList(resources);
-
-        // Popola i suggerimenti di ottimizzazione
-        populateOptimizations(optimizations);
-
-        // Crea il grafico di confronto con gestione degli errori
-        try {
-            createComparisonChart(data);
-        } catch (error) {
-            console.error('Errore durante la creazione del grafico:', error);
+        if (success) {
+          console.log("Dashboard avanzata caricata con successo.");
+          return; // Termina qui se la dashboard avanzata è stata caricata con successo
+        } else {
+          console.warn("Fallback alla dashboard standard (errore nel caricamento avanzato).");
         }
-
-        // Popola i dettagli economici
-        populateEconomicDetails(economicBenefits);
-
-        // Aggiorna la visualizzazione delle Web Vitals
-        updateWebVitals(data);
+      } else {
+        console.warn("Modulo dashboard-loader.js non trovato o senza loadEnhancedDashboard.");
+      }
+    } catch (error) {
+      console.error("Errore nel caricamento della dashboard avanzata:", error);
     }
+  } else if (isEnhanced) {
+    console.warn("Container per dashboard avanzata non trovato, ma analyzer_type è lighthouse-enhanced.");
+  } else {
+    console.log("Utilizzo dashboard standard per analyzer_type:", data.analyzer_type);
+  }
+
+  // Se arriviamo qui, dobbiamo usare la dashboard standard
+
+  // Nascondi il container della dashboard avanzata se esiste
+  if (enhancedDashboardContainer) {
+    enhancedDashboardContainer.style.display = 'none';
+  }
+
+  // Mostra tutte le sezioni della dashboard standard
+  standardSections.forEach(id => {
+    const element = document.getElementById(id);
+    if (element && element.parentElement) {
+      element.parentElement.style.display = 'block';
+    }
+  });
+
+  // Estrai i dati necessari
+  const metrics = data.metrics;
+  const resources = data.resources;
+  const optimizations = data.optimizations;
+  const comparison = data.industry_comparison;
+  const economicBenefits = metrics.economic_benefits || {
+    current_monthly_cost: 5.20,
+    potential_savings_percent: 30,
+    potential_monthly_savings: 1.56,
+    potential_annual_savings: 18.72,
+    bandwidth_cost_per_visit: 0.52,
+    estimated_monthly_visits: 10000,
+    costs_breakdown: {
+      bandwidth: 2.10,
+      energy: 0.60,
+      seo_impact: 1.20,
+      bounce_impact: 0.80,
+      extra_maintenance: 0.30,
+      extra_infrastructure: 0.20
+    },
+    savings_breakdown: {
+      bandwidth: 0.63,
+      energy: 0.18,
+      seo_conversions: 0.84,
+      reduced_bounce: 0.48,
+      maintenance: 0.24,
+      infrastructure: 0.18
+    }
+  };
+
+  // Popola le metriche principali
+  populateScoreOverview(metrics, comparison);
+
+  // Popola la lista delle risorse
+  populateResourceList(resources);
+
+  // Popola i suggerimenti di ottimizzazione
+  populateOptimizations(optimizations);
+
+  // Crea il grafico di confronto con gestione degli errori
+  try {
+    createComparisonChart(data);
+  } catch (error) {
+    console.error('Errore durante la creazione del grafico:', error);
+  }
+
+  // Popola i dettagli economici
+  populateEconomicDetails(economicBenefits);
+
+  // Aggiorna la visualizzazione delle Web Vitals
+  updateWebVitals(data);
 }
 
 /**
- * Renderizza la dashboard avanzata utilizzando React
- * @param {Object} data - Dati di analisi
+ * Mostra un banner informativo sul tipo di analisi utilizzato
+ * @param {string} analyzerType - Tipo di analizzatore usato
  */
-async function renderEnhancedDashboard(data) {
-    try {
-        const container = document.getElementById('enhancedDashboardContainer');
-        if (!container) {
-            console.error('Container per dashboard avanzata non trovato');
-            return;
-        }
+function showAnalysisTypeBanner(analyzerType) {
+  // Cerca un container esistente o creane uno nuovo
+  let bannerContainer = document.getElementById('analyzerTypeBanner');
 
-        console.log("Verifica disponibilità React e ReactDOM");
-        // Verifica che React e ReactDOM siano disponibili
-        if (!window.React || !window.ReactDOM) {
-            console.error('React o ReactDOM non disponibili. Caricamento asincrono...');
+  if (!bannerContainer) {
+    bannerContainer = document.createElement('div');
+    bannerContainer.id = 'analyzerTypeBanner';
 
-            // Tenta di caricare React e ReactDOM se non sono disponibili
-            await loadReactLibraries();
-
-            // Verifica di nuovo dopo il caricamento
-            if (!window.React || !window.ReactDOM) {
-                console.error('Impossibile caricare React e ReactDOM. Fallback alla dashboard standard');
-                fallbackToStandardDashboard(data);
-                return;
-            }
-        }
-
-        // Importa la dashboard avanzata
-        console.log("Importazione dinamica di EnhancedDashboard");
-        try {
-            const { default: EnhancedDashboard } = await import('./enhanced-dashboard.js');
-            console.log("EnhancedDashboard importato:", EnhancedDashboard);
-
-            // Crea l'elemento React
-            const element = window.React.createElement(EnhancedDashboard, { data: data });
-            console.log("Elemento React creato");
-
-            // Renderizza il componente
-            window.ReactDOM.render(element, container);
-            console.log("Dashboard avanzata renderizzata con successo");
-        } catch (importError) {
-            console.error('Errore importazione EnhancedDashboard:', importError);
-            fallbackToStandardDashboard(data);
-        }
-    } catch (error) {
-        console.error('Errore rendering dashboard avanzata:', error);
-        fallbackToStandardDashboard(data);
+    // Inserisci il banner prima della dashboard
+    const dashboard = document.getElementById('dashboardSection');
+    if (dashboard) {
+      dashboard.insertBefore(bannerContainer, dashboard.firstChild);
     }
-}
+  }
 
-/**
- * Carica asincrono di React e ReactDOM
- * @returns {Promise} Promise che si risolve quando le librerie sono caricate
- */
-async function loadReactLibraries() {
-    console.log("Tentativo di caricamento asincrono di React e ReactDOM");
+  // Determina il tipo di analisi e il messaggio appropriato
+  let message, style, icon;
 
-    const loadScript = (src) => {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    };
+  switch (analyzerType) {
+    case 'lighthouse-enhanced':
+      message = 'Analisi completa con Lighthouse potenziato';
+      style = 'bg-green-50 border-green-200 text-green-700';
+      icon = '<i class="fas fa-bolt text-green-500"></i>';
+      break;
+    case 'lighthouse':
+      message = 'Analisi con Lighthouse standard';
+      style = 'bg-blue-50 border-blue-200 text-blue-700';
+      icon = '<i class="fas fa-tachometer-alt text-blue-500"></i>';
+      break;
+    case 'pyppeteer':
+      message = 'Analisi con Web Vitals standard';
+      style = 'bg-amber-50 border-amber-200 text-amber-700';
+      icon = '<i class="fas fa-spinner text-amber-500"></i>';
+      break;
+    default:
+      message = 'Analisi standard';
+      style = 'bg-gray-50 border-gray-200 text-gray-700';
+      icon = '<i class="fas fa-info-circle text-gray-500"></i>';
+  }
 
-    try {
-        await loadScript('https://unpkg.com/react@17/umd/react.production.min.js');
-        await loadScript('https://unpkg.com/react-dom@17/umd/react-dom.production.min.js');
-        console.log("React e ReactDOM caricati con successo");
-        return true;
-    } catch (error) {
-        console.error("Impossibile caricare React o ReactDOM:", error);
-        return false;
-    }
-}
-
-/**
- * Fallback alla dashboard standard in caso di problemi con React
- * @param {Object} data - Dati di analisi
- */
-function fallbackToStandardDashboard(data) {
-    console.log("Fallback alla dashboard standard");
-
-    // Rendi visibili tutti i componenti della dashboard standard
-    document.getElementById('scoreOverview').parentElement.style.display = 'block';
-    document.getElementById('webVitalsSection').style.display = 'block';
-    document.getElementById('economicBenefits').parentElement.style.display = 'block';
-    document.getElementById('resourceList').parentElement.style.display = 'block';
-    document.getElementById('optimizationList').parentElement.style.display = 'block';
-
-    // Nascondi il container della dashboard avanzata
-    const enhancedContainer = document.getElementById('enhancedDashboardContainer');
-    if (enhancedContainer) {
-        enhancedContainer.style.display = 'none';
-    }
-
-    // Popola la dashboard standard
-    populateScoreOverview(data.metrics, data.industry_comparison);
-    populateResourceList(data.resources);
-    populateOptimizations(data.optimizations);
-
-    try {
-        createComparisonChart(data);
-    } catch (error) {
-        console.error('Errore durante la creazione del grafico:', error);
-    }
-
-    populateEconomicDetails(data.metrics.economic_benefits);
-    updateWebVitals(data);
+  // Crea il contenuto del banner
+  bannerContainer.className = `p-3 mb-4 rounded-lg border ${style} flex items-center`;
+  bannerContainer.innerHTML = `
+    <div class="mr-3">${icon}</div>
+    <div>
+      <span class="font-medium">${message}</span>
+      <span class="text-sm ml-2">${analyzerType === 'lighthouse-enhanced' ?
+        'Visualizzazione avanzata disponibile' :
+        'Dashboard standard in uso'}
+      </span>
+    </div>
+  `;
 }
 
 /**
@@ -213,93 +203,93 @@ function fallbackToStandardDashboard(data) {
  * @param {Object} comparison - Dati di confronto con la media del settore
  */
 function populateScoreOverview(metrics, comparison) {
-    const scoreOverview = document.getElementById('scoreOverview');
-    if (!scoreOverview) {
-        console.error('Container scoreOverview non trovato');
-        return;
-    }
+  const scoreOverview = document.getElementById('scoreOverview');
+  if (!scoreOverview) {
+    console.error('Container scoreOverview non trovato');
+    return;
+  }
 
-    scoreOverview.innerHTML = '';
+  scoreOverview.innerHTML = '';
 
-    // Punteggio sostenibilità
-    let scoreClass = 'red-score';
-    let scoreIcon = 'fa-exclamation-circle';
-    if (metrics.sustainability_score >= 80) {
-        scoreClass = 'green-score';
-        scoreIcon = 'fa-check-circle';
-    } else if (metrics.sustainability_score >= 50) {
-        scoreClass = 'yellow-score';
-        scoreIcon = 'fa-exclamation-triangle';
-    }
+  // Punteggio sostenibilità
+  let scoreClass = 'red-score';
+  let scoreIcon = 'fa-exclamation-circle';
+  if (metrics.sustainability_score >= 80) {
+    scoreClass = 'green-score';
+    scoreIcon = 'fa-check-circle';
+  } else if (metrics.sustainability_score >= 50) {
+    scoreClass = 'yellow-score';
+    scoreIcon = 'fa-exclamation-triangle';
+  }
 
-    let scoreDescription = "Il tuo sito necessita di miglioramenti";
-    if (metrics.sustainability_score >= 80) {
-        scoreDescription = "Il tuo sito è molto efficiente";
-    } else if (metrics.sustainability_score >= 50) {
-        scoreDescription = "Il tuo sito è abbastanza efficiente";
-    }
+  let scoreDescription = "Il tuo sito necessita di miglioramenti";
+  if (metrics.sustainability_score >= 80) {
+    scoreDescription = "Il tuo sito è molto efficiente";
+  } else if (metrics.sustainability_score >= 50) {
+    scoreDescription = "Il tuo sito è abbastanza efficiente";
+  }
 
-    const sustainabilityCard = createScoreCard(
-        'Punteggio Sostenibilità',
-        `${metrics.sustainability_score}<span>/100</span>`,
-        scoreDescription,
-        scoreClass,
-        scoreIcon
-    );
-    scoreOverview.appendChild(sustainabilityCard);
+  const sustainabilityCard = createScoreCard(
+    'Punteggio Sostenibilità',
+    `${metrics.sustainability_score}<span>/100</span>`,
+    scoreDescription,
+    scoreClass,
+    scoreIcon
+  );
+  scoreOverview.appendChild(sustainabilityCard);
 
-    // Emissioni CO2
-    let co2Class = 'green-score';
-    let co2Icon = 'fa-leaf';
-    if (metrics.co2_emissions > 1) {
-        co2Class = 'red-score';
-        co2Icon = 'fa-smog';
-    } else if (metrics.co2_emissions > 0.5) {
-        co2Class = 'yellow-score';
-        co2Icon = 'fa-wind';
-    }
+  // Emissioni CO2
+  let co2Class = 'green-score';
+  let co2Icon = 'fa-leaf';
+  if (metrics.co2_emissions > 1) {
+    co2Class = 'red-score';
+    co2Icon = 'fa-smog';
+  } else if (metrics.co2_emissions > 0.5) {
+    co2Class = 'yellow-score';
+    co2Icon = 'fa-wind';
+  }
 
-    const co2Card = createScoreCard(
-        'Emissioni CO₂',
-        `${metrics.co2_emissions}<span>g/view</span>`,
-        `Meglio del ${comparison.better_than_percent}% dei siti web`,
-        co2Class,
-        co2Icon
-    );
-    scoreOverview.appendChild(co2Card);
+  const co2Card = createScoreCard(
+    'Emissioni CO₂',
+    `${metrics.co2_emissions}<span>g/view</span>`,
+    `Meglio del ${comparison.better_than_percent}% dei siti web`,
+    co2Class,
+    co2Icon
+  );
+  scoreOverview.appendChild(co2Card);
 
-    // Peso totale
-    const sizeCard = createScoreCard(
-        'Peso Totale',
-        `${metrics.total_size}`,
-        'Dimensione delle risorse del sito',
-        'blue-score',
-        'fa-weight-hanging'
-    );
-    scoreOverview.appendChild(sizeCard);
+  // Peso totale
+  const sizeCard = createScoreCard(
+    'Peso Totale',
+    `${metrics.total_size}`,
+    'Dimensione delle risorse del sito',
+    'blue-score',
+    'fa-weight-hanging'
+  );
+  scoreOverview.appendChild(sizeCard);
 
-    // Tempo di caricamento
-    let timeClass = 'green-score';
-    let timeIcon = 'fa-tachometer-alt';
-    if (metrics.load_time > 3) {
-        timeClass = 'red-score';
-    } else if (metrics.load_time > 2) {
-        timeClass = 'yellow-score';
-    }
+  // Tempo di caricamento
+  let timeClass = 'green-score';
+  let timeIcon = 'fa-tachometer-alt';
+  if (metrics.load_time > 3) {
+    timeClass = 'red-score';
+  } else if (metrics.load_time > 2) {
+    timeClass = 'yellow-score';
+  }
 
-    let timeDescription = `Veloce rispetto alla media (${comparison.average_load_time}s)`;
-    if (metrics.load_time > comparison.average_load_time) {
-        timeDescription = `Lento rispetto alla media (${comparison.average_load_time}s)`;
-    }
+  let timeDescription = `Veloce rispetto alla media (${comparison.average_load_time}s)`;
+  if (metrics.load_time > comparison.average_load_time) {
+    timeDescription = `Lento rispetto alla media (${comparison.average_load_time}s)`;
+  }
 
-    const timeCard = createScoreCard(
-        'Tempo di Caricamento',
-        `${metrics.load_time}<span>s</span>`,
-        timeDescription,
-        timeClass,
-        timeIcon
-    );
-    scoreOverview.appendChild(timeCard);
+  const timeCard = createScoreCard(
+    'Tempo di Caricamento',
+    `${metrics.load_time}<span>s</span>`,
+    timeDescription,
+    timeClass,
+    timeIcon
+  );
+  scoreOverview.appendChild(timeCard);
 }
 
 /**
@@ -307,41 +297,41 @@ function populateScoreOverview(metrics, comparison) {
  * @param {Object} resources - Dati delle risorse
  */
 function populateResourceList(resources) {
-    const resourceList = document.getElementById('resourceList');
-    if (!resourceList) {
-        console.error('Container resourceList non trovato');
-        return;
-    }
+  const resourceList = document.getElementById('resourceList');
+  if (!resourceList) {
+    console.error('Container resourceList non trovato');
+    return;
+  }
 
-    resourceList.innerHTML = `
-        <div class="resource-item">
-            <div class="resource-name"><strong>Tipo</strong></div>
-            <div class="resource-size"><strong>Dimensione</strong></div>
-            <div class="resource-impact"><strong>Impatto</strong></div>
-        </div>
+  resourceList.innerHTML = `
+    <div class="resource-item">
+      <div class="resource-name"><strong>Tipo</strong></div>
+      <div class="resource-size"><strong>Dimensione</strong></div>
+      <div class="resource-impact"><strong>Impatto</strong></div>
+    </div>
+  `;
+
+  // Mappatura delle icone per tipo di risorsa
+  const resourceIcons = {
+    'html': 'fa-html5',
+    'css': 'fa-css3-alt',
+    'javascript': 'fa-js',
+    'images': 'fa-image',
+    'fonts': 'fa-font',
+    'other': 'fa-file'
+  };
+
+  for (const [type, data] of Object.entries(resources)) {
+    const icon = resourceIcons[type] || 'fa-file';
+    const resourceItem = document.createElement('div');
+    resourceItem.className = 'resource-item';
+    resourceItem.innerHTML = `
+      <div class="resource-name"><i class="fab ${icon}"></i> ${capitalizeFirstLetter(type)} (${data.count})</div>
+      <div class="resource-size">${data.size}</div>
+      <div class="resource-impact">${data.co2}g CO₂</div>
     `;
-
-    // Mappatura delle icone per tipo di risorsa
-    const resourceIcons = {
-        'html': 'fa-html5',
-        'css': 'fa-css3-alt',
-        'javascript': 'fa-js',
-        'images': 'fa-image',
-        'fonts': 'fa-font',
-        'other': 'fa-file'
-    };
-
-    for (const [type, data] of Object.entries(resources)) {
-        const icon = resourceIcons[type] || 'fa-file';
-        const resourceItem = document.createElement('div');
-        resourceItem.className = 'resource-item';
-        resourceItem.innerHTML = `
-            <div class="resource-name"><i class="fab ${icon}"></i> ${capitalizeFirstLetter(type)} (${data.count})</div>
-            <div class="resource-size">${data.size}</div>
-            <div class="resource-impact">${data.co2}g CO₂</div>
-        `;
-        resourceList.appendChild(resourceItem);
-    }
+    resourceList.appendChild(resourceItem);
+  }
 }
 
 /**
@@ -349,36 +339,36 @@ function populateResourceList(resources) {
  * @param {Array} optimizations - Lista di ottimizzazioni
  */
 function populateOptimizations(optimizations) {
-    const optimizationList = document.getElementById('optimizationList');
-    if (!optimizationList) {
-        console.error('Container optimizationList non trovato');
-        return;
-    }
+  const optimizationList = document.getElementById('optimizationList');
+  if (!optimizationList) {
+    console.error('Container optimizationList non trovato');
+    return;
+  }
 
-    optimizationList.innerHTML = '';
+  optimizationList.innerHTML = '';
 
-    optimizations.forEach(opt => {
-        const priorityClass = opt.priority === 'high' ? 'high-priority' :
-                            opt.priority === 'medium' ? 'medium-priority' : '';
+  optimizations.forEach(opt => {
+    const priorityClass = opt.priority === 'high' ? 'high-priority' :
+                        opt.priority === 'medium' ? 'medium-priority' : '';
 
-        const priorityIcon = opt.priority === 'high' ? 'exclamation-circle' :
-                            opt.priority === 'medium' ? 'exclamation-triangle' : 'info-circle';
+    const priorityIcon = opt.priority === 'high' ? 'exclamation-circle' :
+                        opt.priority === 'medium' ? 'exclamation-triangle' : 'info-circle';
 
-        const optimizationCard = document.createElement('div');
-        optimizationCard.className = `optimization-card ${priorityClass}`;
+    const optimizationCard = document.createElement('div');
+    optimizationCard.className = `optimization-card ${priorityClass}`;
 
-        optimizationCard.innerHTML = `
-            <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
-            <p>${opt.description}</p>
-            <div class="impact-row">
-                <div class="impact-item">
-                    <div class="impact-value">${opt.impact}g</div>
-                    <div class="impact-label">CO₂ Risparmiato</div>
-                </div>
-            </div>
-        `;
-        optimizationList.appendChild(optimizationCard);
-    });
+    optimizationCard.innerHTML = `
+      <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
+      <p>${opt.description}</p>
+      <div class="impact-row">
+        <div class="impact-item">
+          <div class="impact-value">${opt.impact}g</div>
+          <div class="impact-label">CO₂ Risparmiato</div>
+        </div>
+      </div>
+    `;
+    optimizationList.appendChild(optimizationCard);
+  });
 }
 
 /**
@@ -391,14 +381,14 @@ function populateOptimizations(optimizations) {
  * @returns {HTMLElement} - Elemento card creato
  */
 function createScoreCard(title, value, description, valueClass, iconName) {
-    const card = document.createElement('div');
-    card.className = 'score-card';
-    card.innerHTML = `
-        <h3>${title}</h3>
-        <div class="score-value ${valueClass}">${value}</div>
-        <p class="text-center"><i class="fas ${iconName}"></i> ${description}</p>
-    `;
-    return card;
+  const card = document.createElement('div');
+  card.className = 'score-card';
+  card.innerHTML = `
+    <h3>${title}</h3>
+    <div class="score-value ${valueClass}">${value}</div>
+    <p class="text-center"><i class="fas ${iconName}"></i> ${description}</p>
+  `;
+  return card;
 }
 
 /**
@@ -407,8 +397,8 @@ function createScoreCard(title, value, description, valueClass, iconName) {
  * @returns {string} - Stringa con la prima lettera maiuscola
  */
 function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // Esporta le funzioni
-export { populateScoreOverview, populateResourceList, populateOptimizations, createScoreCard };
+export { populateScoreOverview, populateResourceList, populateOptimizations, createScoreCard, showAnalysisTypeBanner };

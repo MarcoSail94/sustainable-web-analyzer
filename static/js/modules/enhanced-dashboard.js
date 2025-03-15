@@ -1,391 +1,466 @@
-/**
- * Componente React per la dashboard avanzata con stile migliorato.
- * Per visualizzare correttamente l'output, questo file deve essere salvato
- * in static/js/modules/enhanced-dashboard.js
- */
+import React, { useState, useEffect } from 'react';
 
-// Nota: questo componente viene importato dinamicamente da dashboard.js
-const EnhancedDashboard = (props) => {
-  const { data } = props;
-  const React = window.React;
-  const { useState } = React;
-
+// Componente principale della dashboard avanzata
+const EnhancedDashboard = ({ data }) => {
   // Stato per gestire il tab attivo
   const [activeTab, setActiveTab] = useState('sustainability');
 
-  // Verificare se sono disponibili metriche avanzate
-  const isEnhanced = data?.analyzer_type === 'lighthouse-enhanced';
+  // Estrazione dei dati necessari
   const metrics = data?.metrics || {};
   const webVitals = metrics?.web_vitals || {};
-  const performanceDetails = metrics?.performance_details || {};
-  const optimizationScores = metrics?.optimization || {};
-  const categoryScores = metrics?.category_scores || {};
-  const energyMetrics = metrics?.energy || {};
+  const resources = data?.resources || {};
+  const optimizations = data?.optimizations || [];
+  const economicBenefits = metrics?.economic_benefits || {};
   const carbonFootprint = metrics?.carbon_footprint || {};
 
-  // Dati per il grafico radar delle performance
-  const performanceRadarData = [
-    { name: 'LCP', value: webVitals.lcp || 0, fullMark: 4 },
-    { name: 'FID', value: webVitals.fid / 1000 || 0, fullMark: 0.3 },
-    { name: 'CLS', value: webVitals.cls * 10 || 0, fullMark: 2.5 },
-    { name: 'TTI', value: (webVitals.time_to_interactive || 0) / 1000, fullMark: 5 },
-    { name: 'TTFB', value: (webVitals.ttfb || 0) / 1000, fullMark: 0.6 },
-    { name: 'Speed Index', value: (webVitals.speed_index || 0) / 1000, fullMark: 4.5 },
-  ];
-
-  // Dati per il grafico a barre delle ottimizzazioni
-  const optimizationBarData = [
-    { name: 'Immagini', score: Math.round((optimizationScores.compress_images || 0.5) * 100) },
-    { name: 'Next-Gen', score: Math.round((optimizationScores.next_gen_images || 0.5) * 100) },
-    { name: 'Compress', score: Math.round((optimizationScores.text_compression || 0.5) * 100) },
-    { name: 'JS Optim', score: Math.round((optimizationScores.js_optimization || 0.5) * 100) },
-    { name: 'Cache', score: Math.round((optimizationScores.cache_policy || 0.5) * 100) },
-    { name: 'HTTP/2', score: Math.round((optimizationScores.http2 || 0.5) * 100) },
-  ];
-
-  // Dati per il grafico dei punteggi complessivi
-  const categoryScoreData = [
-    { name: 'Performance', score: categoryScores.performance || 0 },
-    { name: 'Accessibilità', score: categoryScores.accessibility || 0 },
-    { name: 'Best Practices', score: categoryScores.best_practices || 0 },
-    { name: 'SEO', score: categoryScores.seo || 0 },
-    { name: 'Sostenibilità', score: metrics.sustainability_score || 0 },
-  ];
-
-  // Colori per i punteggi basati sul tema dell'applicazione
+  // Colori per i punteggi
   const getScoreColor = (score) => {
-    if (score >= 90) return 'var(--success-color)';
-    if (score >= 70) return 'var(--primary-color)';
-    if (score >= 50) return 'var(--warning-color)';
-    return 'var(--danger-color)';
+    if (score >= 80) return '#10b981'; // verde
+    if (score >= 50) return '#f59e0b'; // giallo
+    return '#ef4444'; // rosso
   };
 
   // Formatta i numeri grandi
   const formatNumber = (num) => {
+    if (!num) return '0';
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num;
+    return num.toString();
   };
 
-  // Usa le classi CSS esistenti per mantenere la coerenza stilistica
+  // Verifica se i dati avanzati sono disponibili
+  const hasEnhancedData = metrics.energy || carbonFootprint || metrics.performance_details;
+
   return (
-    <div className="enhanced-dashboard detail-section">
+    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+      {/* Banner che indica l'uso della dashboard avanzata */}
+      <div className="mb-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg border border-green-200 dark:border-green-700">
+        <div className="flex items-center">
+          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div className="ml-4">
+            <h3 className="text-lg font-bold text-green-800 dark:text-green-200">Dashboard Avanzata</h3>
+            <p className="text-green-700 dark:text-green-300">
+              {hasEnhancedData
+                ? "Visualizzazione con dati avanzati di Lighthouse attiva"
+                : "Dashboard avanzata attiva, ma dati estesi non disponibili"}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Tabs per navigare tra le sezioni */}
-      <div className="dashboard-tabs">
+      <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700 mb-6">
         <button
-          className={`tab-button ${activeTab === 'sustainability' ? 'active' : ''}`}
+          className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
+            activeTab === 'sustainability'
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
           onClick={() => setActiveTab('sustainability')}
         >
-          <i className="fas fa-leaf mr-2"></i> Sostenibilità
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+          Sostenibilità
         </button>
         <button
-          className={`tab-button ${activeTab === 'performance' ? 'active' : ''}`}
+          className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
+            activeTab === 'performance'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
           onClick={() => setActiveTab('performance')}
         >
-          <i className="fas fa-tachometer-alt mr-2"></i> Performance
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Performance
         </button>
         <button
-          className={`tab-button ${activeTab === 'optimization' ? 'active' : ''}`}
-          onClick={() => setActiveTab('optimization')}
+          className={`px-4 py-2 font-medium rounded-t-lg text-sm mr-2 ${
+            activeTab === 'economics'
+              ? 'bg-purple-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
+          onClick={() => setActiveTab('economics')}
         >
-          <i className="fas fa-sliders-h mr-2"></i> Ottimizzazioni
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Economia
         </button>
         <button
-          className={`tab-button ${activeTab === 'energy' ? 'active' : ''}`}
-          onClick={() => setActiveTab('energy')}
+          className={`px-4 py-2 font-medium rounded-t-lg text-sm ${
+            activeTab === 'optimizations'
+              ? 'bg-amber-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
+          onClick={() => setActiveTab('optimizations')}
         >
-          <i className="fas fa-bolt mr-2"></i> Energia
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Ottimizzazioni
         </button>
       </div>
 
-      {/* Pannello di sostenibilità */}
+      {/* Pannello Sostenibilità */}
       {activeTab === 'sustainability' && (
-        <div className="dashboard-panel">
-          <div className="panel-header">
-            <h2>Sostenibilità Digitale</h2>
-            <p>Panoramica completa dell'impatto ambientale del sito web</p>
-          </div>
+        <div className="animate-fade-in">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+            Sostenibilità Digitale
+          </h2>
 
-          <div className="metrics-overview">
-            <div className="metric-card highlight">
-              <div className="metric-value">{metrics.sustainability_score}<span>/100</span></div>
-              <div className="metric-label">Punteggio Sostenibilità</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{metrics.co2_emissions}<span>g/view</span></div>
-              <div className="metric-label">Emissioni CO₂</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{metrics.load_time}<span>s</span></div>
-              <div className="metric-label">Tempo di Caricamento</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{metrics.total_size}</div>
-              <div className="metric-label">Dimensione Totale</div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <MetricCard
+              title="Punteggio Sostenibilità"
+              value={metrics.sustainability_score || 0}
+              suffix="/100"
+              color={getScoreColor(metrics.sustainability_score || 0)}
+              icon={<SustainabilityIcon />}
+            />
+            <MetricCard
+              title="Emissioni CO₂"
+              value={metrics.co2_emissions || 0}
+              suffix="g/view"
+              color="#3b82f6"
+              icon={<CO2Icon />}
+            />
+            <MetricCard
+              title="Dimensione Totale"
+              value={metrics.total_size || "0 KB"}
+              color="#8b5cf6"
+              icon={<SizeIcon />}
+            />
+            <MetricCard
+              title="Tempo di Caricamento"
+              value={metrics.load_time || 0}
+              suffix="s"
+              color={metrics.load_time > 3 ? "#ef4444" : "#10b981"}
+              icon={<SpeedIcon />}
+            />
           </div>
 
           {carbonFootprint && (
-            <div className="carbon-section">
-              <h3><i className="fas fa-globe mr-2"></i> Impronta di Carbonio Annuale</h3>
-
-              <div className="carbon-metrics">
-                <div className="carbon-metric">
-                  <div className="carbon-value">{carbonFootprint.kg_co2} kg</div>
-                  <div className="carbon-label">CO₂ all'anno</div>
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 mb-6 border border-green-200 dark:border-green-800">
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Impronta di Carbonio Annuale
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {carbonFootprint.kg_co2 || 0} kg
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">CO₂ all'anno</div>
                 </div>
-                <div className="carbon-metric">
-                  <div className="carbon-value">{carbonFootprint.equivalent_trees}</div>
-                  <div className="carbon-label">Alberi equivalenti</div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {carbonFootprint.equivalent_trees || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Alberi equivalenti</div>
                 </div>
-                <div className="carbon-metric">
-                  <div className="carbon-value">{formatNumber(carbonFootprint.comparison?.car_km || 0)} km</div>
-                  <div className="carbon-label">Equivalenti in auto</div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {formatNumber(carbonFootprint.comparison?.car_km || 0)} km
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Equivalenti in auto</div>
                 </div>
-                <div className="carbon-metric">
-                  <div className="carbon-value">{formatNumber(carbonFootprint.comparison?.smartphone_charges || 0)}</div>
-                  <div className="carbon-label">Ricariche smartphone</div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow text-center">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {formatNumber(carbonFootprint.comparison?.smartphone_charges || 0)}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Ricariche smartphone</div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="category-chart-container">
-            <h3><i className="fas fa-chart-bar mr-2"></i> Punteggi di Qualità</h3>
-            <div className="chart-placeholder">
-              <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                <i className="fas fa-chart-bar" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
-                <p style={{ marginTop: '15px' }}>Grafico dei punteggi di categoria</p>
-              </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Ripartizione Risorse
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantità</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dimensione</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Impatto CO₂</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {Object.entries(resources).map(([type, data]) => (
+                    <tr key={type} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <ResourceIcon type={type} />
+                          <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.count}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.size}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{data.co2}g</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* Pannello performance */}
+      {/* Pannello Performance */}
       {activeTab === 'performance' && (
-        <div className="dashboard-panel">
-          <div className="panel-header">
-            <h2>Analisi Performance</h2>
-            <p>Dettagli delle metriche di performance e Web Vitals</p>
+        <div className="animate-fade-in">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+            Core Web Vitals e Performance
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <MetricCard
+              title="LCP"
+              value={webVitals.lcp || 0}
+              suffix="s"
+              color={webVitals.lcp > 4 ? "#ef4444" : webVitals.lcp > 2.5 ? "#f59e0b" : "#10b981"}
+              icon={<LCPIcon />}
+              description="Largest Contentful Paint"
+            />
+            <MetricCard
+              title="FID"
+              value={webVitals.fid || 0}
+              suffix="ms"
+              color={webVitals.fid > 300 ? "#ef4444" : webVitals.fid > 100 ? "#f59e0b" : "#10b981"}
+              icon={<FIDIcon />}
+              description="First Input Delay"
+            />
+            <MetricCard
+              title="CLS"
+              value={webVitals.cls || 0}
+              color={webVitals.cls > 0.25 ? "#ef4444" : webVitals.cls > 0.1 ? "#f59e0b" : "#10b981"}
+              icon={<CLSIcon />}
+              description="Cumulative Layout Shift"
+            />
+            <MetricCard
+              title="Performance"
+              value={webVitals.lighthouse_score || 0}
+              suffix="/100"
+              color={getScoreColor(webVitals.lighthouse_score || 0)}
+              icon={<PerformanceIcon />}
+              isHighlighted={true}
+            />
           </div>
 
-          <div className="metrics-overview">
-            <div className="metric-card">
-              <div className="metric-value">{webVitals.lcp}<span>s</span></div>
-              <div className="metric-label">LCP</div>
-              <div className="metric-explanation">Largest Contentful Paint</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{webVitals.fid}<span>ms</span></div>
-              <div className="metric-label">FID</div>
-              <div className="metric-explanation">First Input Delay</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{webVitals.cls}</div>
-              <div className="metric-label">CLS</div>
-              <div className="metric-explanation">Cumulative Layout Shift</div>
-            </div>
-            <div className="metric-card highlight">
-              <div className="metric-value">{webVitals.lighthouse_score}<span>/100</span></div>
-              <div className="metric-label">Performance Score</div>
-            </div>
-          </div>
-
-          <div className="performance-radar-container">
-            <h3><i className="fas fa-tachometer-alt mr-2"></i> Radar delle Performance</h3>
-            <div className="chart-placeholder">
-              <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                <i className="fas fa-tachometer-alt" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
-                <p style={{ marginTop: '15px' }}>Grafico radar delle performance</p>
-              </div>
-            </div>
-          </div>
-
-          {isEnhanced && (
-            <div className="additional-metrics">
-              <h3><i className="fas fa-th-list mr-2"></i> Metriche Avanzate</h3>
-              <div className="metrics-table">
-                <div className="metric-row">
-                  <div className="metric-name">First Contentful Paint</div>
-                  <div className="metric-value">{((performanceDetails.first_contentful_paint || 0) / 1000).toFixed(2)}s</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Speed Index</div>
-                  <div className="metric-value">{((performanceDetails.speed_index || 0) / 1000).toFixed(2)}s</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Time to Interactive</div>
-                  <div className="metric-value">{((performanceDetails.time_to_interactive || 0) / 1000).toFixed(2)}s</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Total Blocking Time</div>
-                  <div className="metric-value">{performanceDetails.total_blocking_time || 0}ms</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Dimensione DOM</div>
-                  <div className="metric-value">{performanceDetails.dom_size || 0} elementi</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Richieste di Rete</div>
-                  <div className="metric-value">{performanceDetails.network_requests || 0}</div>
-                </div>
-                <div className="metric-row">
-                  <div className="metric-name">Bootup Time JS</div>
-                  <div className="metric-value">{((performanceDetails.bootup_time || 0) / 1000).toFixed(2)}s</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Pannello ottimizzazioni */}
-      {activeTab === 'optimization' && (
-        <div className="dashboard-panel">
-          <div className="panel-header">
-            <h2>Opportunità di Ottimizzazione</h2>
-            <p>Aree di miglioramento e loro punteggi</p>
-          </div>
-
-          {isEnhanced && (
-            <div className="optimization-chart-container">
-              <h3><i className="fas fa-chart-bar mr-2"></i> Punteggi di Ottimizzazione</h3>
-              <div className="chart-placeholder">
-                <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                  <i className="fas fa-sliders-h" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
-                  <p style={{ marginTop: '15px' }}>Grafico delle opportunità di ottimizzazione</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="optimization-explanations">
-            <h3><i className="fas fa-lightbulb mr-2"></i> Spiegazioni Tecniche</h3>
-            <div className="explanations-grid">
-              <div className="explanation-card">
-                <h4>Compressione Immagini</h4>
-                <p>Le immagini devono essere propriamente ottimizzate tramite compressione senza perdita di qualità percepibile.</p>
-                <div className="score-pill" style={{ backgroundColor: getScoreColor(optimizationScores.compress_images * 100 || 50) }}>
-                  {Math.round((optimizationScores.compress_images || 0.5) * 100)}/100
-                </div>
-              </div>
-              <div className="explanation-card">
-                <h4>Immagini Next-Gen</h4>
-                <p>Formati moderni come WebP e AVIF offrono migliore compressione rispetto a PNG e JPEG.</p>
-                <div className="score-pill" style={{ backgroundColor: getScoreColor(optimizationScores.next_gen_images * 100 || 50) }}>
-                  {Math.round((optimizationScores.next_gen_images || 0.5) * 100)}/100
-                </div>
-              </div>
-              <div className="explanation-card">
-                <h4>Compressione Testo</h4>
-                <p>HTML, CSS e JavaScript dovrebbero essere compressi con gzip o brotli.</p>
-                <div className="score-pill" style={{ backgroundColor: getScoreColor(optimizationScores.text_compression * 100 || 50) }}>
-                  {Math.round((optimizationScores.text_compression || 0.5) * 100)}/100
-                </div>
-              </div>
-              <div className="explanation-card">
-                <h4>Ottimizzazione JS</h4>
-                <p>Rimuovere codice JavaScript non utilizzato e minificare quello rimanente.</p>
-                <div className="score-pill" style={{ backgroundColor: getScoreColor(optimizationScores.js_optimization * 100 || 50) }}>
-                  {Math.round((optimizationScores.js_optimization || 0.5) * 100)}/100
-                </div>
-              </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Metriche Dettagliate
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <DetailMetric
+                title="First Contentful Paint"
+                value={(webVitals.first_contentful_paint/1000).toFixed(2) || "N/A"}
+                suffix="s"
+              />
+              <DetailMetric
+                title="Speed Index"
+                value={(webVitals.speed_index/1000).toFixed(2) || "N/A"}
+                suffix="s"
+              />
+              <DetailMetric
+                title="Time to Interactive"
+                value={(webVitals.time_to_interactive/1000).toFixed(2) || "N/A"}
+                suffix="s"
+              />
+              <DetailMetric
+                title="Total Blocking Time"
+                value={webVitals.total_blocking_time || "N/A"}
+                suffix="ms"
+              />
+              <DetailMetric
+                title="Caricamento Server"
+                value={(webVitals.ttfb/1000).toFixed(2) || "N/A"}
+                suffix="s"
+              />
+              <DetailMetric
+                title="Browser Connection"
+                value={metrics.performance_details?.network_rtt || "N/A"}
+                suffix="ms"
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* Pannello energia */}
-      {activeTab === 'energy' && (
-        <div className="dashboard-panel">
-          <div className="panel-header">
-            <h2>Efficienza Energetica</h2>
-            <p>Consumo energetico e impatto ambientale</p>
+      {/* Pannello Economico */}
+      {activeTab === 'economics' && (
+        <div className="animate-fade-in">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+            Benefici Economici
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <MetricCard
+              title="Costo Mensile"
+              value={economicBenefits.current_monthly_cost || 0}
+              prefix="€"
+              color="#ef4444"
+              icon={<CostIcon />}
+            />
+            <MetricCard
+              title="Risparmio Potenziale"
+              value={economicBenefits.potential_annual_savings || 0}
+              prefix="€"
+              suffix="/anno"
+              color="#10b981"
+              icon={<SavingsIcon />}
+              isHighlighted={true}
+            />
+            <MetricCard
+              title="Riduzione Costi"
+              value={economicBenefits.potential_savings_percent || 0}
+              suffix="%"
+              color="#3b82f6"
+              icon={<PercentIcon />}
+            />
+            <MetricCard
+              title="Visite Mensili"
+              value={formatNumber(economicBenefits.estimated_monthly_visits || 0)}
+              color="#8b5cf6"
+              icon={<VisitsIcon />}
+            />
           </div>
 
-          {energyMetrics && (
-            <div className="energy-metrics-overview">
-              <div className="metric-card highlight">
-                <div className="metric-value">{energyMetrics.score}<span>/100</span></div>
-                <div className="metric-label">Efficienza Energetica</div>
-              </div>
-              <div className="metric-card">
-                <div className="metric-value">{energyMetrics.estimated_kwh_per_view}<span>kWh</span></div>
-                <div className="metric-label">Consumo per Visita</div>
-              </div>
-              <div className="metric-card">
-                <div className="metric-value">{energyMetrics.estimated_yearly_kwh}<span>kWh</span></div>
-                <div className="metric-label">Consumo Annuale</div>
-              </div>
-              <div className="metric-card">
-                <div className="metric-value">{metrics.co2_emissions}<span>g CO₂</span></div>
-                <div className="metric-label">Emissioni per Visita</div>
-              </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Suddivisione Costi e Risparmi
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoria</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Costo Attuale</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Risparmio Potenziale</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {economicBenefits.costs_breakdown && economicBenefits.savings_breakdown && Object.entries(economicBenefits.costs_breakdown).map(([key, value]) => {
+                    const savingsKey = {
+                      'bandwidth': 'bandwidth',
+                      'energy': 'energy',
+                      'seo_impact': 'seo_conversions',
+                      'bounce_impact': 'reduced_bounce',
+                      'extra_maintenance': 'maintenance',
+                      'extra_infrastructure': 'infrastructure'
+                    }[key] || key;
+
+                    const savingValue = economicBenefits.savings_breakdown[savingsKey] || 0;
+
+                    // Formatta i nomi per visualizzazione
+                    const categoryNames = {
+                      'bandwidth': 'Costi di Banda',
+                      'energy': 'Costi Energetici',
+                      'seo_impact': 'Impatto SEO',
+                      'bounce_impact': 'Utenti Persi',
+                      'extra_maintenance': 'Manutenzione Extra',
+                      'extra_infrastructure': 'Infrastruttura'
+                    };
+
+                    return (
+                      <tr key={key} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {categoryNames[key] || key}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          €{value.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                          €{savingValue.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <td className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Totale</td>
+                    <td className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                      €{economicBenefits.current_monthly_cost?.toFixed(2) || '0.00'}
+                    </td>
+                    <td className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">
+                      €{economicBenefits.potential_monthly_savings?.toFixed(2) || '0.00'}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          <div className="energy-impact-section">
-            <h3><i className="fas fa-info-circle mr-2"></i> Impatto degli Ottimizzazioni</h3>
-            <p>Come i diversi aspetti del tuo sito influenzano l'efficienza energetica:</p>
+      {/* Pannello Ottimizzazioni */}
+      {activeTab === 'optimizations' && (
+        <div className="animate-fade-in">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+            Opportunità di Ottimizzazione
+          </h2>
 
-            {energyMetrics?.optimization_impacts && (
-              <div className="impact-bars">
-                <div className="impact-bar">
-                  <div className="impact-label">Ottimizzazione Immagini</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.images}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.images) }}></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {optimizations.map((opt, index) => (
+              <div
+                key={index}
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border-l-4 ${
+                  opt.priority === 'high'
+                    ? 'border-red-500'
+                    : opt.priority === 'medium'
+                    ? 'border-amber-500'
+                    : 'border-green-500'
+                } hover:shadow-lg transition-shadow duration-300`}
+              >
+                <div className="flex items-start">
+                  <div className={`p-2 rounded-full mr-3 ${
+                    opt.priority === 'high'
+                      ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                      : opt.priority === 'medium'
+                      ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+                      : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                  }`}>
+                    <PriorityIcon priority={opt.priority} />
                   </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.images}%</div>
-                </div>
-                <div className="impact-bar">
-                  <div className="impact-label">Formati Immagine Moderni</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.next_gen_formats}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.next_gen_formats) }}></div>
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-2">{opt.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{opt.description}</p>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className="px-2 py-1 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded">
+                        CO₂: {opt.impact}g
+                      </span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+                        Risparmio: €{opt.economic_impact}
+                      </span>
+                      <span className="px-2 py-1 bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 rounded">
+                        {opt.resource_type}
+                      </span>
+                    </div>
                   </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.next_gen_formats}%</div>
-                </div>
-                <div className="impact-bar">
-                  <div className="impact-label">Compressione Testo</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.text_compression}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.text_compression) }}></div>
-                  </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.text_compression}%</div>
-                </div>
-                <div className="impact-bar">
-                  <div className="impact-label">Ottimizzazione JavaScript</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.js_optimization}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.js_optimization) }}></div>
-                  </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.js_optimization}%</div>
-                </div>
-                <div className="impact-bar">
-                  <div className="impact-label">Caching Efficiente</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.caching}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.caching) }}></div>
-                  </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.caching}%</div>
-                </div>
-                <div className="impact-bar">
-                  <div className="impact-label">Utilizzo di HTTP/2</div>
-                  <div className="impact-track">
-                    <div className="impact-fill" style={{ width: `${energyMetrics.optimization_impacts.http2}%`, backgroundColor: getScoreColor(energyMetrics.optimization_impacts.http2) }}></div>
-                  </div>
-                  <div className="impact-value">{energyMetrics.optimization_impacts.http2}%</div>
                 </div>
               </div>
-            )}
-          </div>
-
-          <div className="energy-tips">
-            <h3><i className="fas fa-lightbulb mr-2"></i> Consigli per l'efficienza energetica</h3>
-            <ul className="tips-list">
-              <li><i className="fas fa-check mr-2"></i> <strong>Riduci il JavaScript</strong>: Il parsing e l'esecuzione del JS sono operazioni ad alta intensità di CPU che consumano molta energia.</li>
-              <li><i className="fas fa-check mr-2"></i> <strong>Ottimizza le immagini</strong>: Immagini più piccole richiedono meno larghezza di banda e meno energia per essere trasferite.</li>
-              <li><i className="fas fa-check mr-2"></i> <strong>Usa un CDN verde</strong>: Alcuni Content Delivery Network funzionano con energia rinnovabile.</li>
-              <li><i className="fas fa-check mr-2"></i> <strong>Implementa caching aggressivo</strong>: Il caching riduce le richieste di rete e il consumo energetico.</li>
-              <li><i className="fas fa-check mr-2"></i> <strong>Riduce gli script di terze parti</strong>: Gli script esterni spesso aggiungono peso e complessità computazionale.</li>
-            </ul>
+            ))}
           </div>
         </div>
       )}
@@ -393,5 +468,144 @@ const EnhancedDashboard = (props) => {
   );
 };
 
-// Esporta il componente come default per l'import dinamico
+// Componenti di utilità
+const MetricCard = ({ title, value, prefix = '', suffix = '', color, icon, description = '', isHighlighted = false }) => (
+  <div className={`p-4 rounded-lg shadow-md ${isHighlighted ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' : 'bg-white dark:bg-gray-800'} transition-transform hover:transform hover:scale-105`}>
+    <div className="flex justify-between items-start mb-3">
+      <h3 className={`text-sm font-medium ${isHighlighted ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>{title}</h3>
+      <div className={`p-2 rounded-full ${isHighlighted ? 'bg-white/20' : `text-${color.replace('#', '')}`}`}>
+        {icon}
+      </div>
+    </div>
+    <div className="flex items-baseline">
+      <span className={`text-2xl font-bold ${isHighlighted ? 'text-white' : 'text-gray-800 dark:text-white'}`} style={!isHighlighted ? {color} : {}}>
+        {prefix}{typeof value === 'number' ? value.toFixed(2).replace(/\.?0+$/, '') : value}{suffix}
+      </span>
+    </div>
+    {description && (
+      <p className={`mt-1 text-xs ${isHighlighted ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>{description}</p>
+    )}
+  </div>
+);
+
+const DetailMetric = ({ title, value, suffix = '' }) => (
+  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
+    <span className="text-sm text-gray-700 dark:text-gray-300">{title}</span>
+    <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">{value}{suffix}</span>
+  </div>
+);
+
+// Icone
+const SustainabilityIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+  </svg>
+);
+
+const CO2Icon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+const SizeIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+  </svg>
+);
+
+const SpeedIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const LCPIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
+const FIDIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+  </svg>
+);
+
+const CLSIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+  </svg>
+);
+
+const PerformanceIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+  </svg>
+);
+
+const CostIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const SavingsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
+
+const PercentIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+  </svg>
+);
+
+const VisitsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
+const ResourceIcon = ({ type }) => {
+  switch (type) {
+    case 'html':
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-500"><span className="text-xs font-semibold">HTML</span></span>;
+    case 'css':
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-500"><span className="text-xs font-semibold">CSS</span></span>;
+    case 'javascript':
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-yellow-100 dark:bg-yellow-900/30 text-yellow-500"><span className="text-xs font-semibold">JS</span></span>;
+    case 'images':
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-green-100 dark:bg-green-900/30 text-green-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></span>;
+    case 'fonts':
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-500"><span className="text-xs font-semibold">Aa</span></span>;
+    default:
+      return <span className="w-6 h-6 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></span>;
+  }
+};
+
+const PriorityIcon = ({ priority }) => {
+  switch (priority) {
+    case 'high':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      );
+    case 'medium':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      );
+  }
+};
+
 export default EnhancedDashboard;

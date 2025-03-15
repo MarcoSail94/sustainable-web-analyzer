@@ -4,6 +4,9 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
+<!-- Aggiunti stili per la dashboard avanzata e per Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/enhanced-dashboard.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -28,6 +31,15 @@
                 <label for="monthlyVisits">Visite Mensili Stimate</label>
                 <input type="number" id="monthlyVisits" class="number-input" value="10000" min="100" step="100">
             </div>
+            <div class="form-group">
+                <label for="useEnhanced">
+                    <input type="checkbox" id="useEnhanced" checked>
+                    Usa Analizzatore Avanzato (Lighthouse)
+                </label>
+                <p class="text-sm text-gray-500 mt-1">
+                    L'analizzatore avanzato offre dati più completi e una dashboard interattiva.
+                </p>
+            </div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
@@ -44,8 +56,11 @@
         <p>Ecco i risultati dell'analisi di sostenibilità per il tuo sito web. Scopri come migliorarne l'efficienza.</p>
     </div>
 
-    <!-- Container per la Dashboard Avanzata - Nuovo elemento! -->
-    <div id="enhancedDashboardContainer"></div>
+    <!-- Area per il banner informativo sul tipo di analisi -->
+    <div id="analyzerTypeBanner"></div>
+
+    <!-- Container per la Dashboard Avanzata React -->
+    <div id="enhancedDashboardContainer" class="mb-8"></div>
 
     <!-- Include components di dashboard standard (visualizzati solo se non si usa la dashboard avanzata) -->
     {% include 'partials/dashboard/overview.html' %}
@@ -72,8 +87,114 @@
 
 {% block js %}
 <!-- Aggiunta di React e ReactDOM per il supporto ai componenti -->
-<script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+<script type="module">
+    // Aggiungi l'opzione useEnhanced al form
+    document.addEventListener('DOMContentLoaded', function() {
+      const analyzerForm = document.getElementById('analyzerForm');
+      const useEnhancedCheckbox = document.getElementById('useEnhanced');
+
+      if (analyzerForm) {
+        const originalSubmit = analyzerForm.onsubmit;
+
+        analyzerForm.addEventListener('submit', function(e) {
+          // Ottieni lo stato della checkbox
+          const useEnhanced = useEnhancedCheckbox && useEnhancedCheckbox.checked;
+
+          // Modifica i parametri della richiesta per includere useEnhanced
+          const urlInput = document.getElementById('urlInput');
+          const monthlyVisitsInput = document.getElementById('monthlyVisits');
+
+          if (urlInput && urlInput.value) {
+            e.preventDefault();
+
+            // Ottieni il valore delle visite mensili
+            let monthlyVisits = 10000;
+            if (monthlyVisitsInput && monthlyVisitsInput.value) {
+              const parsedValue = parseInt(monthlyVisitsInput.value, 10);
+              if (!isNaN(parsedValue) && parsedValue > 0) {
+                monthlyVisits = parsedValue;
+              }
+            }
+
+            // Mostra il messaggio di caricamento
+            const loadingSection = document.getElementById('loadingSection');
+            if (loadingSection) {
+              loadingSection.style.display = 'block';
+            }
+
+            const dashboardSection = document.getElementById('dashboardSection');
+            if (dashboardSection) {
+              dashboardSection.style.display = 'none';
+            }
+
+            // Chiama l'API
+            fetch('/api/analyze', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                url: urlInput.value,
+                monthly_visits: monthlyVisits,
+                use_enhanced: useEnhanced
+              }),
+            })
+            .then(response => response.json())
+            .then(data => {
+              // Nascondi il caricamento
+              if (loadingSection) {
+                loadingSection.style.display = 'none';
+              }
+
+              // Gestisci i dati
+              if (!data.success) {
+                // Mostra errore
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                  errorMessage.textContent = data.error || "Si è verificato un errore durante l'analisi";
+                  errorMessage.style.display = 'block';
+                }
+                return;
+              }
+
+              // Salva i dati
+              window.analysisData = data;
+
+              // Carica il modulo dashboard
+              import('./modules/dashboard.js').then(module => {
+                // Popola la dashboard
+                module.populateDashboard(data);
+
+                // Mostra la dashboard
+                if (dashboardSection) {
+                  dashboardSection.style.display = 'block';
+                  dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              });
+            })
+            .catch(error => {
+              console.error('Errore durante l\'analisi:', error);
+
+              // Nascondi il caricamento
+              if (loadingSection) {
+                loadingSection.style.display = 'none';
+              }
+
+              // Mostra errore
+              const errorMessage = document.getElementById('errorMessage');
+              if (errorMessage) {
+                errorMessage.textContent = "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto');
+                errorMessage.style.display = 'block';
+              }
+            });
+          }
+        });
+      }
+    });
+</script>
 
 <script type="module" src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
