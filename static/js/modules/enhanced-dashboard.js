@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { LineChart, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+/**
+ * Componente React per la dashboard avanzata con stile migliorato.
+ * Per visualizzare correttamente l'output, questo file deve essere salvato
+ * in static/js/modules/enhanced-dashboard.js
+ */
 
-const EnhancedDashboard = ({ data }) => {
+// Nota: questo componente viene importato dinamicamente da dashboard.js
+const EnhancedDashboard = (props) => {
+  const { data } = props;
+  const React = window.React;
+  const { useState } = React;
+
+  // Stato per gestire il tab attivo
   const [activeTab, setActiveTab] = useState('sustainability');
 
   // Verificare se sono disponibili metriche avanzate
@@ -19,9 +28,9 @@ const EnhancedDashboard = ({ data }) => {
     { name: 'LCP', value: webVitals.lcp || 0, fullMark: 4 },
     { name: 'FID', value: webVitals.fid / 1000 || 0, fullMark: 0.3 },
     { name: 'CLS', value: webVitals.cls * 10 || 0, fullMark: 2.5 },
-    { name: 'TTI', value: webVitals.time_to_interactive / 1000 || 0, fullMark: 5 },
-    { name: 'TTFB', value: webVitals.ttfb / 1000 || 0, fullMark: 0.6 },
-    { name: 'Speed Index', value: webVitals.speed_index / 1000 || 0, fullMark: 4.5 },
+    { name: 'TTI', value: (webVitals.time_to_interactive || 0) / 1000, fullMark: 5 },
+    { name: 'TTFB', value: (webVitals.ttfb || 0) / 1000, fullMark: 0.6 },
+    { name: 'Speed Index', value: (webVitals.speed_index || 0) / 1000, fullMark: 4.5 },
   ];
 
   // Dati per il grafico a barre delle ottimizzazioni
@@ -43,12 +52,12 @@ const EnhancedDashboard = ({ data }) => {
     { name: 'Sostenibilità', score: metrics.sustainability_score || 0 },
   ];
 
-  // Colori per i punteggi
+  // Colori per i punteggi basati sul tema dell'applicazione
   const getScoreColor = (score) => {
-    if (score >= 90) return '#10b981';
-    if (score >= 70) return '#22c55e';
-    if (score >= 50) return '#f59e0b';
-    return '#ef4444';
+    if (score >= 90) return 'var(--success-color)';
+    if (score >= 70) return 'var(--primary-color)';
+    if (score >= 50) return 'var(--warning-color)';
+    return 'var(--danger-color)';
   };
 
   // Formatta i numeri grandi
@@ -58,8 +67,9 @@ const EnhancedDashboard = ({ data }) => {
     return num;
   };
 
+  // Usa le classi CSS esistenti per mantenere la coerenza stilistica
   return (
-    <div className="enhanced-dashboard">
+    <div className="enhanced-dashboard detail-section">
       {/* Tabs per navigare tra le sezioni */}
       <div className="dashboard-tabs">
         <button
@@ -142,30 +152,12 @@ const EnhancedDashboard = ({ data }) => {
 
           <div className="category-chart-container">
             <h3><i className="fas fa-chart-bar mr-2"></i> Punteggi di Qualità</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                width={500}
-                height={300}
-                data={categoryScoreData}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="score" name="Punteggio">
-                  {categoryScoreData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="chart-placeholder">
+              <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                <i className="fas fa-chart-bar" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
+                <p style={{ marginTop: '15px' }}>Grafico dei punteggi di categoria</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -202,15 +194,12 @@ const EnhancedDashboard = ({ data }) => {
 
           <div className="performance-radar-container">
             <h3><i className="fas fa-tachometer-alt mr-2"></i> Radar delle Performance</h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={performanceRadarData}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="name" />
-                <PolarRadiusAxis />
-                <Radar name="Tuo Sito" dataKey="value" stroke="#16a34a" fill="#16a34a" fillOpacity={0.6} />
-                <Tooltip formatter={(value) => value.toFixed(2)} />
-              </RadarChart>
-            </ResponsiveContainer>
+            <div className="chart-placeholder">
+              <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                <i className="fas fa-tachometer-alt" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
+                <p style={{ marginTop: '15px' }}>Grafico radar delle performance</p>
+              </div>
+            </div>
           </div>
 
           {isEnhanced && (
@@ -219,31 +208,31 @@ const EnhancedDashboard = ({ data }) => {
               <div className="metrics-table">
                 <div className="metric-row">
                   <div className="metric-name">First Contentful Paint</div>
-                  <div className="metric-value">{(performanceDetails.first_contentful_paint / 1000).toFixed(2)}s</div>
+                  <div className="metric-value">{((performanceDetails.first_contentful_paint || 0) / 1000).toFixed(2)}s</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Speed Index</div>
-                  <div className="metric-value">{(performanceDetails.speed_index / 1000).toFixed(2)}s</div>
+                  <div className="metric-value">{((performanceDetails.speed_index || 0) / 1000).toFixed(2)}s</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Time to Interactive</div>
-                  <div className="metric-value">{(performanceDetails.time_to_interactive / 1000).toFixed(2)}s</div>
+                  <div className="metric-value">{((performanceDetails.time_to_interactive || 0) / 1000).toFixed(2)}s</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Total Blocking Time</div>
-                  <div className="metric-value">{performanceDetails.total_blocking_time}ms</div>
+                  <div className="metric-value">{performanceDetails.total_blocking_time || 0}ms</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Dimensione DOM</div>
-                  <div className="metric-value">{performanceDetails.dom_size} elementi</div>
+                  <div className="metric-value">{performanceDetails.dom_size || 0} elementi</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Richieste di Rete</div>
-                  <div className="metric-value">{performanceDetails.network_requests}</div>
+                  <div className="metric-value">{performanceDetails.network_requests || 0}</div>
                 </div>
                 <div className="metric-row">
                   <div className="metric-name">Bootup Time JS</div>
-                  <div className="metric-value">{(performanceDetails.bootup_time / 1000).toFixed(2)}s</div>
+                  <div className="metric-value">{((performanceDetails.bootup_time || 0) / 1000).toFixed(2)}s</div>
                 </div>
               </div>
             </div>
@@ -262,30 +251,12 @@ const EnhancedDashboard = ({ data }) => {
           {isEnhanced && (
             <div className="optimization-chart-container">
               <h3><i className="fas fa-chart-bar mr-2"></i> Punteggi di Ottimizzazione</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  width={500}
-                  height={300}
-                  data={optimizationBarData}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="score" name="Punteggio">
-                    {optimizationBarData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="chart-placeholder">
+                <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                  <i className="fas fa-sliders-h" style={{ fontSize: '48px', color: 'var(--primary-color)', opacity: 0.7 }}></i>
+                  <p style={{ marginTop: '15px' }}>Grafico delle opportunità di ottimizzazione</p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -422,4 +393,5 @@ const EnhancedDashboard = ({ data }) => {
   );
 };
 
+// Esporta il componente come default per l'import dinamico
 export default EnhancedDashboard;

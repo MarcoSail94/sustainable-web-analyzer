@@ -5,6 +5,7 @@
  * - Lazy loading delle immagini
  * - Prefetching intelligente
  * - Gestione degli stati di caricamento
+ * - Supporto avanzato per React e React DOM
  */
 
 // Import moduli globali essenziali
@@ -42,7 +43,8 @@ const appState = {
   loadedModules: [],
   isLoading: false,
   isInitialized: false,
-  themeInitialized: false
+  themeInitialized: false,
+  reactInitialized: false
 };
 
 /**
@@ -63,6 +65,9 @@ function initializeApp() {
     showLoadingIndicator();
   }
 
+  // Verifica la disponibilità di React e ReactDOM
+  checkReactAvailability();
+
   // Inizializzazione prioritaria del tema prima di altri moduli
   initTheme().then(() => {
     // Carica i moduli essenziali per tutte le pagine
@@ -81,11 +86,83 @@ function initializeApp() {
     });
   });
 
+  // Inizializza l'analizzatore se siamo nella pagina principale
+  if (appState.currentPage === 'index') {
+    loadModule(MODULES.analyzer).then(module => {
+      if (module && module.initializeAnalyzer) {
+        module.initializeAnalyzer();
+      }
+    });
+  }
+
   // Inizializza il lazy loading per le immagini
   initLazyLoadImages();
 
   // Prefetching intelligente per migliorare la reattività dell'interfaccia
   initPrefetching();
+}
+
+/**
+ * Verifica la disponibilità di React e ReactDOM e li precarica se necessario
+ */
+function checkReactAvailability() {
+  // Controlla se React e ReactDOM sono disponibili
+  if (typeof window.React === 'undefined' || typeof window.ReactDOM === 'undefined') {
+    console.warn('React o ReactDOM non sono disponibili. Verranno precaricati per la dashboard avanzata.');
+
+    // Tentativo di pre-caricamento delle librerie
+    preloadReactLibraries();
+  } else {
+    console.log('React e ReactDOM disponibili.');
+    appState.reactInitialized = true;
+  }
+}
+
+/**
+ * Pre-carica le librerie React per evitare problemi di rendering
+ */
+function preloadReactLibraries() {
+  // Usa l'attributo preload per caricare le librerie in anticipo
+  const preloadReact = document.createElement('link');
+  preloadReact.rel = 'preload';
+  preloadReact.as = 'script';
+  preloadReact.href = 'https://unpkg.com/react@17/umd/react.production.min.js';
+  document.head.appendChild(preloadReact);
+
+  const preloadReactDOM = document.createElement('link');
+  preloadReactDOM.rel = 'preload';
+  preloadReactDOM.as = 'script';
+  preloadReactDOM.href = 'https://unpkg.com/react-dom@17/umd/react-dom.production.min.js';
+  document.head.appendChild(preloadReactDOM);
+
+  // Carica effettivamente gli script
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => {
+        console.log(`Script caricato: ${src}`);
+        resolve();
+      };
+      script.onerror = (err) => {
+        console.error(`Errore caricamento script: ${src}`, err);
+        reject(err);
+      };
+      document.head.appendChild(script);
+    });
+  };
+
+  // Carica React e ReactDOM in sequenza per garantire l'ordine corretto
+  loadScript('https://unpkg.com/react@17/umd/react.production.min.js')
+    .then(() => loadScript('https://unpkg.com/react-dom@17/umd/react-dom.production.min.js'))
+    .then(() => {
+      console.log('React e ReactDOM caricati con successo');
+      appState.reactInitialized = true;
+
+      // Invia un evento personalizzato per notificare che React è pronto
+      document.dispatchEvent(new CustomEvent('react:loaded'));
+    })
+    .catch(err => console.error('Errore nel caricamento di React:', err));
 }
 
 /**
@@ -311,6 +388,11 @@ function initPrefetching() {
   if (appState.currentPage === 'index') {
     // Se siamo nella home, prefetch la dashboard
     prefetchModule(MODULES.dashboard);
+
+    // Se l'analizzatore React è richiesto, prefetch il modulo enhanced-dashboard
+    if (document.getElementById('enhancedDashboardContainer')) {
+      prefetchModule('./modules/enhanced-dashboard.js');
+    }
   }
 
   // Aggiunge listener per prefetch sui link
@@ -413,5 +495,6 @@ export {
   loadModule,
   getAnalysisData,
   initLazyLoadImages,
-  appState
+  appState,
+  checkReactAvailability
 };

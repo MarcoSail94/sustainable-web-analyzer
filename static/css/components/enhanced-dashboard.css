@@ -1,5 +1,5 @@
 /**
- * Stili per la dashboard avanzata con metriche Lighthouse
+ * Stili migliorati per la dashboard avanzata che si allineano meglio con il design dell'applicazione
  */
 
 .enhanced-dashboard {
@@ -8,7 +8,7 @@
   padding: 2rem;
   box-shadow: var(--shadow);
   margin-bottom: 2.5rem;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
   border: 1px solid var(--border-light);
 }
 
@@ -73,7 +73,7 @@
   font-size: 1.125rem;
 }
 
-/* Panoramica metriche */
+/* Panoramica metriche - Stile matching con score-card esistente */
 .metrics-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -82,18 +82,22 @@
 }
 
 .metric-card {
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
   padding: 1.5rem;
   text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid var(--border-light);
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .metric-card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .metric-card.highlight {
@@ -106,8 +110,12 @@
   font-size: 2.5rem;
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 0.75rem;
+  margin: 1rem 0;
   color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
 }
 
 .metric-card.highlight .metric-value {
@@ -119,6 +127,8 @@
   opacity: 0.8;
   font-weight: 500;
   margin-left: 0.25rem;
+  align-self: flex-end;
+  padding-bottom: 0.5rem;
 }
 
 .metric-label {
@@ -141,15 +151,15 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Sezione del radar */
+/* Sezione del radar - Stile matchato con detail-section */
 .performance-radar-container,
 .category-chart-container,
 .optimization-chart-container {
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -164,21 +174,31 @@
   align-items: center;
 }
 
-/* Metriche energetiche */
-.energy-metrics-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+.performance-radar-container h3 i,
+.category-chart-container h3 i,
+.optimization-chart-container h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
+}
+
+/* Placeholder per i grafici (in attesa che recharts sia disponibile) */
+.chart-placeholder {
+  background-color: var(--bg-alt);
+  border-radius: var(--rounded-lg);
+  min-height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px dashed var(--border-medium);
 }
 
 /* Impronta di carbonio */
 .carbon-section {
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -191,6 +211,11 @@
   align-items: center;
 }
 
+.carbon-section h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
+}
+
 .carbon-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -200,10 +225,15 @@
 .carbon-metric {
   text-align: center;
   padding: 1rem;
-  background-color: var(--bg-card);
+  background-color: var(--bg-alt);
   border-radius: var(--rounded-md);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-light);
+  transition: transform 0.3s ease;
+}
+
+.carbon-metric:hover {
+  transform: translateY(-3px);
 }
 
 .carbon-value {
@@ -222,9 +252,9 @@
 .additional-metrics {
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -237,6 +267,11 @@
   align-items: center;
 }
 
+.additional-metrics h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
+}
+
 .metrics-table {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -247,9 +282,15 @@
   display: flex;
   justify-content: space-between;
   padding: 0.75rem;
-  background-color: var(--bg-card);
+  background-color: var(--bg-alt);
   border-radius: var(--rounded-md);
   border: 1px solid var(--border-light);
+  transition: transform 0.3s ease;
+}
+
+.metric-row:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .metric-name {
@@ -257,9 +298,12 @@
   color: var(--text-secondary);
 }
 
-.metric-value {
+.metric-row .metric-value {
   font-weight: 600;
   color: var(--primary-color);
+  font-size: 1rem;
+  margin: 0;
+  height: auto;
 }
 
 /* Spiegazioni ottimizzazioni */
@@ -276,6 +320,11 @@
   align-items: center;
 }
 
+.optimization-explanations h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
+}
+
 .explanations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -284,11 +333,17 @@
 
 .explanation-card {
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
   position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.explanation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
 }
 
 .explanation-card h4 {
@@ -320,9 +375,9 @@
 .energy-impact-section {
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -333,6 +388,11 @@
   color: var(--text-main);
   display: flex;
   align-items: center;
+}
+
+.energy-impact-section h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
 }
 
 .energy-impact-section p {
@@ -362,7 +422,7 @@
 
 .impact-track {
   height: 12px;
-  background-color: var(--bg-card);
+  background-color: var(--bg-alt);
   border-radius: var(--rounded-full);
   overflow: hidden;
   border: 1px solid var(--border-light);
@@ -384,9 +444,9 @@
 .energy-tips {
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: var(--bg-alt);
+  background-color: var(--bg-card);
   border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -399,6 +459,11 @@
   align-items: center;
 }
 
+.energy-tips h3 i {
+  margin-right: 0.75rem;
+  color: var(--primary-color);
+}
+
 .tips-list {
   list-style: none;
   padding: 0;
@@ -407,13 +472,19 @@
 .tips-list li {
   margin-bottom: 0.75rem;
   padding: 0.75rem;
-  background-color: var(--bg-card);
+  background-color: var(--bg-alt);
   border-radius: var(--rounded-md);
   color: var(--text-secondary);
   font-size: 0.9375rem;
   display: flex;
   align-items: center;
   border: 1px solid var(--border-light);
+  transition: transform 0.3s ease;
+}
+
+.tips-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .tips-list li i {
@@ -427,7 +498,7 @@
   font-weight: 600;
 }
 
-/* Utilities */
+/* Utilities per spaziatura */
 .mr-2 {
   margin-right: 0.5rem;
 }
@@ -446,15 +517,30 @@
 
   .dashboard-tabs {
     gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .tab-button {
     padding: 0.6rem 1rem;
     font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .metric-card {
+    height: auto;
+    min-height: 200px;
   }
 
   .metric-value {
     font-size: 2rem;
+    height: 60px;
+    margin: 0.75rem 0;
+  }
+
+  .panel-header h2 {
+    font-size: 1.5rem;
   }
 
   .impact-bar {
@@ -464,9 +550,13 @@
   .impact-label {
     font-size: 0.8125rem;
   }
+
+  .carbon-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }
 
-/* Dark theme overrides */
+/* Dark theme overrides - Usa le variabili del tema per garantire la coerenza */
 [data-theme="dark"] .metric-card {
   background-color: var(--bg-card);
 }
@@ -487,5 +577,27 @@
 [data-theme="dark"] .carbon-metric,
 [data-theme="dark"] .tips-list li {
   background-color: var(--bg-card);
+  border-color: var(--border-medium);
+}
+
+[data-theme="dark"] .performance-radar-container,
+[data-theme="dark"] .category-chart-container,
+[data-theme="dark"] .optimization-chart-container,
+[data-theme="dark"] .carbon-section,
+[data-theme="dark"] .additional-metrics,
+[data-theme="dark"] .energy-impact-section,
+[data-theme="dark"] .energy-tips,
+[data-theme="dark"] .explanation-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-medium);
+}
+
+[data-theme="dark"] .chart-placeholder {
+  background-color: var(--bg-card);
+  border: 1px dashed var(--border-medium);
+}
+
+[data-theme="dark"] .impact-track {
+  background-color: var(--bg-alt);
   border-color: var(--border-medium);
 }

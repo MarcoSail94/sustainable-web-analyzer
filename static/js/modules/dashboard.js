@@ -1,5 +1,5 @@
 /**
- * Modulo Dashboard - Gestisce la popolazione della dashboard con i dati di analisi
+ * Modulo Dashboard corretto - Gestisce la popolazione della dashboard con i dati di analisi
  */
 
 import { createComparisonChart } from './charts.js';
@@ -12,6 +12,7 @@ import { formatFileSize } from '../utils/formatters.js';
  * @param {Object} data - Dati di analisi
  */
 export function populateDashboard(data) {
+    console.log("Popolamento dashboard con dati:", data);
     const metrics = data.metrics;
     const resources = data.resources;
     const optimizations = data.optimizations;
@@ -43,12 +44,30 @@ export function populateDashboard(data) {
 
     // Verifica se usare la dashboard avanzata
     const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
+    const enhancedDashboardContainer = document.getElementById('enhancedDashboardContainer');
 
-    if (isEnhanced && document.getElementById('enhancedDashboardContainer')) {
-        // Utilizza la dashboard avanzata se disponibile
+    // Nascondi prima tutti i componenti della dashboard standard
+    document.getElementById('scoreOverview').parentElement.style.display = 'none';
+    document.getElementById('webVitalsSection').style.display = 'none';
+    document.getElementById('economicBenefits').parentElement.style.display = 'none';
+    document.getElementById('resourceList').parentElement.style.display = 'none';
+    document.getElementById('optimizationList').parentElement.style.display = 'none';
+
+    if (isEnhanced && enhancedDashboardContainer) {
+        console.log("Rendering enhanced dashboard...");
+        // Rendi visibile solo il container enhanced
+        enhancedDashboardContainer.style.display = 'block';
+
+        // Utilizza la dashboard avanzata
         renderEnhancedDashboard(data);
     } else {
-        // Altrimenti utilizza la dashboard standard
+        console.log("Rendering standard dashboard...");
+        // Rendi visibili tutti i componenti della dashboard standard
+        document.getElementById('scoreOverview').parentElement.style.display = 'block';
+        document.getElementById('webVitalsSection').style.display = 'block';
+        document.getElementById('economicBenefits').parentElement.style.display = 'block';
+        document.getElementById('resourceList').parentElement.style.display = 'block';
+        document.getElementById('optimizationList').parentElement.style.display = 'block';
 
         // Popola le metriche principali
         populateScoreOverview(metrics, comparison);
@@ -71,9 +90,6 @@ export function populateDashboard(data) {
 
         // Aggiorna la visualizzazione delle Web Vitals
         updateWebVitals(data);
-
-        // Mostra la sezione Web Vitals
-        document.getElementById('webVitalsSection').style.display = 'block';
     }
 }
 
@@ -83,33 +99,112 @@ export function populateDashboard(data) {
  */
 async function renderEnhancedDashboard(data) {
     try {
-        // Importa la dashboard avanzata dinamicamente
-        const { default: EnhancedDashboard } = await import('./enhanced-dashboard.js');
-
-        // Renderizza il componente React
         const container = document.getElementById('enhancedDashboardContainer');
+        if (!container) {
+            console.error('Container per dashboard avanzata non trovato');
+            return;
+        }
 
-        // Utilizza ReactDOM.render o React.createElement in base alla disponibilità
-        if (window.ReactDOM && window.React) {
-            window.ReactDOM.render(
-                window.React.createElement(EnhancedDashboard, { data }),
-                container
-            );
-            console.log('Enhanced dashboard rendered successfully with ReactDOM');
-        } else {
-            console.error('ReactDOM or React not found. Make sure they are loaded.');
-            // Fallback alla dashboard standard
-            populateScoreOverview(data.metrics, data.industry_comparison);
-            populateResourceList(data.resources);
-            populateOptimizations(data.optimizations);
+        console.log("Verifica disponibilità React e ReactDOM");
+        // Verifica che React e ReactDOM siano disponibili
+        if (!window.React || !window.ReactDOM) {
+            console.error('React o ReactDOM non disponibili. Caricamento asincrono...');
+
+            // Tenta di caricare React e ReactDOM se non sono disponibili
+            await loadReactLibraries();
+
+            // Verifica di nuovo dopo il caricamento
+            if (!window.React || !window.ReactDOM) {
+                console.error('Impossibile caricare React e ReactDOM. Fallback alla dashboard standard');
+                fallbackToStandardDashboard(data);
+                return;
+            }
+        }
+
+        // Importa la dashboard avanzata
+        console.log("Importazione dinamica di EnhancedDashboard");
+        try {
+            const { default: EnhancedDashboard } = await import('./enhanced-dashboard.js');
+            console.log("EnhancedDashboard importato:", EnhancedDashboard);
+
+            // Crea l'elemento React
+            const element = window.React.createElement(EnhancedDashboard, { data: data });
+            console.log("Elemento React creato");
+
+            // Renderizza il componente
+            window.ReactDOM.render(element, container);
+            console.log("Dashboard avanzata renderizzata con successo");
+        } catch (importError) {
+            console.error('Errore importazione EnhancedDashboard:', importError);
+            fallbackToStandardDashboard(data);
         }
     } catch (error) {
-        console.error('Error rendering enhanced dashboard:', error);
-        // Fallback alla dashboard standard in caso di errore
-        populateScoreOverview(data.metrics, data.industry_comparison);
-        populateResourceList(data.resources);
-        populateOptimizations(data.optimizations);
+        console.error('Errore rendering dashboard avanzata:', error);
+        fallbackToStandardDashboard(data);
     }
+}
+
+/**
+ * Carica asincrono di React e ReactDOM
+ * @returns {Promise} Promise che si risolve quando le librerie sono caricate
+ */
+async function loadReactLibraries() {
+    console.log("Tentativo di caricamento asincrono di React e ReactDOM");
+
+    const loadScript = (src) => {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    };
+
+    try {
+        await loadScript('https://unpkg.com/react@17/umd/react.production.min.js');
+        await loadScript('https://unpkg.com/react-dom@17/umd/react-dom.production.min.js');
+        console.log("React e ReactDOM caricati con successo");
+        return true;
+    } catch (error) {
+        console.error("Impossibile caricare React o ReactDOM:", error);
+        return false;
+    }
+}
+
+/**
+ * Fallback alla dashboard standard in caso di problemi con React
+ * @param {Object} data - Dati di analisi
+ */
+function fallbackToStandardDashboard(data) {
+    console.log("Fallback alla dashboard standard");
+
+    // Rendi visibili tutti i componenti della dashboard standard
+    document.getElementById('scoreOverview').parentElement.style.display = 'block';
+    document.getElementById('webVitalsSection').style.display = 'block';
+    document.getElementById('economicBenefits').parentElement.style.display = 'block';
+    document.getElementById('resourceList').parentElement.style.display = 'block';
+    document.getElementById('optimizationList').parentElement.style.display = 'block';
+
+    // Nascondi il container della dashboard avanzata
+    const enhancedContainer = document.getElementById('enhancedDashboardContainer');
+    if (enhancedContainer) {
+        enhancedContainer.style.display = 'none';
+    }
+
+    // Popola la dashboard standard
+    populateScoreOverview(data.metrics, data.industry_comparison);
+    populateResourceList(data.resources);
+    populateOptimizations(data.optimizations);
+
+    try {
+        createComparisonChart(data);
+    } catch (error) {
+        console.error('Errore durante la creazione del grafico:', error);
+    }
+
+    populateEconomicDetails(data.metrics.economic_benefits);
+    updateWebVitals(data);
 }
 
 /**
@@ -119,6 +214,11 @@ async function renderEnhancedDashboard(data) {
  */
 function populateScoreOverview(metrics, comparison) {
     const scoreOverview = document.getElementById('scoreOverview');
+    if (!scoreOverview) {
+        console.error('Container scoreOverview non trovato');
+        return;
+    }
+
     scoreOverview.innerHTML = '';
 
     // Punteggio sostenibilità
@@ -208,6 +308,11 @@ function populateScoreOverview(metrics, comparison) {
  */
 function populateResourceList(resources) {
     const resourceList = document.getElementById('resourceList');
+    if (!resourceList) {
+        console.error('Container resourceList non trovato');
+        return;
+    }
+
     resourceList.innerHTML = `
         <div class="resource-item">
             <div class="resource-name"><strong>Tipo</strong></div>
@@ -245,6 +350,11 @@ function populateResourceList(resources) {
  */
 function populateOptimizations(optimizations) {
     const optimizationList = document.getElementById('optimizationList');
+    if (!optimizationList) {
+        console.error('Container optimizationList non trovato');
+        return;
+    }
+
     optimizationList.innerHTML = '';
 
     optimizations.forEach(opt => {
