@@ -4,7 +4,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
-<!-- Aggiunti stili per la dashboard avanzata e per Tailwind -->
+<!-- Tailwind e stili per la dashboard avanzata -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/enhanced-dashboard.css') }}">
 {% endblock %}
@@ -86,126 +86,216 @@
 {% endblock %}
 
 {% block js %}
-<!-- Aggiunta di React e ReactDOM per il supporto ai componenti -->
+<!-- Caricamento di React e ReactDOM prima di qualsiasi altro script per garantire disponibilità -->
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
+<!-- Script per verificare il caricamento di React -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verifica che React e ReactDOM siano caricati correttamente
+        if (window.React && window.ReactDOM) {
+            console.log("React e ReactDOM caricati correttamente:", window.React.version);
+        } else {
+            console.error("ERRORE: React o ReactDOM non disponibili");
+        }
+    });
+</script>
+
 <script type="module">
+    // Modulo dashboard-loader per inizializzare il componente React
+    import { loadEnhancedDashboard } from '/static/js/modules/dashboard-loader.js';
+    window.loadEnhancedDashboard = loadEnhancedDashboard;
+
     // Aggiungi l'opzione useEnhanced al form
     document.addEventListener('DOMContentLoaded', function() {
       const analyzerForm = document.getElementById('analyzerForm');
       const useEnhancedCheckbox = document.getElementById('useEnhanced');
 
       if (analyzerForm) {
-        const originalSubmit = analyzerForm.onsubmit;
-
         analyzerForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+
           // Ottieni lo stato della checkbox
           const useEnhanced = useEnhancedCheckbox && useEnhancedCheckbox.checked;
 
-          // Modifica i parametri della richiesta per includere useEnhanced
+          // Ottieni i valori di input
           const urlInput = document.getElementById('urlInput');
           const monthlyVisitsInput = document.getElementById('monthlyVisits');
 
-          if (urlInput && urlInput.value) {
-            e.preventDefault();
-
-            // Ottieni il valore delle visite mensili
-            let monthlyVisits = 10000;
-            if (monthlyVisitsInput && monthlyVisitsInput.value) {
-              const parsedValue = parseInt(monthlyVisitsInput.value, 10);
-              if (!isNaN(parsedValue) && parsedValue > 0) {
-                monthlyVisits = parsedValue;
-              }
+          if (!urlInput || !urlInput.value) {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+              errorMessage.textContent = "Inserisci un URL valido";
+              errorMessage.style.display = 'block';
             }
+            return;
+          }
 
-            // Mostra il messaggio di caricamento
-            const loadingSection = document.getElementById('loadingSection');
+          // Ottieni il valore delle visite mensili
+          let monthlyVisits = 10000;
+          if (monthlyVisitsInput && monthlyVisitsInput.value) {
+            const parsedValue = parseInt(monthlyVisitsInput.value, 10);
+            if (!isNaN(parsedValue) && parsedValue > 0) {
+              monthlyVisits = parsedValue;
+            }
+          }
+
+          // Mostra il messaggio di caricamento
+          const loadingSection = document.getElementById('loadingSection');
+          if (loadingSection) {
+            loadingSection.style.display = 'block';
+          }
+
+          const dashboardSection = document.getElementById('dashboardSection');
+          if (dashboardSection) {
+            dashboardSection.style.display = 'none';
+          }
+
+          // Nascondi messaggi di errore precedenti
+          const errorMessage = document.getElementById('errorMessage');
+          if (errorMessage) {
+            errorMessage.style.display = 'none';
+          }
+
+          // Chiama l'API
+          fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: urlInput.value,
+              monthly_visits: monthlyVisits,
+              use_enhanced: useEnhanced
+            }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            // Nascondi il caricamento
             if (loadingSection) {
-              loadingSection.style.display = 'block';
+              loadingSection.style.display = 'none';
             }
 
-            const dashboardSection = document.getElementById('dashboardSection');
-            if (dashboardSection) {
-              dashboardSection.style.display = 'none';
-            }
-
-            // Chiama l'API
-            fetch('/api/analyze', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                url: urlInput.value,
-                monthly_visits: monthlyVisits,
-                use_enhanced: useEnhanced
-              }),
-            })
-            .then(response => response.json())
-            .then(data => {
-              // Nascondi il caricamento
-              if (loadingSection) {
-                loadingSection.style.display = 'none';
-              }
-
-              // Gestisci i dati
-              if (!data.success) {
-                // Mostra errore
-                const errorMessage = document.getElementById('errorMessage');
-                if (errorMessage) {
-                  errorMessage.textContent = data.error || "Si è verificato un errore durante l'analisi";
-                  errorMessage.style.display = 'block';
-                }
-                return;
-              }
-
-              // Salva i dati
-              window.analysisData = data;
-
-              // CORREZIONE: Carica il modulo dashboard con percorso assoluto corretto
-              import('/static/js/modules/dashboard.js').then(module => {
-                // Popola la dashboard
-                module.populateDashboard(data);
-
-                // Mostra la dashboard
-                if (dashboardSection) {
-                  dashboardSection.style.display = 'block';
-                  dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }).catch(error => {
-                console.error('Errore nel caricamento del modulo dashboard:', error);
-                // Mostra un messaggio di errore
-                const errorMessage = document.getElementById('errorMessage');
-                if (errorMessage) {
-                  errorMessage.textContent = "Errore nel caricamento della dashboard: " + error.message;
-                  errorMessage.style.display = 'block';
-                }
-              });
-            })
-            .catch(error => {
-              console.error('Errore durante l\'analisi:', error);
-
-              // Nascondi il caricamento
-              if (loadingSection) {
-                loadingSection.style.display = 'none';
-              }
-
+            // Gestisci i dati
+            if (!data.success) {
               // Mostra errore
               const errorMessage = document.getElementById('errorMessage');
               if (errorMessage) {
-                errorMessage.textContent = "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto');
+                errorMessage.textContent = data.error || "Si è verificato un errore durante l'analisi";
                 errorMessage.style.display = 'block';
               }
-            });
-          }
+              return;
+            }
+
+            // Salva i dati
+            window.analysisData = data;
+
+            // Mostra la dashboard
+            if (dashboardSection) {
+              dashboardSection.style.display = 'block';
+            }
+
+            // Visualizza il banner del tipo di analisi
+            if (typeof showAnalysisTypeBanner === 'function') {
+              showAnalysisTypeBanner(data.analyzer_type);
+            }
+
+            // Verifica se utilizzare la dashboard avanzata
+            const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
+            const enhancedDashboardContainer = document.getElementById('enhancedDashboardContainer');
+
+            if (isEnhanced && enhancedDashboardContainer) {
+              console.log("Utilizzo dashboard avanzata React...");
+
+              // Nascondi le sezioni standard
+              const standardSections = [
+                'scoreOverview', 'webVitalsSection', 'economicBenefits',
+                'resourceList', 'optimizationList'
+              ].forEach(id => {
+                const element = document.getElementById(id);
+                if (element && element.parentElement) {
+                  element.parentElement.style.display = 'none';
+                }
+              });
+
+              // Tenta di caricare la dashboard React
+              if (window.loadEnhancedDashboard) {
+                window.loadEnhancedDashboard(data, enhancedDashboardContainer)
+                  .then(success => {
+                    if (success) {
+                      console.log("Dashboard React caricata con successo");
+                      dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      console.warn("Fallback alla dashboard standard");
+                      // Fallback alla dashboard standard
+                      import('/static/js/modules/dashboard.js').then(module => {
+                        module.populateDashboard(data);
+                        dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Errore caricamento dashboard React:", error);
+                    // Fallback alla dashboard standard
+                    import('/static/js/modules/dashboard.js').then(module => {
+                      module.populateDashboard(data);
+                      dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                    });
+                  });
+              } else {
+                console.error("Funzione loadEnhancedDashboard non disponibile");
+                // Fallback alla dashboard standard
+                import('/static/js/modules/dashboard.js').then(module => {
+                  module.populateDashboard(data);
+                  dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                });
+              }
+            } else {
+              // Utilizza la dashboard standard
+              import('/static/js/modules/dashboard.js').then(module => {
+                module.populateDashboard(data);
+                dashboardSection.scrollIntoView({ behavior: 'smooth' });
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Errore durante l\'analisi:', error);
+
+            // Nascondi il caricamento
+            if (loadingSection) {
+              loadingSection.style.display = 'none';
+            }
+
+            // Mostra errore
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+              errorMessage.textContent = "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto');
+              errorMessage.style.display = 'block';
+            }
+          });
+        });
+      }
+
+      // Imposta il comportamento del toggle per le opzioni avanzate
+      const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+      const advancedOptions = document.getElementById('advancedOptions');
+
+      if (toggleAdvancedBtn && advancedOptions) {
+        toggleAdvancedBtn.addEventListener('click', function() {
+          const isHidden = advancedOptions.style.display === 'none';
+          advancedOptions.style.display = isHidden ? 'block' : 'none';
+
+          this.innerHTML = isHidden ?
+            '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
+            '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
+          this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
         });
       }
     });
 </script>
 
-<!-- Caricamento corretto dei moduli con percorsi assoluti -->
-<script type="module" src="{{ url_for('static', filename='js/modules/analyzer.js') }}"></script>
+<!-- Moduli di supporto -->
 <script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/economics.js') }}"></script>

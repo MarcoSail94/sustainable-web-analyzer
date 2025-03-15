@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+// Assicuriamoci che React sia importato correttamente
+const React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) {
+  console.error("React non è disponibile! L'app non funzionerà correttamente.");
+}
 
 // Componente principale della dashboard avanzata
 const EnhancedDashboard = ({ data }) => {
   // Stato per gestire il tab attivo
-  const [activeTab, setActiveTab] = useState('sustainability');
+  const [activeTab, setActiveTab] = React.useState('sustainability');
 
   // Estrazione dei dati necessari
   const metrics = data?.metrics || {};
@@ -30,6 +34,13 @@ const EnhancedDashboard = ({ data }) => {
 
   // Verifica se i dati avanzati sono disponibili
   const hasEnhancedData = metrics.energy || carbonFootprint || metrics.performance_details;
+
+  console.log("Rendering EnhancedDashboard con dati:", {
+    sustainabilityScore: metrics.sustainability_score,
+    co2: metrics.co2_emissions,
+    webVitals: webVitals,
+    tabActive: activeTab
+  });
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">

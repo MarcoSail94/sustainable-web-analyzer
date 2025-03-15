@@ -35,8 +35,16 @@ export async function loadEnhancedDashboard(data, container) {
       </div>
     `;
 
-    // Importa il componente EnhancedDashboard in modo dinamico - PERCORSO CORRETTO
-    const EnhancedDashboardModule = await import('/static/js/modules/enhanced-dashboard.js');
+    // Debug: verifica prima che il modulo sia accessibile
+    console.log("Tentativo di importare enhanced-dashboard.js...");
+
+    // Importa il componente EnhancedDashboard in modo dinamico
+    const EnhancedDashboardModule = await import('../modules/enhanced-dashboard.js').catch(e => {
+      console.error("Errore importazione percorso relativo:", e);
+      // Prova con percorso assoluto
+      return import('/static/js/modules/enhanced-dashboard.js');
+    });
+
     const EnhancedDashboard = EnhancedDashboardModule.default;
 
     if (!EnhancedDashboard) {
@@ -61,10 +69,12 @@ export async function loadEnhancedDashboard(data, container) {
 
     // Usa createRoot per React 18
     if (window.ReactDOM.createRoot) {
+      console.log("Usando ReactDOM.createRoot (React 18+)");
       const root = window.ReactDOM.createRoot(container);
       root.render(window.React.createElement(EnhancedDashboard, { data }));
     } else {
       // Fallback a render per versioni precedenti
+      console.log("Usando ReactDOM.render (React < 18)");
       window.ReactDOM.render(
         window.React.createElement(EnhancedDashboard, { data }),
         container
@@ -88,6 +98,9 @@ export async function loadEnhancedDashboard(data, container) {
               <h3 class="text-lg font-bold text-red-800 dark:text-red-200">Errore di Caricamento</h3>
               <p class="text-red-700 dark:text-red-300">
                 Si è verificato un errore durante il caricamento della dashboard avanzata. Verrà utilizzata la dashboard standard.
+              </p>
+              <p class="text-red-700 dark:text-red-300 text-sm mt-2">
+                Dettaglio errore: ${error.message || 'Errore sconosciuto'}
               </p>
               <button
                 class="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -151,11 +164,18 @@ function ensureMinimumData(data) {
 async function loadReactLibraries() {
   const loadScript = (src) => {
     return new Promise((resolve, reject) => {
+      console.log(`Caricamento script: ${src}`);
       const script = document.createElement('script');
       script.src = src;
       script.async = true;
-      script.onload = resolve;
-      script.onerror = reject;
+      script.onload = () => {
+        console.log(`Script caricato con successo: ${src}`);
+        resolve();
+      };
+      script.onerror = (err) => {
+        console.error(`Errore caricamento script: ${src}`, err);
+        reject(err);
+      };
       document.head.appendChild(script);
     });
   };
@@ -165,6 +185,7 @@ async function loadReactLibraries() {
     await loadScript('https://unpkg.com/react@18/umd/react.production.min.js');
     await loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');
     console.log("React e ReactDOM caricati con successo");
+    return true;
   } catch (error) {
     console.error("Errore durante il caricamento di React:", error);
     throw error;
