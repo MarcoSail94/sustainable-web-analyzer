@@ -35,8 +35,29 @@
     </div>
 </section>
 
-<!-- Loading Section -->
-{% include 'partials/loading.html' %}
+<!-- Loading Section with improved feedback -->
+<section class="loading" id="loadingSection" style="display: none;">
+    <div class="spinner"></div>
+    <p id="loadingMessage">Analisi in corso, attendere prego...</p>
+    <div class="loading-steps">
+        <div class="loading-step" id="loadingStep1">
+            <i class="fas fa-file-code"></i>
+            <span>Analisi risorse</span>
+        </div>
+        <div class="loading-step" id="loadingStep2">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Misurazione performance</span>
+        </div>
+        <div class="loading-step" id="loadingStep3">
+            <i class="fas fa-leaf"></i>
+            <span>Calcolo impatto ambientale</span>
+        </div>
+        <div class="loading-step" id="loadingStep4">
+            <i class="fas fa-chart-line"></i>
+            <span>Analisi economica</span>
+        </div>
+    </div>
+</section>
 
 <!-- Dashboard Section -->
 <section class="dashboard container" id="dashboardSection" style="display: none;">
@@ -241,233 +262,79 @@
 
 {% block js %}
 <script type="module">
-    // Importa il modulo di analisi per la gestione del form
-    import { showError } from '/static/js/modules/analyzer.js';
-
-    // Importa la dashboard unificata
-    import { populateDashboard } from '/static/js/modules/unified-dashboard.js';
+    // Importa il modulo analyzer semplificato
+    import { initializeAnalyzer } from '/static/js/modules/analyzer.js';
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Gestisci il form di analisi
-        setupAnalyzerForm();
+        // Inizializza l'analizzatore
+        initializeAnalyzer();
 
-        // Inizializza il toggle per le opzioni avanzate
-        setupAdvancedToggle();
-
-        // Verifica se ci sono parametri URL per avviare un'analisi
-        checkUrlParams();
+        // Implementa l'aggiornamento delle fasi di caricamento
+        setupLoadingSteps();
     });
 
     /**
-     * Configura il form di analisi
+     * Imposta la visualizzazione degli step durante il caricamento
      */
-    function setupAnalyzerForm() {
-        const analyzerForm = document.getElementById('analyzerForm');
-        if (!analyzerForm) return;
+    function setupLoadingSteps() {
+        const steps = document.querySelectorAll('.loading-step');
+        if (steps.length === 0) return;
 
-        analyzerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Funzione per aggiornare lo stato di un passo
+        window.updateLoadingStep = function(stepIndex, status) {
+            if (stepIndex < 1 || stepIndex > steps.length) return;
 
-            const urlInput = document.getElementById('urlInput');
-            const monthlyVisitsInput = document.getElementById('monthlyVisits');
+            const step = document.getElementById(`loadingStep${stepIndex}`);
+            if (!step) return;
+
+            // Rimuovi classi di stato esistenti
+            step.classList.remove('active', 'completed', 'error');
+
+            // Aggiungi la classe appropriata
+            if (status === 'active') {
+                step.classList.add('active');
+            } else if (status === 'completed') {
+                step.classList.add('completed');
+            } else if (status === 'error') {
+                step.classList.add('error');
+            }
+        };
+
+        // Simula l'avanzamento automatico
+        document.getElementById('analyzerForm').addEventListener('submit', function() {
             const loadingSection = document.getElementById('loadingSection');
-            const dashboardSection = document.getElementById('dashboardSection');
-            const errorMessage = document.getElementById('errorMessage');
+            if (!loadingSection || loadingSection.style.display === 'none') return;
 
-            // Valida l'input
-            if (!urlInput || !urlInput.value) {
-                showError("Inserisci un URL valido", errorMessage);
-                return;
-            }
+            // Resetta gli steps
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed', 'error');
+            });
 
-            // Ottieni le visite mensili
-            let monthlyVisits = 10000; // Valore predefinito
-            if (monthlyVisitsInput && monthlyVisitsInput.value) {
-                const parsedValue = parseInt(monthlyVisitsInput.value, 10);
-                if (!isNaN(parsedValue) && parsedValue > 0) {
-                    monthlyVisits = parsedValue;
-                }
-            }
+            // Imposta il primo step come attivo
+            setTimeout(() => {
+                window.updateLoadingStep(1, 'active');
 
-            // Nascondi errori precedenti
-            if (errorMessage) {
-                errorMessage.style.display = 'none';
-            }
+                // Implementa una sequenza per simulare il processo
+                setTimeout(() => {
+                    window.updateLoadingStep(1, 'completed');
+                    window.updateLoadingStep(2, 'active');
 
-            // Mostra il caricamento
-            if (loadingSection) {
-                loadingSection.style.display = 'block';
-            }
+                    setTimeout(() => {
+                        window.updateLoadingStep(2, 'completed');
+                        window.updateLoadingStep(3, 'active');
 
-            if (dashboardSection) {
-                dashboardSection.style.display = 'none';
-            }
+                        setTimeout(() => {
+                            window.updateLoadingStep(3, 'completed');
+                            window.updateLoadingStep(4, 'active');
 
-            try {
-                // Chiama l'API per l'analisi
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        url: urlInput.value,
-                        monthly_visits: monthlyVisits
-                    }),
-                });
-
-                const data = await response.json();
-
-                // Nascondi il caricamento
-                if (loadingSection) {
-                    loadingSection.style.display = 'none';
-                }
-
-                if (!data.success) {
-                    // Mostra errore
-                    showError(data.error || "Si è verificato un errore durante l'analisi", errorMessage);
-                    return;
-                }
-
-                // Salva i dati per uso futuro
-                window.analysisData = data;
-                try {
-                    localStorage.setItem('analysisData', JSON.stringify(data));
-                } catch (e) {
-                    console.warn('Impossibile salvare i dati in localStorage:', e);
-                }
-
-                // Popola la dashboard con i dati
-                try {
-                    await populateDashboard(data);
-
-                    // Mostra la dashboard
-                    dashboardSection.style.display = 'block';
-                    dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                } catch (err) {
-                    console.error('Errore durante il popolamento della dashboard:', err);
-                    showError("Errore durante la visualizzazione dei risultati", errorMessage);
-                }
-            } catch (error) {
-                console.error('Errore durante l\'analisi:', error);
-
-                // Nascondi il caricamento
-                if (loadingSection) {
-                    loadingSection.style.display = 'none';
-                }
-
-                // Mostra errore
-                showError("Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto'), errorMessage);
-            }
+                            setTimeout(() => {
+                                window.updateLoadingStep(4, 'completed');
+                            }, 800);
+                        }, 1000);
+                    }, 1500);
+                }, 1000);
+            }, 500);
         });
-
-        // Configura i pulsanti di azione
-        setupActionButtons();
-    }
-
-    /**
-     * Configura il toggle per le opzioni avanzate
-     */
-    function setupAdvancedToggle() {
-        const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
-        const advancedOptions = document.getElementById('advancedOptions');
-
-        if (toggleAdvancedBtn && advancedOptions) {
-            toggleAdvancedBtn.addEventListener('click', function() {
-                const isHidden = advancedOptions.style.display === 'none';
-                advancedOptions.style.display = isHidden ? 'block' : 'none';
-
-                this.innerHTML = isHidden ?
-                    '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
-                    '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
-                this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-            });
-        }
-    }
-
-    /**
-     * Configura i pulsanti di azione
-     */
-    function setupActionButtons() {
-        // Aggiungi funzionalità al pulsante di download
-        const downloadReportBtn = document.getElementById('downloadReportBtn');
-        if (downloadReportBtn) {
-            downloadReportBtn.addEventListener('click', function() {
-                alert('La funzionalità di download del report PDF è temporaneamente disabilitata. Questa funzione sarà disponibile in un aggiornamento futuro.');
-            });
-        }
-
-        // Aggiungi funzionalità al pulsante di condivisione
-        const shareReportBtn = document.getElementById('shareReportBtn');
-        if (shareReportBtn) {
-            shareReportBtn.addEventListener('click', function() {
-                const analysisData = window.analysisData;
-                if (!analysisData) {
-                    alert('Nessuna analisi disponibile da condividere!');
-                    return;
-                }
-
-                // Esempio base di condivisione
-                if (navigator.share) {
-                    // API Web Share
-                    navigator.share({
-                        title: `Analisi di Sostenibilità Web: ${analysisData.domain}`,
-                        text: `Il sito ${analysisData.domain} ha un punteggio di sostenibilità di ${analysisData.metrics.sustainability_score}/100.`,
-                        url: window.location.href
-                    }).catch(err => {
-                        console.error('Errore nella condivisione:', err);
-                    });
-                } else {
-                    // Fallback: copia l'URL negli appunti
-                    const url = window.location.href;
-                    navigator.clipboard.writeText(url).then(() => {
-                        alert('URL copiato negli appunti!');
-                    }).catch(err => {
-                        console.error('Errore nella copia URL:', err);
-                        alert(`Copia manualmente questo URL: ${url}`);
-                    });
-                }
-            });
-        }
-    }
-
-    /**
-     * Verifica se ci sono parametri URL per avviare un'analisi
-     */
-    function checkUrlParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlToAnalyze = urlParams.get('url');
-        if (urlToAnalyze) {
-            const urlInput = document.getElementById('urlInput');
-            if (urlInput) {
-                urlInput.value = urlToAnalyze;
-                // Opzionalmente avvia automaticamente l'analisi
-                // document.getElementById('analyzerForm').dispatchEvent(new Event('submit'));
-            }
-        }
-    }
-
-    /**
-     * Mostra un messaggio di errore
-     * @param {string} message - Messaggio di errore
-     * @param {HTMLElement} errorElement - Elemento HTML per l'errore
-     */
-    function showError(message, errorElement) {
-        if (!errorElement) {
-            console.error(message);
-            alert(message);
-            return;
-        }
-
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-
-        // Scroll fino al messaggio di errore
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 </script>
-
-<!-- Moduli di supporto per i grafici -->
-<script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>
 {% endblock %}

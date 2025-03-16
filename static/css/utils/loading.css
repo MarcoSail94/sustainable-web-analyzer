@@ -1,156 +1,171 @@
 /**
- * loading.css - Stili per gli indicatori di caricamento dell'applicazione
+ * Stili migliorati per gli indicatori di caricamento
  */
 
-/* Indicatore di caricamento globale dell'app */
-.app-loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.app-loading.fade-out {
-  opacity: 0;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spinner 1s ease-in-out infinite;
-  margin-bottom: 20px;
-}
-
-.app-loading p {
-  color: white;
-  font-size: 16px;
+/* Loading Section */
+.loading {
+  display: none;
   text-align: center;
-  animation: pulse 1.5s infinite;
-}
-
-/* Indicatore per caricamento lazy di contenuti */
-.lazy-load-container {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(var(--primary-color-rgb), 0.05);
-  border-radius: var(--rounded-lg);
-}
-
-.lazy-load-spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid rgba(var(--primary-color-rgb), 0.2);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spinner 0.8s linear infinite;
-}
-
-/* Skeleton per caricamento di contenuti */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-alt) 25%,
-    var(--gray-200) 37%,
-    var(--bg-alt) 63%
-  );
-  background-size: 400% 100%;
-  animation: skeleton-loading 1.4s ease infinite;
-  border-radius: var(--rounded-md);
-}
-
-.skeleton-text {
-  height: 16px;
-  margin-bottom: 8px;
-  width: 100%;
-}
-
-.skeleton-text.short {
-  width: 60%;
-}
-
-.skeleton-title {
-  height: 24px;
-  margin-bottom: 12px;
-  width: 70%;
-}
-
-.skeleton-card {
-  padding: 20px;
-  border-radius: var(--rounded-lg);
+  padding: 3rem 0;
   background-color: var(--bg-card);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+  max-width: 700px;
+  margin: 2rem auto;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.skeleton-image {
-  height: 200px;
-  margin-bottom: 12px;
-}
-
-.skeleton-circle {
-  width: 50px;
-  height: 50px;
+.spinner {
+  border: 5px solid rgba(var(--primary-color-rgb), 0.1);
   border-radius: 50%;
+  border-top: 5px solid var(--primary-color);
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
 }
 
-/* Animazioni */
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading p {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  animation: pulse 2s infinite;
+  margin-bottom: 2rem;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Passi di caricamento */
+.loading-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0 auto;
+  max-width: 80%;
+  padding: 1rem 0;
+  position: relative;
+}
+
+.loading-steps::before {
+  content: '';
+  position: absolute;
+  top: 25px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--border-medium);
+  z-index: 1;
+}
+
+.loading-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  width: 80px;
+  transition: all 0.3s ease;
+}
+
+.loading-step i {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-alt);
+  border: 2px solid var(--border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.loading-step span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 80px;
+  transition: all 0.3s ease;
+}
+
+/* Stati dei passi */
+.loading-step.active i {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.2);
+  transform: scale(1.1);
+}
+
+.loading-step.active span {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.loading-step.completed i {
+  background-color: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+}
+
+.loading-step.completed span {
+  color: var(--success-color);
+}
+
+.loading-step.error i {
+  background-color: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.loading-step.error span {
+  color: var(--danger-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .loading-steps {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    max-width: 100%;
   }
-  50% {
-    opacity: 0.5;
+
+  .loading-steps::before {
+    display: none;
+  }
+
+  .loading-step {
+    width: 70px;
   }
 }
 
-@keyframes skeleton-loading {
-  0% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0 50%;
-  }
+/* Dark mode */
+[data-theme="dark"] .loading {
+  background-color: var(--bg-card);
 }
 
-/* Stili per immagini con lazy loading */
-img.lazy {
-  opacity: 0;
-  transition: opacity 0.3s ease-in;
+[data-theme="dark"] .spinner {
+  border-color: rgba(var(--primary-color-rgb), 0.2);
+  border-top-color: var(--primary-color);
 }
 
-img.lazy-loaded {
-  opacity: 1;
+[data-theme="dark"] .loading-step i {
+  background-color: var(--bg-alt);
+  border-color: var(--border-medium);
 }
 
-/* Supporto tema scuro */
-[data-theme="dark"] .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-alt) 25%,
-    var(--gray-500) 37%,
-    var(--bg-alt) 63%
-  );
-}
-
-[data-theme="dark"] .lazy-load-container {
-  background-color: rgba(var(--primary-color-rgb), 0.1);
+[data-theme="dark"] .loading-steps::before {
+  background-color: var(--border-medium);
 }

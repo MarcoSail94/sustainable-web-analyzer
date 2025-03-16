@@ -1,5 +1,5 @@
 /**
- * modules/analyzer.js - Versione ottimizzata con gestione dell'opzione use_enhanced
+ * modules/analyzer.js - Versione semplificata che utilizza automaticamente il miglior analizzatore disponibile
  */
 
 /**
@@ -7,7 +7,6 @@
  */
 export function initializeAnalyzer() {
   const analyzerForm = document.getElementById('analyzerForm');
-  const useEnhancedCheckbox = document.getElementById('useEnhanced');
   if (!analyzerForm) return;
 
   // Verifica se l'handler è già impostato per evitare duplicazioni
@@ -56,7 +55,6 @@ async function handleAnalysisSubmit(e) {
   e.preventDefault();
 
   const urlInput = document.getElementById('urlInput');
-  const useEnhancedCheckbox = document.getElementById('useEnhanced');
   const loadingSection = document.getElementById('loadingSection');
   const dashboardSection = document.getElementById('dashboardSection');
   const errorMessage = document.getElementById('errorMessage');
@@ -78,9 +76,6 @@ async function handleAnalysisSubmit(e) {
     }
   }
 
-  // Ottieni l'opzione per l'analizzatore avanzato
-  const useEnhanced = useEnhancedCheckbox && useEnhancedCheckbox.checked;
-
   // Nascondi errori precedenti
   if (errorMessage) {
     errorMessage.style.display = 'none';
@@ -96,7 +91,7 @@ async function handleAnalysisSubmit(e) {
   }
 
   try {
-    // Chiama l'API per l'analisi
+    // Chiama l'API per l'analisi - il backend selezionerà automaticamente il miglior analizzatore
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: {
@@ -104,8 +99,7 @@ async function handleAnalysisSubmit(e) {
       },
       body: JSON.stringify({
         url: urlInput.value,
-        monthly_visits: monthlyVisits,
-        use_enhanced: useEnhanced // Aggiungi l'opzione per l'analizzatore avanzato
+        monthly_visits: monthlyVisits
       }),
     });
 
@@ -130,8 +124,8 @@ async function handleAnalysisSubmit(e) {
       console.warn('Impossibile salvare i dati in localStorage:', e);
     }
 
-    // Carica dinamicamente la dashboard e mostra i risultati
-    const dashboardModule = await import('./dashboard.js');
+    // Carica il modulo dashboard unificato
+    const dashboardModule = await import('./unified-dashboard.js');
 
     if (dashboardModule.populateDashboard && dashboardSection) {
       try {
