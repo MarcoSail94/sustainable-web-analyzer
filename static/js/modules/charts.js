@@ -47,24 +47,36 @@ export function createComparisonChart(data) {
             window.comparisonChart.destroy();
         }
 
+        // Verifica che i dati necessari esistano prima di usarli
+        // Questo è fondamentale per evitare errori quando alcuni valori sono mancanti
         const metrics = [
             {
                 label: 'Emissioni CO₂ (g/view)',
                 yourValue: data.metrics.co2_emissions || 0,
-                industryAvg: data.industry_comparison?.average_co2 || 0
+                industryAvg: data.industry_comparison?.average_co2 || 0.6  // Valore di fallback se mancante
             },
             {
                 label: 'Tempo di Caricamento (s)',
                 yourValue: data.metrics.load_time || 0,
-                industryAvg: data.industry_comparison?.average_load_time || 0
+                industryAvg: data.industry_comparison?.average_load_time || 2.5  // Valore di fallback
             },
             {
                 label: 'Punteggio Sostenibilità (/100)',
                 yourValue: data.metrics.sustainability_score || 0,
-                industryAvg: data.industry_comparison?.average_sustainability_score || 75 // Valore di fallback
+                industryAvg: data.industry_comparison?.average_sustainability_score || 75  // Valore di fallback
             }
         ];
 
+        // Aggiungi log per debugging
+        console.log("Dati grafico di confronto:", metrics);
+
+        // Assicurati che tutti i valori siano numeri validi per evitare errori di rendering
+        metrics.forEach(metric => {
+            if (isNaN(metric.yourValue)) metric.yourValue = 0;
+            if (isNaN(metric.industryAvg)) metric.industryAvg = 0;
+        });
+
+        // Crea il grafico con configurazione aggiornata
         window.comparisonChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -140,8 +152,13 @@ export function createComparisonChart(data) {
                 }
             }
         });
+
+        // Conferma il successo
+        console.log('Grafico di confronto creato con successo');
+
     } catch (error) {
         console.error('Errore durante la creazione del grafico:', error);
+        console.error('Stack trace:', error.stack);
         const chartContainer = document.querySelector('.chart-container');
         if (chartContainer) {
             fallbackChartImplementation(chartContainer);
@@ -155,6 +172,9 @@ export function createComparisonChart(data) {
  */
 export function createCostBreakdownCharts(economicBenefits) {
     try {
+        // Aggiungi log per debugging
+        console.log("Creazione grafici economici con dati:", economicBenefits);
+
         // Verifica che Chart.js sia disponibile
         if (!isChartJsAvailable()) {
             console.error('Chart.js non disponibile per i grafici di costo');
@@ -164,7 +184,8 @@ export function createCostBreakdownCharts(economicBenefits) {
 
         // Verifica che i dati siano definiti
         if (!economicBenefits || !economicBenefits.costs_breakdown) {
-            console.error('Dati economici non validi');
+            console.error('Dati economici non validi o mancanti');
+            fallbackEconomicCharts();
             return;
         }
 
@@ -194,6 +215,27 @@ export function createCostBreakdownCharts(economicBenefits) {
             window.savingsChart.destroy();
         }
 
+        // Verifica che tutti i valori necessari esistano
+        const costValues = [
+            costsData.bandwidth || 0,
+            costsData.energy || 0,
+            costsData.seo_impact || 0,
+            costsData.bounce_impact || 0,
+            costsData.extra_maintenance || 0,
+            costsData.extra_infrastructure || 0
+        ];
+
+        // Verifica se tutti i valori sono zero - in questo caso mostra un messaggio
+        if (costValues.every(val => val === 0)) {
+            const container = costsCanvas.parentNode;
+            container.innerHTML = `
+                <div class="text-center p-4">
+                    <p>Dati insufficienti per creare il grafico dei costi.</p>
+                </div>
+            `;
+            return;
+        }
+
         // Crea il grafico dei costi
         window.costsChart = new Chart(costsCtx, {
             type: 'doughnut',
@@ -207,14 +249,7 @@ export function createCostBreakdownCharts(economicBenefits) {
                     'Infrastruttura Extra'
                 ],
                 datasets: [{
-                    data: [
-                        costsData.bandwidth || 0,
-                        costsData.energy || 0,
-                        costsData.seo_impact || 0,
-                        costsData.bounce_impact || 0,
-                        costsData.extra_maintenance || 0,
-                        costsData.extra_infrastructure || 0
-                    ],
+                    data: costValues,
                     backgroundColor: [
                         '#3b82f6', // blu
                         '#10b981', // verde
@@ -263,6 +298,27 @@ export function createCostBreakdownCharts(economicBenefits) {
                 return;
             }
 
+            // Verifica che esistano valori non-zero
+            const savingsValues = [
+                savingsData.bandwidth || 0,
+                savingsData.energy || 0,
+                savingsData.seo_conversions || 0,
+                savingsData.reduced_bounce || 0,
+                savingsData.maintenance || 0,
+                savingsData.infrastructure || 0
+            ];
+
+            // Se tutti i risparmi sono zero, mostra un messaggio
+            if (savingsValues.every(val => val === 0)) {
+                const container = savingsCanvas.parentNode;
+                container.innerHTML = `
+                    <div class="text-center p-4">
+                        <p>Dati insufficienti per creare il grafico dei risparmi.</p>
+                    </div>
+                `;
+                return;
+            }
+
             // Crea il grafico dei risparmi
             window.savingsChart = new Chart(savingsCtx, {
                 type: 'doughnut',
@@ -276,14 +332,7 @@ export function createCostBreakdownCharts(economicBenefits) {
                         'Infrastruttura Ottimizzata'
                     ],
                     datasets: [{
-                        data: [
-                            savingsData.bandwidth || 0,
-                            savingsData.energy || 0,
-                            savingsData.seo_conversions || 0,
-                            savingsData.reduced_bounce || 0,
-                            savingsData.maintenance || 0,
-                            savingsData.infrastructure || 0
-                        ],
+                        data: savingsValues,
                         backgroundColor: [
                             '#3b82f6', // blu
                             '#10b981', // verde
@@ -322,8 +371,12 @@ export function createCostBreakdownCharts(economicBenefits) {
                 }
             });
         }
+
+        console.log('Grafici economici creati con successo');
+
     } catch (error) {
         console.error('Errore nella creazione dei grafici economici:', error);
+        console.error('Stack trace:', error.stack);
         fallbackEconomicCharts();
     }
 }

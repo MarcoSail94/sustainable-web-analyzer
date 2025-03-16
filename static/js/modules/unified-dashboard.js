@@ -146,6 +146,66 @@ function showAnalysisQualityBanner(metricsAvailability) {
 }
 
 /**
+ * Correzione alla funzione populateWebVitals in static/js/modules/unified-dashboard.js
+ * per trattare correttamente i valori zero o molto piccoli di CLS
+ */
+function populateWebVitals(webVitals, availability) {
+  const webVitalsSection = document.getElementById('webVitalsSection');
+  if (!webVitalsSection) {
+    console.error('Container webVitalsSection not found');
+    return;
+  }
+
+  // Nascondi l'intera sezione se i dati sono completamente mancanti
+  if (availability === 'unavailable' || availability === 'skipped') {
+    showWebVitalsUnavailable(webVitalsSection, availability === 'skipped' ?
+      'Web Vitals saltate per questo dominio (impostazione di configurazione)' :
+      'Dati Web Vitals non disponibili');
+    return;
+  }
+
+  // Log dettagliato per debugging
+  console.log("Popolamento Web Vitals con dati:", webVitals);
+  console.log("LCP:", webVitals.lcp);
+  console.log("FID:", webVitals.fid);
+  console.log("CLS:", webVitals.cls);
+  console.log("Scores:", webVitals.scores);
+
+  // Per dati parziali o completi, aggiorna i valori
+  try {
+    // IMPORTANTE: per CLS, un valore di 0 o molto piccolo è valido e positivo
+    // Non considerarlo come un valore mancante
+    updateWebVitalMetric('lcp', webVitals.lcp || null, 's', { good: 2.5, medium: 4.0 }, webVitals.scores?.lcp);
+    updateWebVitalMetric('fid', webVitals.fid || null, 'ms', { good: 100, medium: 300 }, webVitals.scores?.fid);
+
+    // Fix specifico per CLS: controlla esplicitamente se è undefined invece di usare || null
+    // Questo perché CLS può essere 0 o un valore molto piccolo (che è un buon risultato)
+    const clsValue = webVitals.cls !== undefined ? webVitals.cls : null;
+    updateWebVitalMetric('cls', clsValue, '', { good: 0.1, medium: 0.25 }, webVitals.scores?.cls);
+
+    // Aggiorna il grafico di confronto Web Vitals se possibile
+    if (typeof createWebVitalsChart === 'function') {
+      try {
+        console.log("Creazione grafico Web Vitals con dati:", webVitals);
+        createWebVitalsChart({ metrics: { web_vitals: webVitals } });
+      } catch (e) {
+        console.error('Error creating Web Vitals chart:', e);
+        console.error('Stack trace:', e.stack);
+        showWebVitalsChartError();
+      }
+    }
+
+    // Se i dati sono parziali, mostra un avviso
+    if (availability === 'partial') {
+      showWebVitalsPartialNotice(webVitalsSection);
+    }
+  } catch (e) {
+    console.error('Error updating Web Vitals:', e);
+    console.error('Stack trace:', e.stack);
+    showWebVitalsUnavailable(webVitalsSection, 'Errore nell\'aggiornamento dei dati Web Vitals');
+  }
+}
+/**
  * Genera una descrizione della disponibilità delle metriche
  * @param {Object} metricsAvailability - Informazioni sulla disponibilità delle metriche
  * @returns {string} - Descrizione testuale
@@ -422,45 +482,70 @@ function populateOptimizations(optimizations) {
  * @param {Object} webVitals - Dati Web Vitals
  * @param {string} availability - Disponibilità dei dati ('available', 'partial', 'unavailable', 'skipped')
  */
-function populateWebVitals(webVitals, availability) {
-  const webVitalsSection = document.getElementById('webVitalsSection');
-  if (!webVitalsSection) {
-    console.error('Container webVitalsSection not found');
+function updateWebVitalMetric(metric, value, unit, thresholds, score) {
+  const valueElement = document.getElementById(`${metric}Value`);
+  const bar = document.getElementById(`${metric}Bar`);
+  const status = document.getElementById(`${metric}Status`);
+  const card = document.getElementById(`${metric}Card`);
+
+  if (!valueElement || !bar || !status || !card) {
+    console.warn(`Elements for Web Vital ${metric} not found`);
     return;
   }
 
-  // Nascondi l'intera sezione se i dati sono completamente mancanti
-  if (availability === 'unavailable' || availability === 'skipped') {
-    showWebVitalsUnavailable(webVitalsSection, availability === 'skipped' ?
-      'Web Vitals saltate per questo dominio (impostazione di configurazione)' :
-      'Dati Web Vitals non disponibili');
+  // Fix per CLS: tratta 0 e valori molto piccoli come validi invece che come mancanti
+  // Il valore di CLS è tipicamente molto piccolopopulateWebVitals (0.00036) e viene interpretato come falsy
+  if (value === null || (value === 0 && metric !== 'cls')) {
+    valueElement.textContent = "N/A";
+    status.textContent = "Non disponibile";
+    status.className = "web-vital-status unavailable";
+    bar.style.width = "0%";
+    bar.style.backgroundColor = "var(--gray-400)";
     return;
   }
 
-  // Per dati parziali o completi, aggiorna i valori
-  try {
-    updateWebVitalMetric('lcp', webVitals.lcp || null, 's', { good: 2.5, medium: 4.0 }, webVitals.scores?.lcp);
-    updateWebVitalMetric('fid', webVitals.fid || null, 'ms', { good: 100, medium: 300 }, webVitals.scores?.fid);
-    updateWebVitalMetric('cls', webVitals.cls || null, '', { good: 0.1, medium: 0.25 }, webVitals.scores?.cls);
-
-    // Aggiorna il grafico di confronto Web Vitals se possibile
-    if (typeof createWebVitalsChart === 'function') {
-      try {
-        createWebVitalsChart({ metrics: { web_vitals: webVitals } });
-      } catch (e) {
-        console.error('Error creating Web Vitals chart:', e);
-        showWebVitalsChartError();
-      }
-    }
-
-    // Se i dati sono parziali, mostra un avviso
-    if (availability === 'partial') {
-      showWebVitalsPartialNotice(webVitalsSection);
-    }
-  } catch (e) {
-    console.error('Error updating Web Vitals:', e);
-    showWebVitalsUnavailable(webVitalsSection, 'Errore nell\'aggiornamento dei dati Web Vitals');
+  // Formatta il valore in base alla metrica
+  let displayValue;
+  if (metric === 'lcp') {
+    displayValue = value.toFixed(2) + unit;
+  } else if (metric === 'fid') {
+    displayValue = Math.round(value) + unit;
+  } else { // cls
+    // Per CLS, usa 3 decimali e mostra sempre il valore, anche se 0
+    displayValue = value.toFixed(3);
   }
+
+  valueElement.textContent = displayValue;
+
+  // Determina lo stato della metrica
+  let statusText, statusClass, barColor, barWidth;
+
+  if ((metric === 'lcp' && value < thresholds.good) ||
+      (metric === 'fid' && value < thresholds.good) ||
+      (metric === 'cls' && value < thresholds.good)) {
+    statusText = "Buono";
+    statusClass = "status-good";
+    barColor = "var(--success-color)";
+  } else if ((metric === 'lcp' && value < thresholds.medium) ||
+              (metric === 'fid' && value < thresholds.medium) ||
+              (metric === 'cls' && value < thresholds.medium)) {
+    statusText = "Migliorabile";
+    statusClass = "status-needs-improvement";
+    barColor = "var(--warning-color)";
+  } else {
+    statusText = "Scarso";
+    statusClass = "status-poor";
+    barColor = "var(--danger-color)";
+  }
+
+  // Imposta la larghezza della barra in base al punteggio
+  barWidth = `${Math.min(100, score || 0)}%`;
+
+  // Aggiorna gli elementi UI
+  status.textContent = statusText;
+  status.className = `web-vital-status ${statusClass}`;
+  bar.style.backgroundColor = barColor;
+  bar.style.width = barWidth;
 }
 
 /**
