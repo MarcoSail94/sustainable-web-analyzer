@@ -7,7 +7,11 @@
 export async function loadEnhancedDashboard(data, container) {
   console.log("Inizializzazione dashboard avanzata...");
 
-  // Salva lo stato originale delle sezioni standard
+  // IMPORTANTE: Nascondi IMMEDIATAMENTE tutte le sezioni della dashboard standard
+  // Questa è la prima cosa da fare per evitare visualizzazioni miste
+  hideStandardDashboardSections();
+
+  // Salva lo stato originale delle sezioni standard solo se non è già salvato
   if (!window._originalDashboardState) {
     window._originalDashboardState = {};
     document.querySelectorAll('.detail-section').forEach(section => {
@@ -15,10 +19,6 @@ export async function loadEnhancedDashboard(data, container) {
         section.style.display || 'block';
     });
   }
-
-  // IMPORTANTE: Nascondi immediatamente tutte le sezioni della dashboard standard
-  // per evitare che vengano visualizzate entrambe le dashboard
-  hideStandardDashboardSections();
 
   try {
     // Verifica che React e ReactDOM siano disponibili
@@ -76,40 +76,15 @@ export async function loadEnhancedDashboard(data, container) {
 }
 
 /**
- * Nasconde tutte le sezioni della dashboard standard
+ * Nasconde tutte le sezioni della dashboard standard in modo più aggressivo
  */
 function hideStandardDashboardSections() {
-  const standardSections = [
-    'scoreOverview',
-    'webVitalsSection',
-    'economicBenefits',
-    'resourceList',
-    'optimizationList'
-  ];
-
   // Salva lo stato corrente per il ripristino se non è già stato salvato
   if (!window._dashboardState) {
     window._dashboardState = {};
   }
 
-  standardSections.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      // Ottieni il container genitore della sezione
-      const parentSection = element.closest('.detail-section');
-      if (parentSection) {
-        // Salva lo stato attuale di visualizzazione
-        window._dashboardState[parentSection.id || `parent_of_${id}`] = parentSection.style.display;
-        parentSection.style.display = 'none';
-      } else if (element.parentElement) {
-        // Caso alternativo per elementi che non sono in un .detail-section
-        window._dashboardState[id] = element.parentElement.style.display;
-        element.parentElement.style.display = 'none';
-      }
-    }
-  });
-
-  // Nascondi anche eventuali sezioni detail-section eccetto il container React
+  // Nascondi tutte le sezioni detail-section eccetto il container React
   document.querySelectorAll('.detail-section').forEach(section => {
     const id = section.id || '';
     if (!id.includes('enhancedDashboard') && !id.includes('dashboardContainer')) {
@@ -118,45 +93,61 @@ function hideStandardDashboardSections() {
     }
   });
 
+  // Nascondi anche tutti gli elementi specifici da un elenco più completo
+  const elementsToHide = [
+    'scoreOverview',
+    'webVitalsSection',
+    'economicBenefits',
+    'resourceList',
+    'optimizationList',
+    'comparisonChart',
+    'benefitsGrid',
+    'costsTableBody',
+    'totalCurrentCost',
+    'totalPotentialSavings',
+    'parametersGrid'
+  ];
+
+  elementsToHide.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      // Nascondi l'elemento stesso
+      window._dashboardState[id] = element.style.display;
+      element.style.display = 'none';
+
+      // Risali e nascondi anche i container genitori che potrebbero essere visibili
+      let parent = element.parentElement;
+      while (parent && !parent.classList.contains('dashboard') && !parent.id.includes('dashboardSection')) {
+        if (parent.classList.contains('detail-section')) {
+          const parentId = parent.id || `parent_${id}`;
+          window._dashboardState[parentId] = parent.style.display;
+          parent.style.display = 'none';
+        }
+        parent = parent.parentElement;
+      }
+    }
+  });
+
+  // Cerca anche container di chart per nasconderli
+  document.querySelectorAll('.chart-container').forEach(chart => {
+    if (!chart.closest('#enhancedDashboardContainer')) {
+      const chartId = chart.id || `chart_${Math.random().toString(36).substr(2, 9)}`;
+      window._dashboardState[chartId] = chart.style.display;
+      chart.style.display = 'none';
+    }
+  });
+
   // Log di debug
-  console.log("Dashboard standard nascosta", window._dashboardState);
+  console.log("Dashboard standard nascosta completamente", window._dashboardState);
 }
 
 /**
  * Mostra le sezioni della dashboard standard
  */
 function showStandardDashboardSections() {
-  const standardSections = [
-    'scoreOverview',
-    'webVitalsSection',
-    'economicBenefits',
-    'resourceList',
-    'optimizationList'
-  ];
-
   console.log("Ripristino dashboard standard", window._dashboardState || "nessuno stato salvato");
 
-  standardSections.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      // Ottieni il container genitore della sezione
-      const parentSection = element.closest('.detail-section');
-      if (parentSection) {
-        // Ripristina lo stato originale del genitore
-        const stateKey = parentSection.id || `parent_of_${id}`;
-        const originalDisplay = (window._dashboardState && window._dashboardState[stateKey]) ||
-                               (window._originalDashboardState && window._originalDashboardState[stateKey]) ||
-                               'block';
-        parentSection.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
-      } else if (element.parentElement) {
-        // Caso alternativo
-        const originalDisplay = (window._dashboardState && window._dashboardState[id]) || 'block';
-        element.parentElement.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
-      }
-    }
-  });
-
-  // Ripristina anche eventuali sezioni detail-section
+  // Ripristina tutte le sezioni detail-section
   document.querySelectorAll('.detail-section').forEach(section => {
     const id = section.id || '';
     if (!id.includes('enhancedDashboard') && !id.includes('dashboardContainer')) {
@@ -165,6 +156,44 @@ function showStandardDashboardSections() {
                             (window._originalDashboardState && window._originalDashboardState[id]) ||
                             'block';
       section.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
+    }
+  });
+
+  // Ripristina anche specifici elementi
+  const elementsToShow = [
+    'scoreOverview',
+    'webVitalsSection',
+    'economicBenefits',
+    'resourceList',
+    'optimizationList',
+    'comparisonChart'
+  ];
+
+  elementsToShow.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      const originalDisplay = (window._dashboardState && window._dashboardState[id]) || 'block';
+      element.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
+
+      // Ripristina anche container genitori
+      let parent = element.parentElement;
+      while (parent && !parent.classList.contains('dashboard')) {
+        if (parent.classList.contains('detail-section')) {
+          const parentId = parent.id || `parent_${id}`;
+          const originalParentDisplay = (window._dashboardState && window._dashboardState[parentId]) || 'block';
+          parent.style.display = originalParentDisplay !== 'none' ? originalParentDisplay : 'block';
+        }
+        parent = parent.parentElement;
+      }
+    }
+  });
+
+  // Ripristina anche i container di chart
+  document.querySelectorAll('.chart-container').forEach(chart => {
+    if (!chart.closest('#enhancedDashboardContainer')) {
+      const chartId = chart.id || '';
+      const originalDisplay = (window._dashboardState && window._dashboardState[chartId]) || 'block';
+      chart.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
     }
   });
 }
@@ -392,10 +421,12 @@ function renderDashboard(EnhancedDashboard, data, container) {
     // Assicurati che i dati minimi siano disponibili
     data = ensureMinimumData(data);
 
+    // Svuota completamente il container prima di aggiungere il wrapper
+    container.innerHTML = '';
+
     // Crea un elemento wrapper per gestire meglio i fallimenti di render
     const wrapperElement = document.createElement('div');
     wrapperElement.className = 'enhanced-dashboard-wrapper';
-    container.innerHTML = ''; // Svuota il container prima di aggiungere il wrapper
     container.appendChild(wrapperElement);
 
     // Salva un riferimento al container wrapper nel window per eventuale debugging
