@@ -7,6 +7,15 @@
 export async function loadEnhancedDashboard(data, container) {
   console.log("Inizializzazione dashboard avanzata...");
 
+  // Salva lo stato originale delle sezioni standard
+  if (!window._originalDashboardState) {
+    window._originalDashboardState = {};
+    document.querySelectorAll('.detail-section').forEach(section => {
+      window._originalDashboardState[section.id || `section_${Math.random().toString(36).substr(2, 9)}`] =
+        section.style.display || 'block';
+    });
+  }
+
   // IMPORTANTE: Nascondi immediatamente tutte le sezioni della dashboard standard
   // per evitare che vengano visualizzate entrambe le dashboard
   hideStandardDashboardSections();
@@ -37,8 +46,8 @@ export async function loadEnhancedDashboard(data, container) {
     // Verifica che il componente EnhancedDashboard sia già stato definito
     if (window.EnhancedDashboard) {
       console.log("Componente EnhancedDashboard già disponibile in window");
-      renderDashboard(window.EnhancedDashboard, data, container);
-      return true;
+      const success = renderDashboard(window.EnhancedDashboard, data, container);
+      return success;
     }
 
     // Strategia 1: Caricamento diretto dello script
@@ -46,8 +55,7 @@ export async function loadEnhancedDashboard(data, container) {
 
     if (success && window.EnhancedDashboard) {
       console.log("EnhancedDashboard caricato con successo tramite script");
-      renderDashboard(window.EnhancedDashboard, data, container);
-      return true;
+      return renderDashboard(window.EnhancedDashboard, data, container);
     }
 
     // Strategia 2: Definizione diretta del componente
@@ -57,8 +65,7 @@ export async function loadEnhancedDashboard(data, container) {
     window.EnhancedDashboard = defineEnhancedDashboardComponent();
 
     // Renderizza il componente definito
-    renderDashboard(window.EnhancedDashboard, data, container);
-    return true;
+    return renderDashboard(window.EnhancedDashboard, data, container);
 
   } catch (error) {
     console.error("Errore durante il caricamento della dashboard avanzata:", error);
@@ -80,23 +87,39 @@ function hideStandardDashboardSections() {
     'optimizationList'
   ];
 
+  // Salva lo stato corrente per il ripristino se non è già stato salvato
+  if (!window._dashboardState) {
+    window._dashboardState = {};
+  }
+
   standardSections.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
-      if (element.parentElement && element.parentElement.tagName !== 'BODY') {
+      // Ottieni il container genitore della sezione
+      const parentSection = element.closest('.detail-section');
+      if (parentSection) {
+        // Salva lo stato attuale di visualizzazione
+        window._dashboardState[parentSection.id || `parent_of_${id}`] = parentSection.style.display;
+        parentSection.style.display = 'none';
+      } else if (element.parentElement) {
+        // Caso alternativo per elementi che non sono in un .detail-section
+        window._dashboardState[id] = element.parentElement.style.display;
         element.parentElement.style.display = 'none';
-      } else if (element) {
-        element.style.display = 'none';
       }
     }
   });
 
-  // Nasconde anche eventuali sezioni detail-section
+  // Nascondi anche eventuali sezioni detail-section eccetto il container React
   document.querySelectorAll('.detail-section').forEach(section => {
-    if (!section.id || !section.id.includes('enhancedDashboard')) {
+    const id = section.id || '';
+    if (!id.includes('enhancedDashboard') && !id.includes('dashboardContainer')) {
+      window._dashboardState[`section_${id}`] = section.style.display;
       section.style.display = 'none';
     }
   });
+
+  // Log di debug
+  console.log("Dashboard standard nascosta", window._dashboardState);
 }
 
 /**
@@ -111,20 +134,38 @@ function showStandardDashboardSections() {
     'optimizationList'
   ];
 
+  console.log("Ripristino dashboard standard", window._dashboardState || "nessuno stato salvato");
+
   standardSections.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
-      if (element.parentElement && element.parentElement.tagName !== 'BODY') {
-        element.parentElement.style.display = 'block';
-      } else if (element) {
-        element.style.display = 'block';
+      // Ottieni il container genitore della sezione
+      const parentSection = element.closest('.detail-section');
+      if (parentSection) {
+        // Ripristina lo stato originale del genitore
+        const stateKey = parentSection.id || `parent_of_${id}`;
+        const originalDisplay = (window._dashboardState && window._dashboardState[stateKey]) ||
+                               (window._originalDashboardState && window._originalDashboardState[stateKey]) ||
+                               'block';
+        parentSection.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
+      } else if (element.parentElement) {
+        // Caso alternativo
+        const originalDisplay = (window._dashboardState && window._dashboardState[id]) || 'block';
+        element.parentElement.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
       }
     }
   });
 
-  // Mostra anche eventuali sezioni detail-section
+  // Ripristina anche eventuali sezioni detail-section
   document.querySelectorAll('.detail-section').forEach(section => {
-    section.style.display = 'block';
+    const id = section.id || '';
+    if (!id.includes('enhancedDashboard') && !id.includes('dashboardContainer')) {
+      const stateKey = `section_${id}`;
+      const originalDisplay = (window._dashboardState && window._dashboardState[stateKey]) ||
+                            (window._originalDashboardState && window._originalDashboardState[id]) ||
+                            'block';
+      section.style.display = originalDisplay !== 'none' ? originalDisplay : 'block';
+    }
   });
 }
 
@@ -144,27 +185,39 @@ function updateContainerThemeClass(container) {
  * Aggiunge un listener per i cambiamenti di tema
  */
 function addThemeChangeListener(container) {
-  // Definisci una funzione per gestire i cambiamenti di tema
-  const handleThemeChange = (event) => {
-    updateContainerThemeClass(container);
-
-    // Aggiorna anche la classe del body per garantire la coerenza
-    document.body.classList.remove('theme-light', 'theme-dark');
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    document.body.classList.add(`theme-${currentTheme}`);
-
-    // Forza un re-render aggiornando una proprietà di data-theme su tutti i componenti React
-    const reactComponents = container.querySelectorAll('[data-reactroot]');
-    reactComponents.forEach(component => {
-      component.setAttribute('data-theme', currentTheme);
-    });
-  };
-
   // Rimuovi eventuali listener esistenti per evitare duplicati
-  window.removeEventListener('themechange', handleThemeChange);
+  if (window._themeChangeListenerAdded) {
+    return;
+  }
+
+  // Definisci una funzione per gestire i cambiamenti di tema
+  const handleThemeChange = () => {
+    updateContainerThemeClass(container);
+  };
 
   // Aggiungi il listener
   window.addEventListener('themechange', handleThemeChange);
+
+  // Osserva anche cambiamenti all'attributo data-theme
+  if (window.MutationObserver) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          handleThemeChange();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    // Salva l'observer per evitare perdite di memoria
+    window._themeObserver = observer;
+  }
+
+  window._themeChangeListenerAdded = true;
 
   // Aggiorna immediatamente
   handleThemeChange();
@@ -227,6 +280,12 @@ function showErrorMessage(container, error) {
 async function loadReactLibraries() {
   const loadScript = (src) => {
     return new Promise((resolve, reject) => {
+      // Verifica se lo script è già stato caricato
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve(true);
+        return;
+      }
+
       console.log(`Caricamento script: ${src}`);
       const script = document.createElement('script');
       script.src = src;
@@ -251,6 +310,13 @@ async function loadReactLibraries() {
     if (!window.ReactDOM) {
       await loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');
     }
+
+    // Verifica che i componenti siano stati caricati correttamente
+    if (!window.React || !window.ReactDOM) {
+      // Prova un'ultima volta con un breve timeout
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
     console.log("React e ReactDOM caricati con successo");
     return true;
   } catch (error) {
@@ -265,32 +331,50 @@ async function loadReactLibraries() {
  */
 async function loadEnhancedDashboardScript() {
   return new Promise((resolve) => {
-    const script = document.createElement('script');
-    script.innerHTML = `
-      // Definisci il componente EnhancedDashboard globalmente
-      window.EnhancedDashboard = ${defineEnhancedDashboardComponent.toString()}();
-    `;
-
-    script.onload = () => {
-      console.log("Script EnhancedDashboard caricato con successo");
+    // Se il componente è già definito, restituisci immediatamente true
+    if (window.EnhancedDashboard) {
       resolve(true);
-    };
+      return;
+    }
 
-    script.onerror = (err) => {
-      console.error("Errore caricamento script EnhancedDashboard:", err);
-      resolve(false);
-    };
-
-    document.head.appendChild(script);
-
-    // Fallback resolve in caso lo script non scatti gli eventi
-    setTimeout(() => {
-      if (window.EnhancedDashboard) {
+    // Prova a caricare come modulo ES
+    import('/static/js/modules/enhanced-dashboard.js')
+      .then(module => {
+        window.EnhancedDashboard = module.default || module;
+        console.log("Enhanced dashboard module caricato con successo");
         resolve(true);
-      } else {
-        resolve(false);
-      }
-    }, 1000);
+      })
+      .catch(err => {
+        console.warn("Impossibile caricare come modulo ES:", err);
+
+        // Fallback: definisci il componente direttamente tramite script
+        const script = document.createElement('script');
+        script.innerHTML = `
+          // Definisci il componente EnhancedDashboard globalmente
+          window.EnhancedDashboard = ${defineEnhancedDashboardComponent.toString()}();
+        `;
+
+        script.onload = () => {
+          console.log("Script EnhancedDashboard caricato con successo");
+          resolve(true);
+        };
+
+        script.onerror = (err) => {
+          console.error("Errore caricamento script EnhancedDashboard:", err);
+          resolve(false);
+        };
+
+        document.head.appendChild(script);
+
+        // Fallback resolve in caso lo script non scatti gli eventi
+        setTimeout(() => {
+          if (window.EnhancedDashboard) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        }, 1000);
+      });
   });
 }
 
@@ -299,28 +383,54 @@ async function loadEnhancedDashboardScript() {
  * @param {Function} EnhancedDashboard - Componente React della dashboard
  * @param {Object} data - Dati di analisi
  * @param {HTMLElement} container - Container per la dashboard
+ * @returns {boolean} - True se il rendering è avvenuto con successo
  */
 function renderDashboard(EnhancedDashboard, data, container) {
   console.log("Rendering componente React EnhancedDashboard...");
 
-  // Assicurati che i dati minimi siano disponibili
-  data = ensureMinimumData(data);
+  try {
+    // Assicurati che i dati minimi siano disponibili
+    data = ensureMinimumData(data);
 
-  // Usa createRoot per React 18
-  if (window.ReactDOM.createRoot) {
-    console.log("Usando ReactDOM.createRoot (React 18+)");
-    const root = window.ReactDOM.createRoot(container);
-    root.render(window.React.createElement(EnhancedDashboard, { data }));
-  } else {
-    // Fallback a render per versioni precedenti
-    console.log("Usando ReactDOM.render (React < 18)");
-    window.ReactDOM.render(
-      window.React.createElement(EnhancedDashboard, { data }),
-      container
-    );
+    // Crea un elemento wrapper per gestire meglio i fallimenti di render
+    const wrapperElement = document.createElement('div');
+    wrapperElement.className = 'enhanced-dashboard-wrapper';
+    container.innerHTML = ''; // Svuota il container prima di aggiungere il wrapper
+    container.appendChild(wrapperElement);
+
+    // Salva un riferimento al container wrapper nel window per eventuale debugging
+    window._enhancedDashboardWrapper = wrapperElement;
+
+    // Usa createRoot per React 18
+    if (window.ReactDOM.createRoot) {
+      console.log("Usando ReactDOM.createRoot (React 18+)");
+      try {
+        const root = window.ReactDOM.createRoot(wrapperElement);
+        root.render(window.React.createElement(EnhancedDashboard, { data }));
+
+        // Salva il root per eventuale cleanup
+        window._reactRoot = root;
+      } catch (e) {
+        console.error("Errore con createRoot:", e);
+        throw e;
+      }
+    } else {
+      // Fallback a render per versioni precedenti
+      console.log("Usando ReactDOM.render (React < 18)");
+      window.ReactDOM.render(
+        window.React.createElement(EnhancedDashboard, { data }),
+        wrapperElement
+      );
+    }
+
+    console.log("Dashboard avanzata renderizzata con successo!");
+    return true;
+  } catch (error) {
+    console.error("Errore durante il rendering della dashboard:", error);
+    showErrorMessage(container, error);
+    showStandardDashboardSections();
+    return false;
   }
-
-  console.log("Dashboard avanzata renderizzata con successo!");
 }
 
 /**
