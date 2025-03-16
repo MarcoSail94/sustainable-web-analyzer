@@ -16,10 +16,12 @@ import { initErrorHandler } from './utils/error-handler.js';
 // Inizializza il gestore errori (aggiungi questo nella funzione initializeApp)
 initErrorHandler();
 
+const moduleCache = new Map();
+
 // Update the MODULES configuration in app.js
 const MODULES = {
   analyzer: './modules/analyzer.js',
-  unifiedDashboard: './modules/unified-dashboard.js', // Replace dashboard & enhanced-dashboard
+  unifiedDashboard: './modules/unified-dashboard.js',
   charts: './modules/charts.js',
   webVitals: './modules/webVitals.js',
   economics: './modules/economics.js',
@@ -35,17 +37,6 @@ const MODULES = {
   }
 };
 
-// Then update any dashboard loading code to use the unified dashboard
-if (appState.currentPage === 'dashboard') {
-  // Load the unified dashboard module
-  pageModules.push(loadModule(MODULES.unifiedDashboard));
-}
-
-/**
- * Cache dei moduli per evitare caricamenti duplicati
- */
-const moduleCache = new Map();
-
 /**
  * Registra lo stato dell'applicazione
  */
@@ -57,6 +48,12 @@ const appState = {
   themeInitialized: false,
   reactInitialized: false
 };
+
+// Then update any dashboard loading code to use the unified dashboard
+if (appState.currentPage === 'dashboard') {
+  // Load the unified dashboard module
+  pageModules.push(loadModule(MODULES.unifiedDashboard));
+}
 
 /**
  * Inizializza l'applicazione quando il DOM è pronto
@@ -399,11 +396,6 @@ function initPrefetching() {
   if (appState.currentPage === 'index') {
     // Se siamo nella home, prefetch la dashboard
     prefetchModule(MODULES.dashboard);
-
-    // Se l'analizzatore React è richiesto, prefetch il modulo enhanced-dashboard
-    if (document.getElementById('enhancedDashboardContainer')) {
-      prefetchModule('./modules/enhanced-dashboard.js');
-    }
   }
 
   // Aggiunge listener per prefetch sui link
