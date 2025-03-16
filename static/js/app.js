@@ -10,6 +10,11 @@
 
 // Import moduli globali essenziali
 import './main.js';
+// Importa il gestore errori
+import { initErrorHandler } from './utils/error-handler.js';
+
+// Inizializza il gestore errori (aggiungi questo nella funzione initializeApp)
+initErrorHandler();
 
 // Update the MODULES configuration in app.js
 const MODULES = {
