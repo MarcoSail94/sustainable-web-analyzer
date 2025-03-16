@@ -57,11 +57,20 @@ export async function populateDashboard(data) {
 
   // Se ci sono dati avanzati, popola le sezioni aggiuntive
   if (data.metrics_availability?.sustainability === 'enhanced') {
+    console.log("Trovati dati avanzati, tentativo di popolamento metriche avanzate");
     try {
+      // Log dei dati delle metriche prima del popolamento
+      console.log("Web vitals:", data.metrics.web_vitals);
+      console.log("Categoria scores:", data.metrics.web_vitals?.category_scores);
+      console.log("Optimization scores:", data.metrics.web_vitals?.optimization_scores);
+
       populateEnhancedMetrics(data.metrics);
     } catch (error) {
       console.error('Error populating enhanced metrics:', error);
+      console.error('Stack trace:', error.stack);
     }
+  } else {
+    console.log("Dati avanzati non disponibili. Metrics_availability:", data.metrics_availability);
   }
 
   // Scorri alla dashboard
@@ -856,25 +865,38 @@ function createEnhancedCharts(data) {
  * @param {Object} metrics - Metriche complete
  */
 function populateEnhancedMetrics(metrics) {
+  console.log("Tentativo di popolare metriche avanzate", metrics);
+
   // Sezione per le metriche avanzate
   if (!document.getElementById('enhancedMetricsSection')) {
+    console.log("Creazione sezione metriche avanzate");
     createEnhancedMetricsSection();
   }
 
+  // Log per verificare disponibilità metriche
+  console.log("Disponibilità energy_efficiency:", !!metrics.energy_efficiency);
+  console.log("Disponibilità accessibility:", !!metrics.accessibility);
+  console.log("Disponibilità yearly_carbon_footprint:", !!metrics.yearly_carbon_footprint);
+  console.log("Disponibilità category_scores:", !!metrics.category_scores);
+
   // Inserisci dati nelle sezioni appropriate
   if (metrics.energy_efficiency) {
+    console.log("Popolamento efficienza energetica", metrics.energy_efficiency);
     populateEnergyEfficiency(metrics.energy_efficiency);
   }
 
   if (metrics.accessibility) {
+    console.log("Popolamento accessibilità", metrics.accessibility);
     populateAccessibility(metrics.accessibility);
   }
 
   if (metrics.yearly_carbon_footprint) {
+    console.log("Popolamento impronta carbonica", metrics.yearly_carbon_footprint);
     populateCarbonFootprint(metrics.yearly_carbon_footprint);
   }
 
   if (metrics.category_scores) {
+    console.log("Popolamento punteggi categorie", metrics.category_scores);
     populateCategoryScores(metrics.category_scores);
   }
 }

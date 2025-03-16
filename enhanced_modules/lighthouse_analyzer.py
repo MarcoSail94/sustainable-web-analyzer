@@ -8,6 +8,7 @@ import json
 import logging
 import subprocess
 import tempfile
+import traceback
 from urllib.parse import urlparse
 import shutil
 from config import Config
@@ -77,12 +78,16 @@ class EnhancedLighthouseAnalyzer:
         if options and isinstance(options, dict):
             lighthouse_options.update(options)
 
+        logger.info(f"Lighthouse configurato con opzioni: {lighthouse_options}")
+
         try:
             # Run Lighthouse and get metrics
             metrics = self._run_lighthouse(url, lighthouse_options)
+            logger.info(f"Analisi Lighthouse completata con successo per: {url}")
             return metrics
         except Exception as e:
             logger.error(f"Lighthouse analysis failed: {str(e)}")
+            logger.error(traceback.format_exc())
             return self._fallback_values(url)
 
     def _run_lighthouse(self, url, options):
@@ -110,10 +115,12 @@ class EnhancedLighthouseAnalyzer:
 
         # Add buffer for process management
         process_timeout = domain_timeout + getattr(Config, 'TIMEOUT_BUFFER', 30)
+        logger.info(f"Timeout configurato per Lighthouse: {process_timeout}s")
 
         # Create a temporary file for the Lighthouse report
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp_file:
             temp_filename = tmp_file.name
+            logger.info(f"File temporaneo creato per il report: {temp_filename}")
 
         try:
             # Construct the Lighthouse command with better Chrome flags
@@ -131,6 +138,7 @@ class EnhancedLighthouseAnalyzer:
             categories = options.get('onlyCategories', ['performance'])
             category_param = f"--only-categories={','.join(categories)}"
             cmd.append(category_param)
+            logger.info(f"Categorie da analizzare: {categories}")
 
             # Add max wait for load if specified
             if 'maxWaitForLoad' in options:
@@ -188,9 +196,13 @@ class EnhancedLighthouseAnalyzer:
                 timeout=process_timeout  # Use domain-specific timeout with buffer
             )
 
+            logger.info(f"Processo Lighthouse completato con successo. Stato: {process.returncode}")
+
             # Read the JSON report
+            logger.info(f"Lettura del file di report: {temp_filename}")
             with open(temp_filename, 'r') as f:
                 lighthouse_data = json.load(f)
+                logger.info(f"Report JSON caricato con successo. Dimensione: {len(json.dumps(lighthouse_data))} bytes")
 
             # Extract Web Vitals and other metrics
             return self._extract_comprehensive_metrics(lighthouse_data)
@@ -210,16 +222,17 @@ class EnhancedLighthouseAnalyzer:
             raise RuntimeError(f"Invalid Lighthouse JSON output: {str(e)}")
         except Exception as e:
             logger.error(f"Unexpected error during Lighthouse analysis: {str(e)}")
+            logger.error(traceback.format_exc())
             raise
         finally:
             # Clean up the temporary file
             if os.path.exists(temp_filename):
                 try:
                     os.unlink(temp_filename)
+                    logger.info(f"File temporaneo eliminato: {temp_filename}")
                 except Exception as e:
                     logger.warning(f"Failed to delete temporary file {temp_filename}: {str(e)}")
 
-    # Rest of the code remains unchanged
     def _extract_comprehensive_metrics(self, lighthouse_data):
         """
         Estrae TUTTE le metriche disponibili dal rapporto Lighthouse.
@@ -235,18 +248,28 @@ class EnhancedLighthouseAnalyzer:
             audits = lighthouse_data.get('audits', {})
             categories = lighthouse_data.get('categories', {})
 
+            logger.info(f"Lighthouse categories disponibili: {list(categories.keys())}")
+            logger.info(f"Numero di audit disponibili: {len(audits)}")
+
             # Extract Core Web Vitals
             lcp_audit = audits.get('largest-contentful-paint', {})
             fid_audit = audits.get('max-potential-fid', {})
             cls_audit = audits.get('cumulative-layout-shift', {})
+
+            logger.info(f"LCP audit disponibile: {bool(lcp_audit)}")
+            logger.info(f"FID audit disponibile: {bool(fid_audit)}")
+            logger.info(f"CLS audit disponibile: {bool(cls_audit)}")
 
             # Convert to milliseconds if needed
             lcp_value = lcp_audit.get('numericValue', 0)
             fid_value = fid_audit.get('numericValue', 0)
             cls_value = cls_audit.get('numericValue', 0)
 
+            logger.info(f"Valori metriche core: LCP={lcp_value}, FID={fid_value}, CLS={cls_value}")
+
             # Calculate Web Vitals scores
             web_vitals_scores = self.calculate_web_vitals_scores(lcp_value, fid_value, cls_value)
+            logger.info(f"Web Vitals scores calcolati: {web_vitals_scores}")
 
             # Extract network statistics
             network_stats = self._extract_network_stats(lighthouse_data)
@@ -295,6 +318,8 @@ class EnhancedLighthouseAnalyzer:
                 'legacy_javascript': audits.get('legacy-javascript', {}).get('score', 1),
             }
 
+            logger.info(f"Performance metrics disponibili: {list(performance_metrics.keys())}")
+
             # Domain-specific metrics for sustainability
             sustainability_indicators = {
                 'font_display': audits.get('font-display', {}).get('score', 1),
@@ -305,13 +330,22 @@ class EnhancedLighthouseAnalyzer:
                 'uses_http2': audits.get('uses-http2', {}).get('score', 1),
             }
 
+            logger.info(f"Sustainability indicators disponibili: {list(sustainability_indicators.keys())}")
+
             # Get category scores
+            # Aggiungiamo log per ogni categoria
+            for category_name, category in categories.items():
+                score = category.get('score', 0) * 100
+                logger.info(f"Categoria {category_name}: score={score}")
+
             category_scores = {
                 'performance': round(categories.get('performance', {}).get('score', 0) * 100, 1),
                 'accessibility': round(categories.get('accessibility', {}).get('score', 0) * 100, 1),
                 'best_practices': round(categories.get('best-practices', {}).get('score', 0) * 100, 1),
                 'seo': round(categories.get('seo', {}).get('score', 0) * 100, 1),
             }
+
+            logger.info(f"Punteggi categorie: {category_scores}")
 
             # Extract detailed energy consumption metrics
             energy_metrics = {}
@@ -323,11 +357,15 @@ class EnhancedLighthouseAnalyzer:
                         'energy_efficiency_score': energy_audit.get('score', 0.5),
                         'energy_details': energy_audit.get('details', {})
                     }
-            except:
-                pass
+                    logger.info(f"Energy metrics presenti: {energy_metrics}")
+                else:
+                    logger.info("Energy metrics non disponibili nell'audit")
+            except Exception as e:
+                logger.warning(f"Errore nell'estrazione energy metrics: {str(e)}")
 
             # Estimate approximate load time (using Time to Interactive)
             load_time = round(performance_metrics['time_to_interactive'] / 1000, 2)  # Convert to seconds
+            logger.info(f"Load time stimato: {load_time}s")
 
             # Create the enhanced metrics object
             enhanced_metrics = {
@@ -389,10 +427,12 @@ class EnhancedLighthouseAnalyzer:
                 'analyzer_type': 'lighthouse-enhanced'
             }
 
+            logger.info(f"Metriche avanzate generate: {json.dumps({k: v for k, v in enhanced_metrics.items() if k != 'performance_metrics'}, indent=2)}")
             return enhanced_metrics
 
         except Exception as e:
             logger.error(f"Error extracting metrics from Lighthouse data: {str(e)}")
+            logger.error(traceback.format_exc())
             raise RuntimeError(f"Failed to extract metrics: {str(e)}")
 
     def _extract_network_stats(self, lighthouse_data):
@@ -423,12 +463,14 @@ class EnhancedLighthouseAnalyzer:
             # Extract network details from the audit
             network_requests = lighthouse_data.get('audits', {}).get('network-requests', {})
             items = network_requests.get('details', {}).get('items', [])
+            logger.info(f"Numero di richieste di rete trovate: {len(items)}")
 
             # Get main document domain to identify third-party resources
             main_document = None
             for item in items:
                 if item.get('resourceType') == 'Document' and not main_document:
                     main_document = urlparse(item.get('url', '')).netloc
+                    logger.info(f"Dominio principale rilevato: {main_document}")
                     break
 
             # Count domains for third-party analysis
@@ -477,9 +519,13 @@ class EnhancedLighthouseAnalyzer:
             network_stats['third_party_domains'] = len(third_party_domains)
             network_stats['third_party_percent'] = round((network_stats['third_party'] / max(1, network_stats['total'])) * 100, 1)
 
+            logger.info(f"Statistiche di rete: domini={len(domains)}, third-party domains={len(third_party_domains)}")
+            logger.info(f"Dimensione totale trasferimento: {network_stats['total']/1024:.2f} KB")
+
             return network_stats
         except Exception as e:
             logger.warning(f"Error extracting network stats: {str(e)}")
+            logger.warning(traceback.format_exc())
             return {
                 'total': 0,
                 'js': 0,
@@ -499,11 +545,13 @@ class EnhancedLighthouseAnalyzer:
         # Check if we have a custom path in config
         custom_path = getattr(Config, 'LIGHTHOUSE_PATH', None)
         if custom_path and os.path.exists(custom_path):
+            logger.info(f"Usando Lighthouse da percorso personalizzato: {custom_path}")
             return custom_path
 
         # Try to find 'lighthouse' in PATH
         lighthouse_path = shutil.which('lighthouse')
         if lighthouse_path:
+            logger.info(f"Trovato Lighthouse in PATH: {lighthouse_path}")
             return lighthouse_path
 
         # Try common locations
@@ -521,6 +569,7 @@ class EnhancedLighthouseAnalyzer:
 
         for path in common_paths:
             if os.path.exists(path):
+                logger.info(f"Trovato Lighthouse in percorso comune: {path}")
                 return path
 
         logger.warning("Lighthouse binary not found. Ensure it's installed with 'npm install -g lighthouse'")
