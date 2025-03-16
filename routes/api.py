@@ -1,27 +1,38 @@
 """
-API routes con integrazione Lighthouse avanzata per analisi Web Vitals completa.
+API route unificata con pipeline di analisi intelligente e gestione trasparente dei dati mancanti.
 """
 
 import time
 import traceback
-from flask import Blueprint, request, jsonify, current_app, g
+from flask import Blueprint, request, jsonify, current_app
 from urllib.parse import urlparse
 from datetime import datetime
 
 from modules.resource_analyzer import ResourceAnalyzer
 from modules.web_vitals_analyzer import WebVitalsAnalyzer
-from modules.lighthouse_analyzer import LighthouseAnalyzer
 from modules.sustainability import SustainabilityAnalyzer
 from modules.economics import EconomicAnalyzer
 
-# Importa i moduli migliorati (se disponibili)
+# Importa i moduli avanzati (se disponibili)
 try:
     from enhanced_modules.lighthouse_analyzer import EnhancedLighthouseAnalyzer
+    from modules.lighthouse_analyzer import LighthouseAnalyzer
     from enhanced_modules.sustainability import EnhancedSustainabilityAnalyzer
-    ENHANCED_MODULES_AVAILABLE = True
+    LIGHTHOUSE_AVAILABLE = True
+    ENHANCED_AVAILABLE = True
 except ImportError:
-    ENHANCED_MODULES_AVAILABLE = False
-    current_app.logger.warning("Enhanced modules not available. Using standard modules only.")
+    try:
+        from modules.lighthouse_analyzer import LighthouseAnalyzer
+        LIGHTHOUSE_AVAILABLE = True
+        ENHANCED_AVAILABLE = False
+    except ImportError:
+        LIGHTHOUSE_AVAILABLE = False
+        ENHANCED_AVAILABLE = False
+
+    if not LIGHTHOUSE_AVAILABLE:
+        current_app.logger.warning("Lighthouse modules not available. Using basic analyzer only.")
+    elif not ENHANCED_AVAILABLE:
+        current_app.logger.warning("Enhanced modules not available. Using standard Lighthouse.")
 
 from config import Config
 
@@ -31,48 +42,27 @@ api_bp = Blueprint('api', __name__)
 def calculate_adaptive_timeout(url, resource_data=None):
     """
     Calcola un timeout adattivo basato sul dominio e sulla dimensione stimata.
-
-    Args:
-        url: URL da analizzare
-        resource_data: Dati di risorse pre-analizzati (se disponibili)
-
-    Returns:
-        Timeout appropriato in secondi
     """
-    from urllib.parse import urlparse
     domain = urlparse(url).netloc
-
-    # Verifica impostazioni specifiche per dominio
     domain_settings = Config.get_domain_settings(domain)
-
-    # Ottieni timeout specifico per il dominio o usa quello predefinito
     base_timeout = domain_settings.get('timeout', Config.BROWSER_TIMEOUT)
-    lighthouse_timeout = domain_settings.get('lighthouse_timeout',
-                                             getattr(Config, 'LIGHTHOUSE_TIMEOUT', base_timeout))
 
-    # Se il timeout adattivo è abilitato e abbiamo i dati delle risorse,
-    # aggiusta il timeout in base alla dimensione
     if getattr(Config, 'ADAPTIVE_TIMEOUT', False) and resource_data:
         total_size_mb = resource_data.get('total_size', 0) / (1024 * 1024)
-
-        # Calcola il timeout aggiuntivo basato sulla dimensione
-        # (TIMEOUT_PER_MB secondi aggiuntivi per ogni MB)
         size_based_timeout = getattr(Config, 'BASE_TIMEOUT', 60) + (
                 total_size_mb * getattr(Config, 'TIMEOUT_PER_MB', 20))
-
-        # Usa il timeout maggiore tra quello basato sulla dimensione e quello specifico del dominio
         adaptive_timeout = max(base_timeout, size_based_timeout)
-
-        # Limita il timeout a un massimo ragionevole (es. 5 minuti)
         max_timeout = getattr(Config, 'MAX_TIMEOUT', 300)
         return min(adaptive_timeout, max_timeout)
 
-    # Se non è possibile calcolare un timeout adattivo, usa il timeout del dominio
-    return lighthouse_timeout
+    return base_timeout
 
 @api_bp.route('/analyze', methods=['POST'])
 def analyze():
-    """Analizza un URL per metriche di sostenibilità con analisi completa Lighthouse."""
+    """
+    Endpoint unificato per l'analisi del sito web.
+    Utilizza una pipeline di analisi intelligente che prova analizzatori in ordine di capacità.
+    """
     start_time = time.time()
     try:
         data = request.get_json()
@@ -81,7 +71,6 @@ def analyze():
 
         url = data.get('url')
         monthly_visits = data.get('monthly_visits', Config.DEFAULT_MONTHLY_VISITS)
-        use_enhanced = data.get('use_enhanced', True) and ENHANCED_MODULES_AVAILABLE  # Usa enhanced solo se disponibile
 
         # Valida visite mensili
         try:
@@ -98,158 +87,136 @@ def analyze():
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
 
-        # Normalizza l'URL (rimuovi slash finali)
+        # Normalizza l'URL
         url = url.rstrip('/')
 
-        # Ottieni dominio per impostazioni specifiche
+        # Ottieni dominio e impostazioni
         domain = urlparse(url).netloc
         domain_settings = Config.get_domain_settings(domain)
-
-        # Imposta timeout per l'analisi iniziale (lo aggiorneremo dopo)
-        initial_timeout = domain_settings.get('timeout', Config.BROWSER_TIMEOUT)
         skip_web_vitals = domain_settings.get('skip_web_vitals', False)
 
-        # Logga i dettagli della richiesta
-        current_app.logger.info(f"Analysis requested for URL: {url} (initial timeout: {initial_timeout}s, enhanced: {use_enhanced})")
+        # Metadati sulla disponibilità delle metriche
+        metrics_availability = {
+            'resources': 'unknown',  # Sarà "available" o "error"
+            'web_vitals': 'unknown',  # Sarà "available", "unavailable", "partial" o "error"
+            'sustainability': 'unknown',  # Sarà "basic", "standard" o "enhanced"
+            'economics': 'unknown',  # Sarà "basic", "standard" o "enhanced"
+            'analyzers_tried': []  # Lista degli analizzatori tentati
+        }
 
-        # Analizza risorse
+        # Inizializza contenitori per dati e errori
+        resource_data = None
+        web_vitals_data = None
+        resource_error = None
+        web_vitals_error = None
+
+        # Step 1: Analisi delle risorse (sempre richiesta)
         current_app.logger.info(f"Analyzing resources for URL: {url}")
-        resource_analyzer = ResourceAnalyzer(url)
-        resource_data = resource_analyzer.analyze()
+        try:
+            resource_analyzer = ResourceAnalyzer(url)
+            resource_data = resource_analyzer.analyze()
 
-        if not resource_data:
-            return jsonify({'success': False, 'error': 'Resource analysis failed'}), 500
+            if not resource_data:
+                resource_error = "Resource analysis failed without specific error"
+                metrics_availability['resources'] = 'error'
+            elif 'error' in resource_data:
+                resource_error = resource_data['error']
+                metrics_availability['resources'] = 'error'
+            else:
+                metrics_availability['resources'] = 'available'
+        except Exception as e:
+            resource_error = str(e)
+            metrics_availability['resources'] = 'error'
+            current_app.logger.error(f"Error in resource analysis: {str(e)}")
 
-        if 'error' in resource_data:
+        # Se l'analisi delle risorse fallisce completamente, fornisci un errore
+        if metrics_availability['resources'] == 'error':
             return jsonify({
                 'success': False,
-                'error': resource_data['error']
+                'error': f"Resource analysis failed: {resource_error}",
+                'metrics_availability': metrics_availability
             }), 500
 
-        # Ora che abbiamo i dati delle risorse, calcola il timeout adattivo
+        # Step 2: Calcola timeout adattivo per Web Vitals
         adaptive_timeout = calculate_adaptive_timeout(url, resource_data)
-        current_app.logger.info(f"Using adaptive timeout: {adaptive_timeout}s based on resource size")
+        current_app.logger.info(f"Using adaptive timeout: {adaptive_timeout}s")
 
-        # Analizza Web Vitals con l'approccio migliorato o standard
+        # Step 3: Analisi Web Vitals (con pipeline di analizzatori)
         if not skip_web_vitals:
-            current_app.logger.info(f"Analyzing Web Vitals for URL: {url} with enhanced={use_enhanced}, timeout={adaptive_timeout}s")
+            current_app.logger.info(f"Starting Web Vitals analysis for URL: {url}")
 
-            # MIGLIORAMENTO: Utilizza un numero massimo di tentativi per l'analisi Lighthouse
-            max_retries = getattr(Config, 'LIGHTHOUSE_MAX_RETRIES', 2)
-            retry_count = 0
-            web_vitals_data = None
+            # Pipeline di analisi Web Vitals: Enhanced → Standard → Basic
+            analyzers_to_try = []
 
-            # Loop per tentativi multipli nell'analisi Lighthouse
-            while retry_count <= max_retries:
+            # Determina quali analizzatori sono disponibili
+            if ENHANCED_AVAILABLE:
+                analyzers_to_try.append(('enhanced_lighthouse', EnhancedLighthouseAnalyzer()))
+            if LIGHTHOUSE_AVAILABLE:
+                analyzers_to_try.append(('standard_lighthouse', LighthouseAnalyzer()))
+            analyzers_to_try.append(('basic', WebVitalsAnalyzer()))
+
+            # Tenta l'analisi con ogni analizzatore disponibile
+            for analyzer_type, analyzer in analyzers_to_try:
+                metrics_availability['analyzers_tried'].append(analyzer_type)
+
                 try:
-                    if Config.LIGHTHOUSE_ENABLED and use_enhanced:
-                        try:
-                            # Prova a usare l'analizzatore Lighthouse migliorato
-                            enhanced_analyzer = EnhancedLighthouseAnalyzer()
-                            web_vitals_data = enhanced_analyzer.measure_web_vitals(
-                                url,
-                                timeout=adaptive_timeout,
-                                options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                            )
-                            web_vitals_data['analyzer_type'] = 'lighthouse-enhanced'
-                            current_app.logger.info("Web Vitals analyzed using Enhanced Lighthouse Analyzer")
-                            break  # Usciamo dal ciclo se l'analisi è riuscita
-                        except Exception as e:
-                            retry_count += 1
-                            current_app.logger.warning(f"Enhanced Lighthouse analysis failed (attempt {retry_count}/{max_retries+1}): {str(e)}")
-
-                            if retry_count <= max_retries:
-                                current_app.logger.info(f"Retrying with modified options...")
-                                # Modifica le opzioni per il prossimo tentativo
-                                modified_options = dict(getattr(Config, 'LIGHTHOUSE_OPTIONS', {}))
-                                # Riduci i dati raccolti ad ogni tentativo
-                                if 'skipAudits' in modified_options:
-                                    modified_options['skipAudits'].extend(['network-requests', 'mainthread-work-breakdown'])
-
-                                # Continua con il prossimo tentativo
-                                continue
-
-                            current_app.logger.warning("Maximum retry attempts reached. Falling back to standard Lighthouse analyzer")
-                            try:
-                                # Fallback a Lighthouse standard
-                                lighthouse_analyzer = LighthouseAnalyzer()
-                                web_vitals_data = lighthouse_analyzer.measure_web_vitals(
-                                    url,
-                                    timeout=adaptive_timeout,
-                                    options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                                )
-                                web_vitals_data['analyzer_type'] = 'lighthouse'
-                                current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
-                                break
-                            except Exception as e2:
-                                current_app.logger.warning(f"Standard Lighthouse analysis failed: {str(e2)}")
-                                current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
-
-                                # Fallback all'analizzatore tradizionale
-                                web_vitals_analyzer = WebVitalsAnalyzer()
-                                web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
-                                web_vitals_data['analyzer_type'] = 'pyppeteer'
-                                break
-                    elif Config.LIGHTHOUSE_ENABLED and not use_enhanced:
-                        # Usa Lighthouse standard se enhanced non è richiesto
-                        try:
-                            lighthouse_analyzer = LighthouseAnalyzer()
-                            web_vitals_data = lighthouse_analyzer.measure_web_vitals(
-                                url,
-                                timeout=adaptive_timeout,
-                                options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                            )
-                            web_vitals_data['analyzer_type'] = 'lighthouse'
-                            current_app.logger.info("Web Vitals analyzed using Standard Lighthouse")
-                            break
-                        except Exception as e:
-                            current_app.logger.warning(f"Lighthouse analysis failed: {str(e)}")
-                            current_app.logger.warning("Falling back to traditional Web Vitals analyzer")
-
-                            # Fallback all'analizzatore tradizionale
-                            web_vitals_analyzer = WebVitalsAnalyzer()
-                            web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
-                            web_vitals_data['analyzer_type'] = 'pyppeteer'
-                            break
+                    current_app.logger.info(f"Trying {analyzer_type} analyzer")
+                    if analyzer_type.endswith('lighthouse'):
+                        web_vitals_data = analyzer.measure_web_vitals(
+                            url,
+                            timeout=adaptive_timeout,
+                            options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                        )
                     else:
-                        # Usa l'analizzatore tradizionale se Lighthouse è disabilitato
-                        web_vitals_analyzer = WebVitalsAnalyzer()
-                        web_vitals_data = web_vitals_analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
-                        web_vitals_data['analyzer_type'] = 'pyppeteer'
-                        break
-                except Exception as unhandled_error:
-                    current_app.logger.error(f"Unhandled error in Web Vitals analysis: {str(unhandled_error)}")
-                    retry_count += 1
-                    if retry_count > max_retries:
-                        # Se abbiamo esaurito i tentativi, utilizziamo un fallback sicuro
-                        web_vitals_analyzer = WebVitalsAnalyzer()
-                        web_vitals_data = web_vitals_analyzer._fallback_values(url)
-                        web_vitals_data['analyzer_type'] = 'fallback'
-                        web_vitals_data['is_fallback'] = True
-                        break
+                        web_vitals_data = analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
 
-            # Se non siamo riusciti ad ottenere dati dopo tutti i tentativi
-            if not web_vitals_data:
-                web_vitals_analyzer = WebVitalsAnalyzer()
-                web_vitals_data = web_vitals_analyzer._fallback_values(url)
-                web_vitals_data['analyzer_type'] = 'fallback'
-                web_vitals_data['is_fallback'] = True
+                    # Aggiungi informazioni sul tipo di analizzatore utilizzato
+                    web_vitals_data['analyzer_type'] = analyzer_type
 
+                    # Verifica se sono presenti valori di fallback
+                    if web_vitals_data.get('is_fallback', False):
+                        metrics_availability['web_vitals'] = 'partial'
+                        current_app.logger.warning(f"Partial data from {analyzer_type} (fallback values used)")
+                    else:
+                        metrics_availability['web_vitals'] = 'available'
+                        current_app.logger.info(f"Complete data from {analyzer_type}")
+
+                    # Analisi riuscita, esci dal ciclo
+                    break
+
+                except Exception as e:
+                    current_app.logger.warning(f"Error with {analyzer_type} analyzer: {str(e)}")
+                    web_vitals_error = f"{analyzer_type} analysis failed: {str(e)}"
+                    # Continua con il prossimo analizzatore
+
+            # Se tutti gli analizzatori falliscono
+            if web_vitals_data is None:
+                metrics_availability['web_vitals'] = 'unavailable'
+                current_app.logger.error(f"All Web Vitals analyzers failed: {web_vitals_error}")
+                # Creiamo una struttura vuota per web_vitals, non valori fittizi
+                web_vitals_data = {
+                    'analyzer_type': 'none',
+                    'unavailable': True,
+                    'error': web_vitals_error
+                }
         else:
-            current_app.logger.info(f"Skipping Web Vitals for {domain} (configured in domain settings)")
-            web_vitals_analyzer = WebVitalsAnalyzer()
-            web_vitals_data = web_vitals_analyzer._fallback_values(url)
-            web_vitals_data['skipped'] = True
-            web_vitals_data['analyzer_type'] = 'none'
+            # Web Vitals analisi saltata per config
+            metrics_availability['web_vitals'] = 'skipped'
+            web_vitals_data = {
+                'analyzer_type': 'none',
+                'skipped': True
+            }
 
-        # Calcola metriche di sostenibilità con l'analizzatore appropriato
+        # Step 4: Calcola metriche di sostenibilità con l'analizzatore appropriato
         current_app.logger.info("Calculating sustainability metrics")
-        if use_enhanced and web_vitals_data.get('analyzer_type') == 'lighthouse-enhanced' and ENHANCED_MODULES_AVAILABLE:
+
+        if ENHANCED_AVAILABLE and web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
             # Usa l'analizzatore di sostenibilità migliorato
             sustainability_analyzer = EnhancedSustainabilityAnalyzer(
                 resource_data=resource_data,
                 web_vitals_data=web_vitals_data
             )
+            metrics_availability['sustainability'] = 'enhanced'
         else:
             # Usa l'analizzatore di sostenibilità standard
             sustainability_analyzer = SustainabilityAnalyzer(
@@ -257,12 +224,18 @@ def analyze():
                 web_vitals_data=web_vitals_data
             )
 
+            if metrics_availability['web_vitals'] in ['available', 'partial']:
+                metrics_availability['sustainability'] = 'standard'
+            else:
+                metrics_availability['sustainability'] = 'basic'
+
+        # Calcola i dati di sostenibilità disponibili con i dati che abbiamo
         sustainability_metrics = sustainability_analyzer.calculate_metrics()
 
-        # Genera suggerimenti di ottimizzazione
+        # Step 5: Genera suggerimenti di ottimizzazione con i dati disponibili
         optimizations = sustainability_analyzer.generate_optimizations()
 
-        # Calcola benefici economici
+        # Step 6: Calcola benefici economici basati sui dati disponibili
         current_app.logger.info("Calculating economic benefits")
         economic_analyzer = EconomicAnalyzer(
             resource_data=resource_data,
@@ -272,10 +245,18 @@ def analyze():
         economic_benefits = economic_analyzer.calculate_benefits()
         industry_comparison = economic_analyzer.generate_comparison_data()
 
+        # Determina la qualità dei dati economici
+        if metrics_availability['sustainability'] == 'enhanced':
+            metrics_availability['economics'] = 'enhanced'
+        elif metrics_availability['sustainability'] == 'standard':
+            metrics_availability['economics'] = 'standard'
+        else:
+            metrics_availability['economics'] = 'basic'
+
         # Aggiungi benefici economici alle metriche di sostenibilità
         sustainability_metrics['economic_benefits'] = economic_benefits
 
-        # Crea struttura del report di base
+        # Step 7: Crea la risposta finale
         report = {
             'success': True,
             'url': url,
@@ -289,69 +270,75 @@ def analyze():
                 'timeout': adaptive_timeout,
                 'skip_web_vitals': skip_web_vitals
             },
-            'analyzer_type': web_vitals_data.get('analyzer_type', 'unknown'),
+            'metrics_availability': metrics_availability,
             'id': int(time.time())  # Timestamp come ID semplice
         }
 
-        # Aggiungi web vitals alle metriche
-        report['metrics']['web_vitals'] = {
-            'lcp': round(web_vitals_data.get('lcp', 0)/1000, 2),  # Converti in secondi
-            'fid': round(web_vitals_data.get('fid', 0), 2),  # Millisecondi
-            'cls': round(web_vitals_data.get('cls', 0), 3),  # Punteggio
-            'scores': web_vitals_data.get('scores', {}),
-            'analyzer_type': web_vitals_data.get('analyzer_type', 'unknown'),
-            'is_fallback': web_vitals_data.get('is_fallback', False),
-            'skipped': web_vitals_data.get('skipped', False)
-        }
+        # Step 8: Aggiungi web vitals alle metriche
+        if metrics_availability['web_vitals'] in ['available', 'partial']:
+            # Abbiamo dati reali o parziali
+            report['metrics']['web_vitals'] = {
+                'lcp': round(web_vitals_data.get('lcp', 0)/1000, 2),  # Converti in secondi
+                'fid': round(web_vitals_data.get('fid', 0), 2),  # Millisecondi
+                'cls': round(web_vitals_data.get('cls', 0), 3),  # Punteggio
+                'scores': web_vitals_data.get('scores', {}),
+                'analyzer_type': web_vitals_data.get('analyzer_type', 'unknown'),
+                'is_fallback': web_vitals_data.get('is_fallback', False),
+                'is_partial': metrics_availability['web_vitals'] == 'partial'
+            }
 
-        # Aggiungi metriche Lighthouse standard se disponibili
-        if web_vitals_data.get('analyzer_type') in ['lighthouse', 'lighthouse-enhanced']:
-            report['metrics']['web_vitals']['lighthouse_score'] = web_vitals_data.get('lighthouse_score', 0)
-            report['metrics']['web_vitals']['speed_index'] = web_vitals_data.get('speed_index', 0)
-            report['metrics']['web_vitals']['ttfb'] = web_vitals_data.get('ttfb', 0)
-            report['metrics']['web_vitals']['time_to_interactive'] = web_vitals_data.get('time_to_interactive', 0)
+            # Aggiungi metriche Lighthouse standard se disponibili
+            if web_vitals_data.get('analyzer_type') in ['enhanced_lighthouse', 'standard_lighthouse']:
+                report['metrics']['web_vitals']['lighthouse_score'] = web_vitals_data.get('lighthouse_score', None)
+                report['metrics']['web_vitals']['speed_index'] = web_vitals_data.get('speed_index', None)
+                report['metrics']['web_vitals']['ttfb'] = web_vitals_data.get('ttfb', None)
+                report['metrics']['web_vitals']['time_to_interactive'] = web_vitals_data.get('time_to_interactive', None)
 
-            # Aggiungi total blocking time se disponibile
-            if 'total_blocking_time' in web_vitals_data:
-                report['metrics']['web_vitals']['total_blocking_time'] = web_vitals_data.get('total_blocking_time', 0)
+                # Aggiungi altre metriche se disponibili (senza valori di default)
+                for metric in ['total_blocking_time', 'first_contentful_paint']:
+                    if metric in web_vitals_data:
+                        report['metrics']['web_vitals'][metric] = web_vitals_data.get(metric)
 
-            # Aggiungi first contentful paint se disponibile
-            if 'first_contentful_paint' in web_vitals_data:
-                report['metrics']['web_vitals']['first_contentful_paint'] = web_vitals_data.get('first_contentful_paint', 0)
+            # Aggiungi metriche avanzate se si utilizza Lighthouse Enhanced
+            if web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
+                # Aggiungi punteggi di ottimizzazione se disponibili
+                if 'optimization_scores' in web_vitals_data:
+                    report['metrics']['optimization'] = web_vitals_data.get('optimization_scores')
 
-        # Aggiungi metriche avanzate se si utilizza Lighthouse Enhanced
-        if web_vitals_data.get('analyzer_type') == 'lighthouse-enhanced':
-            # Aggiungi punteggi di ottimizzazione
-            if 'optimization_scores' in web_vitals_data:
-                report['metrics']['optimization'] = web_vitals_data.get('optimization_scores', {})
+                # Aggiungi punteggi delle categorie se disponibili
+                if 'category_scores' in web_vitals_data:
+                    report['metrics']['category_scores'] = web_vitals_data.get('category_scores')
 
-            # Aggiungi punteggi delle categorie
-            if 'category_scores' in web_vitals_data:
-                report['metrics']['category_scores'] = web_vitals_data.get('category_scores', {})
+                # Aggiungi metriche di performance dettagliate se disponibili
+                if 'performance_metrics' in web_vitals_data:
+                    report['metrics']['performance_details'] = web_vitals_data.get('performance_metrics')
 
-            # Aggiungi metriche di performance dettagliate
-            if 'performance_metrics' in web_vitals_data:
-                report['metrics']['performance_details'] = web_vitals_data.get('performance_metrics', {})
+                # Aggiungi metriche energetiche se disponibili
+                if 'energy_efficiency' in sustainability_metrics:
+                    report['metrics']['energy'] = sustainability_metrics.get('energy_efficiency')
 
-            # Aggiungi metriche energetiche da sostenibilità se disponibili
-            if 'energy_efficiency' in sustainability_metrics:
-                report['metrics']['energy'] = sustainability_metrics.get('energy_efficiency', {})
+                # Aggiungi impronta carbonica annuale se disponibile
+                if 'yearly_carbon_footprint' in sustainability_metrics:
+                    report['metrics']['carbon_footprint'] = sustainability_metrics.get('yearly_carbon_footprint')
 
-            # Aggiungi impronta carbonica annuale se disponibile
-            if 'yearly_carbon_footprint' in sustainability_metrics:
-                report['metrics']['carbon_footprint'] = sustainability_metrics.get('yearly_carbon_footprint', {})
+                # Aggiungi punteggio di accessibilità se disponibile
+                if 'accessibility_score' in web_vitals_data:
+                    report['metrics']['accessibility'] = {
+                        'score': web_vitals_data.get('accessibility_score')
+                    }
+        else:
+            # Nessun dato Web Vitals disponibile - comunica chiaramente l'indisponibilità
+            report['metrics']['web_vitals'] = {
+                'unavailable': True,
+                'reason': 'unavailable' if metrics_availability['web_vitals'] == 'unavailable' else 'skipped',
+                'analyzer_type': web_vitals_data.get('analyzer_type', 'none')
+            }
 
-            # Aggiungi punteggio di accessibilità se disponibile
-            if 'accessibility_score' in web_vitals_data:
-                report['metrics']['accessibility'] = {
-                    'score': web_vitals_data.get('accessibility_score', 0)
-                }
-
-        # Memorizza il report nell'oggetto g per uso successivo
-        g.analysis_data = report
+            if web_vitals_error:
+                report['metrics']['web_vitals']['error'] = web_vitals_error
 
         # Logga il completamento con successo
-        current_app.logger.info(f"Analysis completed for {url} in {report['analysis_time']}s using {web_vitals_data.get('analyzer_type', 'unknown')} analyzer")
+        current_app.logger.info(f"Analysis completed for {url} in {report['analysis_time']}s using {metrics_availability}")
 
         return jsonify(report)
 
@@ -363,15 +350,6 @@ def analyze():
         return jsonify({
             'success': False,
             'error': str(e),
-            'error_type': type(e).__name__
+            'error_type': type(e).__name__,
+            'metrics_availability': metrics_availability if 'metrics_availability' in locals() else {'error': 'global_error'}
         }), 500
-
-@api_bp.route('/report/<string:analysis_id>', methods=['GET'])
-def download_report(analysis_id):
-    """Generate and download a report for an analysis."""
-    # Temporarily disabled PDF generation
-    return jsonify({
-        'success': False,
-        'error': 'PDF generation is temporarily disabled. Please try again later.',
-        'message': 'This feature requires additional system libraries (libgobject-2.0-0). PDF generation will be available in a future update.'
-    }), 501
