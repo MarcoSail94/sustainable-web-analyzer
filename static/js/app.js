@@ -11,10 +11,10 @@
 // Import moduli globali essenziali
 import './main.js';
 
-// Configurazione dei percorsi dei moduli principali
+// Update the MODULES configuration in app.js
 const MODULES = {
   analyzer: './modules/analyzer.js',
-  dashboard: './modules/dashboard.js',
+  unifiedDashboard: './modules/unified-dashboard.js', // Replace dashboard & enhanced-dashboard
   charts: './modules/charts.js',
   webVitals: './modules/webVitals.js',
   economics: './modules/economics.js',
@@ -29,6 +29,12 @@ const MODULES = {
     about: './pages/about.js'
   }
 };
+
+// Then update any dashboard loading code to use the unified dashboard
+if (appState.currentPage === 'dashboard') {
+  // Load the unified dashboard module
+  pageModules.push(loadModule(MODULES.unifiedDashboard));
+}
 
 /**
  * Cache dei moduli per evitare caricamenti duplicati
