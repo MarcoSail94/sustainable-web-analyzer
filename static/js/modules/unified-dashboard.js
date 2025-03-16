@@ -4,8 +4,9 @@
  */
 
 // Import utility necessarie
-import { formatFileSize } from '/static/js/utils/formatters.js';
-import { updateThemeIcon, updateCharts } from '/static/js/utils/theme.js';
+import { formatFileSize, formatCurrency, formatPercent, formatTime, formatCO2 } from '/static/js/utils/formatters.js';
+import { createComparisonChart, createCostBreakdownCharts } from '/static/js/modules/charts.js';
+import { updateWebVitals, createWebVitalsChart } from '/static/js/modules/webVitals.js';
 
 /**
  * Popolamento principale della dashboard con i dati disponibili
@@ -36,7 +37,14 @@ export async function populateDashboard(data) {
   populateScoreOverview(metrics, comparison);
   populateResourceList(resources);
   populateOptimizations(optimizations);
-  populateWebVitals(webVitals, data.metrics_availability?.web_vitals);
+
+  // Popola Web Vitals solo se abbiamo i dati o un messaggio esplicito di indisponibilità
+  if (webVitals && !webVitals.unavailable) {
+    populateWebVitals(webVitals, data.metrics_availability?.web_vitals);
+  } else {
+    hideWebVitalsSection(webVitals?.reason || "unavailable");
+  }
+
   populateEconomicDetails(economicBenefits, data.metrics_availability?.economics);
 
   // Creazione dei grafici necessari
@@ -279,6 +287,26 @@ function populateScoreOverview(metrics, comparison) {
 }
 
 /**
+ * Helper per creare una card di punteggio
+ * @param {string} title - Titolo della card
+ * @param {string} value - Valore HTML (può includere span per unità)
+ * @param {string} description - Descrizione della metrica
+ * @param {string} valueClass - Classe CSS per il valore
+ * @param {string} icon - Classe dell'icona FontAwesome
+ * @returns {HTMLElement} - Elemento card creato
+ */
+function createScoreCard(title, value, description, valueClass, icon) {
+  const card = document.createElement('div');
+  card.className = 'score-card';
+  card.innerHTML = `
+    <h3>${title}</h3>
+    <div class="score-value ${valueClass}">${value}</div>
+    <p><i class="fas ${icon}"></i> ${description}</p>
+  `;
+  return card;
+}
+
+/**
  * Popola la lista delle risorse
  * @param {Object} resources - Dati sulle risorse del sito
  */
@@ -423,6 +451,40 @@ function populateWebVitals(webVitals, availability) {
   } catch (e) {
     console.error('Error updating Web Vitals:', e);
     showWebVitalsUnavailable(webVitalsSection, 'Errore nell\'aggiornamento dei dati Web Vitals');
+  }
+}
+
+/**
+ * Nasconde la sezione Web Vitals quando i dati non sono disponibili
+ * @param {string} reason - Motivo per nascondere la sezione
+ */
+function hideWebVitalsSection(reason) {
+  const webVitalsSection = document.getElementById('webVitalsSection');
+  if (webVitalsSection) {
+    webVitalsSection.style.display = 'none';
+
+    // Opzionalmente, aggiungi un messaggio nel container principale
+    const dashboardSection = document.getElementById('dashboardSection');
+    if (dashboardSection) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'web-vitals-placeholder detail-section';
+      placeholder.innerHTML = `
+        <h2><i class="fas fa-tachometer-alt"></i> Core Web Vitals</h2>
+        <div class="unavailable-data">
+          <i class="fas fa-info-circle"></i>
+          <p>Le metriche Core Web Vitals non sono disponibili per questa analisi (${reason}).</p>
+        </div>
+      `;
+
+      // Trova la posizione giusta per inserire il placeholder
+      const optimizationSection = document.querySelector('.detail-section:has(h2 i.fa-lightbulb)');
+      if (optimizationSection) {
+        dashboardSection.insertBefore(placeholder, optimizationSection);
+      } else {
+        // Aggiungi alla fine se non troviamo il punto di riferimento
+        dashboardSection.appendChild(placeholder);
+      }
+    }
   }
 }
 
@@ -572,6 +634,8 @@ function showWebVitalsChartError() {
 function populateEconomicDetails(economicBenefits, quality) {
   const benefitsGrid = document.getElementById('benefitsGrid');
   const costsTableBody = document.getElementById('costsTableBody');
+  const totalCurrentCost = document.getElementById('totalCurrentCost');
+  const totalPotentialSavings = document.getElementById('totalPotentialSavings');
 
   if (!benefitsGrid || !costsTableBody) {
     console.error('Economic containers not found');
@@ -627,5 +691,494 @@ function populateEconomicDetails(economicBenefits, quality) {
     const notice = document.createElement('div');
     notice.className = 'data-quality-notice';
     notice.innerHTML = `
+      <i class="fas fa-info-circle"></i>
+      <p>I dati economici sono basati su un'analisi ${quality === 'standard' ? 'standard' : 'semplificata'}. Per stime più precise, prova ad usare l'analizzatore avanzato.</p>
+    `;
+    benefitsGrid.after(notice);
+  }
 
+  // Popola la tabella dei costi dettagliati
+  const costsData = economicBenefits.costs_breakdown || {};
+  const savingsData = economicBenefits.savings_breakdown || {};
+
+  // Mappatura dei nomi delle categorie
+  const categoryNames = {
+    'bandwidth': 'Costi di Banda',
+    'energy': 'Costi Energetici',
+    'seo_impact': 'Impatto SEO',
+    'bounce_impact': 'Utenti Persi',
+    'extra_maintenance': 'Manutenzione Extra',
+    'extra_infrastructure': 'Infrastruttura'
+  };
+
+  // Mappatura delle descrizioni
+  const categoryDescriptions = {
+    'bandwidth': 'Costi di trasferimento dati mensili',
+    'energy': 'Consumo energetico dei server',
+    'seo_impact': 'Perdita di valore dalle conversioni mancate per peggiore posizionamento',
+    'bounce_impact': 'Valore perso da utenti che abbandonano per lentezza',
+    'extra_maintenance': 'Costi aggiuntivi per mantenere codice complesso',
+    'extra_infrastructure': 'Costi aggiuntivi per server più potenti'
+  };
+
+  // Mappatura diretta tra chiavi di costo e chiavi di risparmio
+  const costToSavingKeyMap = {
+    'bandwidth': 'bandwidth',
+    'energy': 'energy',
+    'seo_impact': 'seo_conversions',
+    'bounce_impact': 'reduced_bounce',
+    'extra_maintenance': 'maintenance',
+    'extra_infrastructure': 'infrastructure'
+  };
+
+  let totalCurrent = 0;
+  let totalSavings = 0;
+
+  // Itera su tutte le categorie di costo
+  for (const [key, value] of Object.entries(costsData)) {
+    // Usa la mappatura diretta invece di una espressione condizionale
+    const savingKey = costToSavingKeyMap[key] || key;
+    const savingValue = savingsData[savingKey] || 0;
+
+    totalCurrent += value;
+    totalSavings += savingValue;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${categoryNames[key] || key}</td>
+      <td>€${value.toFixed(2)}</td>
+      <td>€${savingValue.toFixed(2)}</td>
+      <td>${categoryDescriptions[key] || ''}</td>
+    `;
+    costsTableBody.appendChild(row);
+  }
+
+  // Aggiorna i totali
+  if (totalCurrentCost) totalCurrentCost.textContent = `€${totalCurrent.toFixed(2)}`;
+  if (totalPotentialSavings) totalPotentialSavings.textContent = `€${totalSavings.toFixed(2)}`;
+
+  // Crea i grafici di suddivisione dei costi se la funzione è disponibile
+  try {
+    if (typeof createCostBreakdownCharts === 'function') {
+      createCostBreakdownCharts(economicBenefits);
+    }
+  } catch (e) {
+    console.error('Error creating cost breakdown charts:', e);
+    showCostChartError();
+  }
 }
+
+/**
+ * Mostra un messaggio quando i dati economici non sono disponibili
+ */
+function showEconomicUnavailable() {
+  const benefitsSection = document.getElementById('economicBenefits');
+  if (!benefitsSection) return;
+
+  // Nascondi componenti che richiedono dati
+  const componentsToHide = [
+    '.benefits-grid',
+    '.charts-row',
+    '.costs-table-container',
+    '.parameters-info'
+  ];
+
+  componentsToHide.forEach(selector => {
+    const elements = benefitsSection.querySelectorAll(selector);
+    elements.forEach(el => {
+      el.style.display = 'none';
+    });
+  });
+
+  // Aggiungi messaggio di indisponibilità
+  const message = document.createElement('div');
+  message.className = 'unavailable-data';
+  message.innerHTML = `
+    <i class="fas fa-exclamation-circle"></i>
+    <p>Dati economici non disponibili con l'analisi corrente.</p>
+    <p class="advice-text">I dati economici richiedono metriche di base come dimensione della pagina e tempo di caricamento.</p>
+  `;
+
+  // Inserisci dopo il titolo principale
+  const title = benefitsSection.querySelector('h2');
+  if (title && title.nextElementSibling) {
+    title.nextElementSibling.after(message);
+  } else if (title) {
+    title.after(message);
+  } else {
+    benefitsSection.appendChild(message);
+  }
+}
+
+/**
+ * Mostra un errore quando c'è un problema con i grafici economici
+ */
+function showCostChartError() {
+  const chartContainers = document.querySelectorAll('.chart-container');
+  chartContainers.forEach(container => {
+    container.innerHTML = `
+      <div class="chart-error">
+        <i class="fas fa-chart-bar"></i>
+        <p>Impossibile creare il grafico</p>
+      </div>
+    `;
+  });
+}
+
+/**
+ * Crea tutti i grafici per la dashboard
+ * @param {Object} data - Dati di analisi
+ */
+function createCharts(data) {
+  const comparisonChart = document.getElementById('comparisonChart');
+  if (comparisonChart && typeof createComparisonChart === 'function') {
+    createComparisonChart(data);
+  }
+
+  // Altri grafici specifici per dati avanzati
+  if (data.metrics_availability?.sustainability === 'enhanced') {
+    createEnhancedCharts(data);
+  }
+}
+
+/**
+ * Crea grafici per dati avanzati
+ * @param {Object} data - Dati di analisi avanzata
+ */
+function createEnhancedCharts(data) {
+  // Implementazione per grafici avanzati
+  // Potrebbe includere grafici di performance, accessibilità, ecc.
+  console.log("Enhanced charts would be created here if implemented");
+}
+
+/**
+ * Popola le metriche avanzate, disponibili solo con l'analizzatore Lighthouse Enhanced
+ * @param {Object} metrics - Metriche complete
+ */
+function populateEnhancedMetrics(metrics) {
+  // Sezione per le metriche avanzate
+  if (!document.getElementById('enhancedMetricsSection')) {
+    createEnhancedMetricsSection();
+  }
+
+  // Inserisci dati nelle sezioni appropriate
+  if (metrics.energy_efficiency) {
+    populateEnergyEfficiency(metrics.energy_efficiency);
+  }
+
+  if (metrics.accessibility) {
+    populateAccessibility(metrics.accessibility);
+  }
+
+  if (metrics.yearly_carbon_footprint) {
+    populateCarbonFootprint(metrics.yearly_carbon_footprint);
+  }
+
+  if (metrics.category_scores) {
+    populateCategoryScores(metrics.category_scores);
+  }
+}
+
+/**
+ * Crea la sezione per le metriche avanzate
+ */
+function createEnhancedMetricsSection() {
+  const dashboardSection = document.getElementById('dashboardSection');
+  if (!dashboardSection) return;
+
+  // Verifica se la sezione esiste già
+  if (document.getElementById('enhancedMetricsSection')) return;
+
+  // Crea la sezione
+  const section = document.createElement('div');
+  section.id = 'enhancedMetricsSection';
+  section.className = 'detail-section enhanced-metrics';
+  section.innerHTML = `
+    <h2><i class="fas fa-chart-line"></i> Metriche Avanzate</h2>
+    <p>Queste metriche sono disponibili grazie all'analizzatore avanzato Lighthouse.</p>
+
+    <div id="enhancedMetricsContainer" class="enhanced-metrics-container">
+      <!-- I contenuti verranno aggiunti dinamicamente -->
+    </div>
+  `;
+
+  // Inserisci la sezione prima della sezione di confronto
+  const comparisonSection = document.querySelector('.detail-section:has(h2 i.fa-chart-bar)');
+  if (comparisonSection) {
+    dashboardSection.insertBefore(section, comparisonSection);
+  } else {
+    // Aggiungi alla fine se non troviamo il punto di riferimento
+    dashboardSection.appendChild(section);
+  }
+}
+
+/**
+ * Popola i dati di efficienza energetica
+ * @param {Object} energyData - Dati di efficienza energetica
+ */
+function populateEnergyEfficiency(energyData) {
+  const container = document.getElementById('enhancedMetricsContainer');
+  if (!container) return;
+
+  const section = document.createElement('div');
+  section.className = 'energy-efficiency-section';
+
+  // Converti il punteggio in percentuale per coerenza con il resto dell'UI
+  const scorePercent = Math.round(energyData.score * 100);
+
+  let scoreClass = 'text-red-500';
+  if (scorePercent >= 80) {
+    scoreClass = 'text-green-500';
+  } else if (scorePercent >= 50) {
+    scoreClass = 'text-amber-500';
+  }
+
+  section.innerHTML = `
+    <h3 class="text-lg font-semibold mb-2 flex items-center">
+      <i class="fas fa-bolt mr-2 text-green-500"></i>
+      Efficienza Energetica
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold ${scoreClass}">${scorePercent}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Punteggio Efficienza</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${energyData.estimated_kwh_per_view} kWh</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Consumo per Visita</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${energyData.estimated_yearly_kwh} kWh</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Consumo Annuale Stimato</div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="text-md font-semibold mb-2">Impatto delle Ottimizzazioni</h4>
+    <div class="impact-bars">
+      ${createImpactBars(energyData.optimization_impacts)}
+    </div>
+  `;
+
+  container.appendChild(section);
+}
+
+/**
+ * Crea le barre di impatto per le ottimizzazioni
+ * @param {Object} impacts - Valori di impatto per categoria
+ * @returns {string} - HTML per le barre di impatto
+ */
+function createImpactBars(impacts) {
+  if (!impacts) return '';
+
+  const categories = {
+    images: 'Ottimizzazione Immagini',
+    next_gen_formats: 'Formati Immagini Moderni',
+    text_compression: 'Compressione Testi',
+    js_optimization: 'Ottimizzazione JavaScript',
+    caching: 'Strategie di Cache',
+    http2: 'Utilizzo HTTP/2'
+  };
+
+  let html = '';
+
+  for (const [key, value] of Object.entries(impacts)) {
+    if (categories[key]) {
+      html += `
+        <div class="impact-bar">
+          <div class="impact-label">${categories[key]}</div>
+          <div class="impact-track">
+            <div class="impact-fill" style="width: ${value}%"></div>
+          </div>
+          <div class="impact-value">${value}%</div>
+        </div>
+      `;
+    }
+  }
+
+  return html;
+}
+
+/**
+ * Popola i dati di accessibilità
+ * @param {Object} accessibilityData - Dati di accessibilità
+ */
+function populateAccessibility(accessibilityData) {
+  const container = document.getElementById('enhancedMetricsContainer');
+  if (!container) return;
+
+  const section = document.createElement('div');
+  section.className = 'accessibility-section mt-6';
+
+  // Determina la classe di colore in base al punteggio
+  let scoreClass = 'text-red-500';
+  if (accessibilityData.score >= 80) {
+    scoreClass = 'text-green-500';
+  } else if (accessibilityData.score >= 50) {
+    scoreClass = 'text-amber-500';
+  }
+
+  section.innerHTML = `
+    <h3 class="text-lg font-semibold mb-2 flex items-center">
+      <i class="fas fa-universal-access mr-2 text-blue-500"></i>
+      Accessibilità
+    </h3>
+
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-2xl font-bold ${scoreClass}">${accessibilityData.score}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Punteggio Accessibilità</div>
+        </div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm max-w-md">
+          ${accessibilityData.sustainability_impact}
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(section);
+}
+
+/**
+ * Popola i dati dell'impronta carbonica
+ * @param {Object} footprintData - Dati dell'impronta carbonica
+ */
+function populateCarbonFootprint(footprintData) {
+  const container = document.getElementById('enhancedMetricsContainer');
+  if (!container) return;
+
+  const section = document.createElement('div');
+  section.className = 'carbon-footprint-section mt-6';
+
+  section.innerHTML = `
+    <h3 class="text-lg font-semibold mb-2 flex items-center">
+      <i class="fas fa-leaf mr-2 text-green-500"></i>
+      Impronta Carbonica Annuale
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${footprintData.kg_co2} kg</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">CO₂ Annuale</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${footprintData.equivalent_trees}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Alberi Equivalenti</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${footprintData.comparison.car_km} km</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Equivalente in Auto</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold">${footprintData.comparison.smartphone_charges}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Ricariche Smartphone</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(section);
+}
+
+/**
+ * Popola i punteggi delle categorie di Lighthouse
+ * @param {Object} categoryScores - Punteggi delle categorie
+ */
+function populateCategoryScores(categoryScores) {
+  const container = document.getElementById('enhancedMetricsContainer');
+  if (!container) return;
+
+  const section = document.createElement('div');
+  section.className = 'category-scores-section mt-6';
+
+  // Prepara i dati per il grafico radar (se necessario)
+  // Per ora usiamo solo un display semplice
+
+  section.innerHTML = `
+    <h3 class="text-lg font-semibold mb-2 flex items-center">
+      <i class="fas fa-chart-pie mr-2 text-purple-500"></i>
+      Punteggi Lighthouse
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-blue-500">${categoryScores.performance}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Performance</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-500">${categoryScores.accessibility}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Accessibilità</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-amber-500">${categoryScores.best_practices}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Best Practices</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-red-500">${categoryScores.seo}%</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">SEO</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(section);
+}
+
+/**
+ * Mostra un errore generale
+ * @param {string} message - Messaggio di errore
+ */
+function showError(message) {
+  console.error(message);
+  // Potresti mostrare un toast o un alert
+  alert(message);
+}
+
+/**
+ * Helper per capitalizzare la prima lettera di una stringa
+ * @param {string} str - Stringa da capitalizzare
+ * @returns {string} - Stringa capitalizzata
+ */
+function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Esporta funzioni che potrebbero essere utili anche esternamente
+export {
+  populateScoreOverview,
+  populateResourceList,
+  populateOptimizations,
+  populateWebVitals,
+  populateEconomicDetails,
+  createCharts,
+  showError
+};

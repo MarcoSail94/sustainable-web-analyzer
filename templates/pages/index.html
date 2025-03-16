@@ -4,9 +4,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
-<!-- Tailwind e stili per la dashboard avanzata -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/enhanced-dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/unified-dashboard.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -31,15 +29,6 @@
                 <label for="monthlyVisits">Visite Mensili Stimate</label>
                 <input type="number" id="monthlyVisits" class="number-input" value="10000" min="100" step="100">
             </div>
-            <div class="form-group">
-                <label for="useEnhanced">
-                    <input type="checkbox" id="useEnhanced" checked>
-                    Usa Analizzatore Avanzato (Lighthouse)
-                </label>
-                <p class="text-sm text-gray-500 mt-1">
-                    L'analizzatore avanzato offre dati più completi e una dashboard interattiva.
-                </p>
-            </div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
@@ -50,25 +39,189 @@
 {% include 'partials/loading.html' %}
 
 <!-- Dashboard Section -->
-<section class="dashboard container" id="dashboardSection">
+<section class="dashboard container" id="dashboardSection" style="display: none;">
     <div class="dashboard-header">
         <h2>Risultati dell'Analisi</h2>
         <p>Ecco i risultati dell'analisi di sostenibilità per il tuo sito web. Scopri come migliorarne l'efficienza.</p>
     </div>
 
-    <!-- Area per il banner informativo sul tipo di analisi -->
-    <div id="analyzerTypeBanner"></div>
+    <!-- Area per il banner informativo sulla qualità dell'analisi -->
+    <div id="analysisQualityBanner"></div>
 
-    <!-- Container per la Dashboard Avanzata React -->
-    <div id="enhancedDashboardContainer" class="mb-8"></div>
+    <!-- Overview dei punteggi principali -->
+    <div class="score-overview" id="scoreOverview">
+        <!-- Contenuto generato dinamicamente -->
+    </div>
 
-    <!-- Include components di dashboard standard (visualizzati solo se non si usa la dashboard avanzata) -->
-    {% include 'partials/dashboard/overview.html' %}
-    {% include 'partials/dashboard/webvitals.html' %}
-    {% include 'partials/dashboard/economic.html' %}
-    {% include 'partials/dashboard/resources.html' %}
-    {% include 'partials/dashboard/optimizations.html' %}
+    <!-- Sezione delle Web Vitals -->
+    <div class="detail-section" id="webVitalsSection">
+        <h2><i class="fas fa-tachometer-alt"></i> Core Web Vitals</h2>
+        <p>Metriche avanzate di performance che misurano l'esperienza utente reale. Questi valori influenzano il posizionamento SEO e la sostenibilità del sito.</p>
 
+        <div class="web-vitals-grid">
+            <div class="web-vital-card" id="lcpCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>LCP</span>
+                    <span class="tooltip-icon" title="Largest Contentful Paint misura quanto tempo impiega il contenuto principale a diventare visibile.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="lcpValue">0.0s</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="lcpBar"></div>
+                </div>
+                <div class="web-vital-status" id="lcpStatus">In attesa</div>
+            </div>
+
+            <div class="web-vital-card" id="fidCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span>FID</span>
+                    <span class="tooltip-icon" title="First Input Delay misura il tempo di risposta alla prima interazione dell'utente.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="fidValue">0ms</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="fidBar"></div>
+                </div>
+                <div class="web-vital-status" id="fidStatus">In attesa</div>
+            </div>
+
+            <div class="web-vital-card" id="clsCard">
+                <div class="web-vital-header">
+                    <i class="fas fa-arrows-alt"></i>
+                    <span>CLS</span>
+                    <span class="tooltip-icon" title="Cumulative Layout Shift misura la stabilità visiva durante il caricamento della pagina.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="web-vital-value" id="clsValue">0.00</div>
+                <div class="web-vital-bar-container">
+                    <div class="web-vital-bar" id="clsBar"></div>
+                </div>
+                <div class="web-vital-status" id="clsStatus">In attesa</div>
+            </div>
+        </div>
+
+        <div class="web-vitals-chart-container">
+            <canvas id="webVitalsChart"></canvas>
+        </div>
+
+        <div class="web-vitals-info">
+            <h3><i class="fas fa-leaf"></i> Impatto sulla Sostenibilità</h3>
+            <p>Le Core Web Vitals non influenzano solo l'esperienza utente, ma anche la sostenibilità del sito web:</p>
+            <ul>
+                <li><strong>LCP ottimizzato</strong>: Riduce il consumo di risorse caricando solo ciò che è necessario per l'utente.</li>
+                <li><strong>FID ottimizzato</strong>: Diminuisce i tassi di abbandono e quindi il consumo energetico dovuto a ricaricamenti inutili.</li>
+                <li><strong>CLS ottimizzato</strong>: Permette agli utenti di completare le attività più velocemente, riducendo il tempo di utilizzo e il consumo energetico.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Benefici economici -->
+    <div class="economic-benefits" id="economicBenefits">
+        <h2><i class="fas fa-chart-line"></i> Benefici Economici</h2>
+        <p>Scopri quanto puoi risparmiare ottimizzando il tuo sito web, considerando tutti i fattori di costo.</p>
+
+        <!-- Card con i valori principali -->
+        <div class="benefits-grid" id="benefitsGrid">
+            <!-- Contenuto generato dinamicamente -->
+        </div>
+
+        <!-- Sezione dei grafici dettagliati -->
+        <div class="cost-breakdown-section">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Analisi Dettagliata dei Costi</h3>
+            <p>Ecco una suddivisione dei costi attuali e dei potenziali risparmi del tuo sito web.</p>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <canvas id="costsBreakdownChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="savingsBreakdownChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabella con i costi dettagliati -->
+            <div class="costs-table-container">
+                <h4>Dettaglio dei costi mensili</h4>
+                <table class="costs-table">
+                    <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Costo Attuale</th>
+                        <th>Risparmio Potenziale</th>
+                        <th>Descrizione</th>
+                    </tr>
+                    </thead>
+                    <tbody id="costsTableBody">
+                    <!-- Contenuto generato dinamicamente -->
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td><strong>Totale</strong></td>
+                        <td id="totalCurrentCost"><strong>€0.00</strong></td>
+                        <td id="totalPotentialSavings"><strong>€0.00</strong></td>
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sezione informativa sui parametri considerati -->
+        <div class="parameters-info">
+            <h3><i class="fas fa-info-circle"></i> Parametri Considerati</h3>
+            <p>L'analisi include diversi fattori oltre ai semplici costi di hosting e larghezza di banda:</p>
+
+            <div class="parameters-grid">
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <h4>Prestazioni e SEO</h4>
+                    <p>Siti più veloci ottengono posizionamenti migliori e hanno tassi di conversione più elevati.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-users"></i></div>
+                    <h4>Tassi di Abbandono</h4>
+                    <p>Ogni secondo di ritardo aumenta il tasso di abbandono, con conseguente perdita di potenziali clienti.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-code"></i></div>
+                    <h4>Costi di Manutenzione</h4>
+                    <p>Siti più leggeri e puliti richiedono meno tempo di sviluppo e debug.</p>
+                </div>
+                <div class="parameter-card">
+                    <div class="parameter-icon"><i class="fas fa-server"></i></div>
+                    <h4>Costi Infrastruttura</h4>
+                    <p>Un sito ottimizzato richiede meno risorse di server, con risparmio sui costi di hosting.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analisi Risorse -->
+    <div class="detail-section">
+        <h2><i class="fas fa-list"></i> Analisi delle Risorse</h2>
+        <p>Panoramica delle risorse del sito web e del loro impatto ambientale.</p>
+
+        <div class="resource-list" id="resourceList">
+            <!-- Contenuto generato dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Suggerimenti di Ottimizzazione -->
+    <div class="detail-section">
+        <h2><i class="fas fa-lightbulb"></i> Suggerimenti di Ottimizzazione</h2>
+        <p>Ecco come puoi migliorare l'efficienza energetica ed economica del tuo sito web:</p>
+
+        <div class="optimization-grid" id="optimizationList">
+            <!-- Contenuto generato dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Confronto con altri siti -->
     <div class="detail-section">
         <h2><i class="fas fa-chart-bar"></i> Confronto con altri Siti</h2>
         <p>Ecco come si posiziona il tuo sito rispetto alla media del settore:</p>
@@ -78,6 +231,7 @@
         </div>
     </div>
 
+    <!-- Pulsanti di azione -->
     <div class="action-buttons">
         <button class="action-button primary-button" id="downloadReportBtn"><i class="fas fa-file-download"></i> Scarica Report Completo</button>
         <button class="action-button secondary-button" id="shareReportBtn"><i class="fas fa-share-alt"></i> Condividi Risultati</button>
@@ -86,217 +240,234 @@
 {% endblock %}
 
 {% block js %}
-<!-- Caricamento di React e ReactDOM prima di qualsiasi altro script per garantire disponibilità -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-<!-- Script per verificare il caricamento di React -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Verifica che React e ReactDOM siano caricati correttamente
-        if (window.React && window.ReactDOM) {
-            console.log("React e ReactDOM caricati correttamente:", window.React.version);
-        } else {
-            console.error("ERRORE: React o ReactDOM non disponibili");
-        }
-    });
-</script>
-
 <script type="module">
-    // Modulo dashboard-loader per inizializzare il componente React
-    import { loadEnhancedDashboard } from '/static/js/modules/dashboard-loader.js';
-    window.loadEnhancedDashboard = loadEnhancedDashboard;
+    // Importa il modulo di analisi per la gestione del form
+    import { showError } from '/static/js/modules/analyzer.js';
 
-    // Aggiungi l'opzione useEnhanced al form
+    // Importa la dashboard unificata
+    import { populateDashboard } from '/static/js/modules/unified-dashboard.js';
+
     document.addEventListener('DOMContentLoaded', function() {
-      const analyzerForm = document.getElementById('analyzerForm');
-      const useEnhancedCheckbox = document.getElementById('useEnhanced');
+        // Gestisci il form di analisi
+        setupAnalyzerForm();
 
-      if (analyzerForm) {
-        analyzerForm.addEventListener('submit', function(e) {
-          e.preventDefault();
+        // Inizializza il toggle per le opzioni avanzate
+        setupAdvancedToggle();
 
-          // Ottieni lo stato della checkbox
-          const useEnhanced = useEnhancedCheckbox && useEnhancedCheckbox.checked;
-
-          // Ottieni i valori di input
-          const urlInput = document.getElementById('urlInput');
-          const monthlyVisitsInput = document.getElementById('monthlyVisits');
-
-          if (!urlInput || !urlInput.value) {
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) {
-              errorMessage.textContent = "Inserisci un URL valido";
-              errorMessage.style.display = 'block';
-            }
-            return;
-          }
-
-          // Ottieni il valore delle visite mensili
-          let monthlyVisits = 10000;
-          if (monthlyVisitsInput && monthlyVisitsInput.value) {
-            const parsedValue = parseInt(monthlyVisitsInput.value, 10);
-            if (!isNaN(parsedValue) && parsedValue > 0) {
-              monthlyVisits = parsedValue;
-            }
-          }
-
-          // Mostra il messaggio di caricamento
-          const loadingSection = document.getElementById('loadingSection');
-          if (loadingSection) {
-            loadingSection.style.display = 'block';
-          }
-
-          const dashboardSection = document.getElementById('dashboardSection');
-          if (dashboardSection) {
-            dashboardSection.style.display = 'none';
-          }
-
-          // Nascondi messaggi di errore precedenti
-          const errorMessage = document.getElementById('errorMessage');
-          if (errorMessage) {
-            errorMessage.style.display = 'none';
-          }
-
-          // Chiama l'API
-          fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              url: urlInput.value,
-              monthly_visits: monthlyVisits,
-              use_enhanced: useEnhanced
-            }),
-          })
-          .then(response => response.json())
-          .then(data => {
-            // Nascondi il caricamento
-            if (loadingSection) {
-              loadingSection.style.display = 'none';
-            }
-
-            // Gestisci i dati
-            if (!data.success) {
-              // Mostra errore
-              const errorMessage = document.getElementById('errorMessage');
-              if (errorMessage) {
-                errorMessage.textContent = data.error || "Si è verificato un errore durante l'analisi";
-                errorMessage.style.display = 'block';
-              }
-              return;
-            }
-
-            // Salva i dati
-            window.analysisData = data;
-
-            // Mostra la dashboard
-            if (dashboardSection) {
-              dashboardSection.style.display = 'block';
-            }
-
-            // Visualizza il banner del tipo di analisi
-            if (typeof showAnalysisTypeBanner === 'function') {
-              showAnalysisTypeBanner(data.analyzer_type);
-            }
-
-            // Verifica se utilizzare la dashboard avanzata
-            const isEnhanced = data.analyzer_type === 'lighthouse-enhanced';
-            const enhancedDashboardContainer = document.getElementById('enhancedDashboardContainer');
-
-            if (isEnhanced && enhancedDashboardContainer) {
-              console.log("Utilizzo dashboard avanzata React...");
-
-              // Nascondi le sezioni standard
-              const standardSections = [
-                'scoreOverview', 'webVitalsSection', 'economicBenefits',
-                'resourceList', 'optimizationList'
-              ].forEach(id => {
-                const element = document.getElementById(id);
-                if (element && element.parentElement) {
-                  element.parentElement.style.display = 'none';
-                }
-              });
-
-              // Tenta di caricare la dashboard React
-              if (window.loadEnhancedDashboard) {
-                window.loadEnhancedDashboard(data, enhancedDashboardContainer)
-                  .then(success => {
-                    if (success) {
-                      console.log("Dashboard React caricata con successo");
-                      dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                      console.warn("Fallback alla dashboard standard");
-                      // Fallback alla dashboard standard
-                      import('/static/js/modules/dashboard.js').then(module => {
-                        module.populateDashboard(data);
-                        dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                      });
-                    }
-                  })
-                  .catch(error => {
-                    console.error("Errore caricamento dashboard React:", error);
-                    // Fallback alla dashboard standard
-                    import('/static/js/modules/dashboard.js').then(module => {
-                      module.populateDashboard(data);
-                      dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                    });
-                  });
-              } else {
-                console.error("Funzione loadEnhancedDashboard non disponibile");
-                // Fallback alla dashboard standard
-                import('/static/js/modules/dashboard.js').then(module => {
-                  module.populateDashboard(data);
-                  dashboardSection.scrollIntoView({ behavior: 'smooth' });
-                });
-              }
-            } else {
-              // Utilizza la dashboard standard
-              import('/static/js/modules/dashboard.js').then(module => {
-                module.populateDashboard(data);
-                dashboardSection.scrollIntoView({ behavior: 'smooth' });
-              });
-            }
-          })
-          .catch(error => {
-            console.error('Errore durante l\'analisi:', error);
-
-            // Nascondi il caricamento
-            if (loadingSection) {
-              loadingSection.style.display = 'none';
-            }
-
-            // Mostra errore
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) {
-              errorMessage.textContent = "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto');
-              errorMessage.style.display = 'block';
-            }
-          });
-        });
-      }
-
-      // Imposta il comportamento del toggle per le opzioni avanzate
-      const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
-      const advancedOptions = document.getElementById('advancedOptions');
-
-      if (toggleAdvancedBtn && advancedOptions) {
-        toggleAdvancedBtn.addEventListener('click', function() {
-          const isHidden = advancedOptions.style.display === 'none';
-          advancedOptions.style.display = isHidden ? 'block' : 'none';
-
-          this.innerHTML = isHidden ?
-            '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
-            '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
-          this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-        });
-      }
+        // Verifica se ci sono parametri URL per avviare un'analisi
+        checkUrlParams();
     });
+
+    /**
+     * Configura il form di analisi
+     */
+    function setupAnalyzerForm() {
+        const analyzerForm = document.getElementById('analyzerForm');
+        if (!analyzerForm) return;
+
+        analyzerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const urlInput = document.getElementById('urlInput');
+            const monthlyVisitsInput = document.getElementById('monthlyVisits');
+            const loadingSection = document.getElementById('loadingSection');
+            const dashboardSection = document.getElementById('dashboardSection');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Valida l'input
+            if (!urlInput || !urlInput.value) {
+                showError("Inserisci un URL valido", errorMessage);
+                return;
+            }
+
+            // Ottieni le visite mensili
+            let monthlyVisits = 10000; // Valore predefinito
+            if (monthlyVisitsInput && monthlyVisitsInput.value) {
+                const parsedValue = parseInt(monthlyVisitsInput.value, 10);
+                if (!isNaN(parsedValue) && parsedValue > 0) {
+                    monthlyVisits = parsedValue;
+                }
+            }
+
+            // Nascondi errori precedenti
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+
+            // Mostra il caricamento
+            if (loadingSection) {
+                loadingSection.style.display = 'block';
+            }
+
+            if (dashboardSection) {
+                dashboardSection.style.display = 'none';
+            }
+
+            try {
+                // Chiama l'API per l'analisi
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: urlInput.value,
+                        monthly_visits: monthlyVisits
+                    }),
+                });
+
+                const data = await response.json();
+
+                // Nascondi il caricamento
+                if (loadingSection) {
+                    loadingSection.style.display = 'none';
+                }
+
+                if (!data.success) {
+                    // Mostra errore
+                    showError(data.error || "Si è verificato un errore durante l'analisi", errorMessage);
+                    return;
+                }
+
+                // Salva i dati per uso futuro
+                window.analysisData = data;
+                try {
+                    localStorage.setItem('analysisData', JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Impossibile salvare i dati in localStorage:', e);
+                }
+
+                // Popola la dashboard con i dati
+                try {
+                    await populateDashboard(data);
+
+                    // Mostra la dashboard
+                    dashboardSection.style.display = 'block';
+                    dashboardSection.scrollIntoView({ behavior: 'smooth' });
+                } catch (err) {
+                    console.error('Errore durante il popolamento della dashboard:', err);
+                    showError("Errore durante la visualizzazione dei risultati", errorMessage);
+                }
+            } catch (error) {
+                console.error('Errore durante l\'analisi:', error);
+
+                // Nascondi il caricamento
+                if (loadingSection) {
+                    loadingSection.style.display = 'none';
+                }
+
+                // Mostra errore
+                showError("Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto'), errorMessage);
+            }
+        });
+
+        // Configura i pulsanti di azione
+        setupActionButtons();
+    }
+
+    /**
+     * Configura il toggle per le opzioni avanzate
+     */
+    function setupAdvancedToggle() {
+        const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+        const advancedOptions = document.getElementById('advancedOptions');
+
+        if (toggleAdvancedBtn && advancedOptions) {
+            toggleAdvancedBtn.addEventListener('click', function() {
+                const isHidden = advancedOptions.style.display === 'none';
+                advancedOptions.style.display = isHidden ? 'block' : 'none';
+
+                this.innerHTML = isHidden ?
+                    '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
+                    '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
+                this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+        }
+    }
+
+    /**
+     * Configura i pulsanti di azione
+     */
+    function setupActionButtons() {
+        // Aggiungi funzionalità al pulsante di download
+        const downloadReportBtn = document.getElementById('downloadReportBtn');
+        if (downloadReportBtn) {
+            downloadReportBtn.addEventListener('click', function() {
+                alert('La funzionalità di download del report PDF è temporaneamente disabilitata. Questa funzione sarà disponibile in un aggiornamento futuro.');
+            });
+        }
+
+        // Aggiungi funzionalità al pulsante di condivisione
+        const shareReportBtn = document.getElementById('shareReportBtn');
+        if (shareReportBtn) {
+            shareReportBtn.addEventListener('click', function() {
+                const analysisData = window.analysisData;
+                if (!analysisData) {
+                    alert('Nessuna analisi disponibile da condividere!');
+                    return;
+                }
+
+                // Esempio base di condivisione
+                if (navigator.share) {
+                    // API Web Share
+                    navigator.share({
+                        title: `Analisi di Sostenibilità Web: ${analysisData.domain}`,
+                        text: `Il sito ${analysisData.domain} ha un punteggio di sostenibilità di ${analysisData.metrics.sustainability_score}/100.`,
+                        url: window.location.href
+                    }).catch(err => {
+                        console.error('Errore nella condivisione:', err);
+                    });
+                } else {
+                    // Fallback: copia l'URL negli appunti
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('URL copiato negli appunti!');
+                    }).catch(err => {
+                        console.error('Errore nella copia URL:', err);
+                        alert(`Copia manualmente questo URL: ${url}`);
+                    });
+                }
+            });
+        }
+    }
+
+    /**
+     * Verifica se ci sono parametri URL per avviare un'analisi
+     */
+    function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToAnalyze = urlParams.get('url');
+        if (urlToAnalyze) {
+            const urlInput = document.getElementById('urlInput');
+            if (urlInput) {
+                urlInput.value = urlToAnalyze;
+                // Opzionalmente avvia automaticamente l'analisi
+                // document.getElementById('analyzerForm').dispatchEvent(new Event('submit'));
+            }
+        }
+    }
+
+    /**
+     * Mostra un messaggio di errore
+     * @param {string} message - Messaggio di errore
+     * @param {HTMLElement} errorElement - Elemento HTML per l'errore
+     */
+    function showError(message, errorElement) {
+        if (!errorElement) {
+            console.error(message);
+            alert(message);
+            return;
+        }
+
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+
+        // Scroll fino al messaggio di errore
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 </script>
 
-<!-- Moduli di supporto -->
+<!-- Moduli di supporto per i grafici -->
 <script type="module" src="{{ url_for('static', filename='js/modules/charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/webVitals.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/modules/economics.js') }}"></script>
 {% endblock %}
