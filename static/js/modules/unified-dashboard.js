@@ -933,7 +933,7 @@ function createEnhancedMetricsSection() {
   section.className = 'detail-section enhanced-metrics';
   section.innerHTML = `
     <h2><i class="fas fa-chart-line"></i> Metriche Avanzate</h2>
-    <p>Queste metriche sono disponibili grazie all'analizzatore avanzato Lighthouse.</p>
+    <p>Queste metriche dettagliate forniscono un'analisi approfondita delle prestazioni di sostenibilità del tuo sito web.</p>
 
     <div id="enhancedMetricsContainer" class="enhanced-metrics-container">
       <!-- I contenuti verranno aggiunti dinamicamente -->
@@ -949,7 +949,6 @@ function createEnhancedMetricsSection() {
     dashboardSection.appendChild(section);
   }
 }
-
 /**
  * Popola i dati di efficienza energetica
  * @param {Object} energyData - Dati di efficienza energetica
@@ -961,54 +960,45 @@ function populateEnergyEfficiency(energyData) {
   const section = document.createElement('div');
   section.className = 'energy-efficiency-section';
 
-  // Converti il punteggio in percentuale per coerenza con il resto dell'UI
-  const scorePercent = Math.round(energyData.score * 100);
-
-  let scoreClass = 'text-red-500';
+  // Calcola classe colore in base al punteggio
+  const scorePercent = energyData.score;
+  let scoreClass = 'red-score';
   if (scorePercent >= 80) {
-    scoreClass = 'text-green-500';
+    scoreClass = 'green-score';
   } else if (scorePercent >= 50) {
-    scoreClass = 'text-amber-500';
+    scoreClass = 'yellow-score';
   }
 
   section.innerHTML = `
-    <h3 class="text-lg font-semibold mb-2 flex items-center">
-      <i class="fas fa-bolt mr-2 text-green-500"></i>
-      Efficienza Energetica
-    </h3>
+    <h3><i class="fas fa-bolt"></i> Efficienza Energetica</h3>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold ${scoreClass}">${scorePercent}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Punteggio Efficienza</div>
-        </div>
+    <div class="energy-metrics-grid">
+      <div class="energy-metric-card">
+        <div class="metric-value ${scoreClass}">${scorePercent}%</div>
+        <div class="metric-label">Punteggio Efficienza</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${energyData.estimated_kwh_per_view} kWh</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Consumo per Visita</div>
-        </div>
+      <div class="energy-metric-card">
+        <div class="metric-value">${energyData.estimated_kwh_per_view} kWh</div>
+        <div class="metric-label">Consumo per Visita</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${energyData.estimated_yearly_kwh} kWh</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Consumo Annuale Stimato</div>
-        </div>
+      <div class="energy-metric-card">
+        <div class="metric-value">${energyData.estimated_yearly_kwh} kWh</div>
+        <div class="metric-label">Consumo Annuale Stimato</div>
       </div>
     </div>
 
-    <h4 class="text-md font-semibold mb-2">Impatto delle Ottimizzazioni</h4>
-    <div class="impact-bars">
-      ${createImpactBars(energyData.optimization_impacts)}
+    <div class="impact-section">
+      <h4><i class="fas fa-chart-line"></i> Impatto delle Ottimizzazioni</h4>
+      <div class="impact-bars">
+        ${createImpactBars(energyData.optimization_impacts)}
+      </div>
     </div>
   `;
 
   container.appendChild(section);
 }
-
 /**
  * Crea le barre di impatto per le ottimizzazioni
  * @param {Object} impacts - Valori di impatto per categoria
@@ -1030,11 +1020,12 @@ function createImpactBars(impacts) {
 
   for (const [key, value] of Object.entries(impacts)) {
     if (categories[key]) {
+      // Utilizziamo variabili CSS personalizzate per l'animazione delle barre
       html += `
         <div class="impact-bar">
           <div class="impact-label">${categories[key]}</div>
           <div class="impact-track">
-            <div class="impact-fill" style="width: ${value}%"></div>
+            <div class="impact-fill" style="--progress-width: ${value}%"></div>
           </div>
           <div class="impact-value">${value}%</div>
         </div>
@@ -1054,29 +1045,26 @@ function populateAccessibility(accessibilityData) {
   if (!container) return;
 
   const section = document.createElement('div');
-  section.className = 'accessibility-section mt-6';
+  section.className = 'accessibility-section';
 
   // Determina la classe di colore in base al punteggio
-  let scoreClass = 'text-red-500';
+  let scoreClass = 'red-score';
   if (accessibilityData.score >= 80) {
-    scoreClass = 'text-green-500';
+    scoreClass = 'green-score';
   } else if (accessibilityData.score >= 50) {
-    scoreClass = 'text-amber-500';
+    scoreClass = 'yellow-score';
   }
 
   section.innerHTML = `
-    <h3 class="text-lg font-semibold mb-2 flex items-center">
-      <i class="fas fa-universal-access mr-2 text-blue-500"></i>
-      Accessibilità
-    </h3>
+    <h3><i class="fas fa-universal-access"></i> Accessibilità</h3>
 
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-      <div class="flex justify-between items-center">
-        <div>
-          <div class="text-2xl font-bold ${scoreClass}">${accessibilityData.score}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Punteggio Accessibilità</div>
+    <div class="accessibility-card">
+      <div class="accessibility-details">
+        <div class="accessibility-score">
+          <div class="score-value ${scoreClass}">${accessibilityData.score}%</div>
+          <div class="score-label">Punteggio Accessibilità</div>
         </div>
-        <div class="text-gray-500 dark:text-gray-400 text-sm max-w-md">
+        <div class="accessibility-impact">
           ${accessibilityData.sustainability_impact}
         </div>
       </div>
@@ -1095,48 +1083,40 @@ function populateCarbonFootprint(footprintData) {
   if (!container) return;
 
   const section = document.createElement('div');
-  section.className = 'carbon-footprint-section mt-6';
+  section.className = 'carbon-footprint-section';
 
   section.innerHTML = `
-    <h3 class="text-lg font-semibold mb-2 flex items-center">
-      <i class="fas fa-leaf mr-2 text-green-500"></i>
-      Impronta Carbonica Annuale
-    </h3>
+    <h3><i class="fas fa-leaf"></i> Impronta Carbonica Annuale</h3>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${footprintData.kg_co2} kg</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">CO₂ Annuale</div>
-        </div>
+    <div class="carbon-metrics-grid">
+      <div class="carbon-metric-card">
+        <div class="metric-icon"><i class="fas fa-smog"></i></div>
+        <div class="metric-value">${footprintData.kg_co2} kg</div>
+        <div class="metric-label">CO₂ Annuale</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${footprintData.equivalent_trees}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Alberi Equivalenti</div>
-        </div>
+      <div class="carbon-metric-card">
+        <div class="metric-icon"><i class="fas fa-tree"></i></div>
+        <div class="metric-value">${footprintData.equivalent_trees}</div>
+        <div class="metric-label">Alberi Equivalenti</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${footprintData.comparison.car_km} km</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Equivalente in Auto</div>
-        </div>
+      <div class="carbon-metric-card">
+        <div class="metric-icon"><i class="fas fa-car"></i></div>
+        <div class="metric-value">${footprintData.comparison.car_km} km</div>
+        <div class="metric-label">Equivalente in Auto</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold">${footprintData.comparison.smartphone_charges}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Ricariche Smartphone</div>
-        </div>
+      <div class="carbon-metric-card">
+        <div class="metric-icon"><i class="fas fa-mobile-alt"></i></div>
+        <div class="metric-value">${footprintData.comparison.smartphone_charges}</div>
+        <div class="metric-label">Ricariche Smartphone</div>
       </div>
     </div>
   `;
 
   container.appendChild(section);
 }
-
 /**
  * Popola i punteggi delle categorie di Lighthouse
  * @param {Object} categoryScores - Punteggi delle categorie
@@ -1146,51 +1126,40 @@ function populateCategoryScores(categoryScores) {
   if (!container) return;
 
   const section = document.createElement('div');
-  section.className = 'category-scores-section mt-6';
-
-  // Prepara i dati per il grafico radar (se necessario)
-  // Per ora usiamo solo un display semplice
+  section.className = 'category-scores-section';
 
   section.innerHTML = `
-    <h3 class="text-lg font-semibold mb-2 flex items-center">
-      <i class="fas fa-chart-pie mr-2 text-purple-500"></i>
-      Punteggi Lighthouse
-    </h3>
+    <h3><i class="fas fa-chart-pie"></i> Punteggi Lighthouse</h3>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold text-blue-500">${categoryScores.performance}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Performance</div>
-        </div>
+    <div class="lighthouse-grid">
+      <div class="lighthouse-card performance">
+        <div class="metric-icon"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="metric-value">${categoryScores.performance}%</div>
+        <div class="metric-label">Performance</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold text-green-500">${categoryScores.accessibility}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Accessibilità</div>
-        </div>
+      <div class="lighthouse-card accessibility">
+        <div class="metric-icon"><i class="fas fa-universal-access"></i></div>
+        <div class="metric-value">${categoryScores.accessibility}%</div>
+        <div class="metric-label">Accessibilità</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold text-amber-500">${categoryScores.best_practices}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Best Practices</div>
-        </div>
+      <div class="lighthouse-card best-practices">
+        <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="metric-value">${categoryScores.best_practices}%</div>
+        <div class="metric-label">Best Practices</div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        <div class="text-center">
-          <div class="text-2xl font-bold text-red-500">${categoryScores.seo}%</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">SEO</div>
-        </div>
+      <div class="lighthouse-card seo">
+        <div class="metric-icon"><i class="fas fa-search"></i></div>
+        <div class="metric-value">${categoryScores.seo}%</div>
+        <div class="metric-label">SEO</div>
       </div>
     </div>
   `;
 
   container.appendChild(section);
 }
-
 /**
  * Mostra un errore generale
  * @param {string} message - Messaggio di errore
