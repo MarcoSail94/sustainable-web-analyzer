@@ -1,12 +1,169 @@
 /**
- * Modulo WebVitals - Gestisce l'aggiornamento e visualizzazione delle Core Web Vitals
+ * Crea il grafico delle Web Vitals utilizzando solo dati reali misurati
+ * @param {Object} data - Può essere l'oggetto dati completo o un formato semplificato con {metrics: {web_vitals: ...}}
  */
+function createWebVitalsChart(data) {
+    // Supporta sia il formato completo che il formato ridotto
+    const webVitals = data.metrics?.web_vitals || data;
+
+    if (!webVitals) {
+        console.error('Dati Web Vitals non disponibili per il grafico');
+        return;
+    }
+
+    try {
+        const ctx = document.getElementById('webVitalsChart');
+        if (!ctx) {
+            console.error('Canvas per WebVitalsChart non trovato');
+            return;
+        }
+
+        const ctxObj = ctx.getContext('2d');
+
+        // Verifica che Chart.js sia disponibile
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js non disponibile per il grafico Web Vitals');
+            return;
+        }
+
+        // Distruggi eventuali grafici precedenti
+        if (window.webVitalsChart && typeof window.webVitalsChart.destroy === 'function') {
+            window.webVitalsChart.destroy();
+        }
+
+        // Prepara i dati per il grafico
+        // Verifica se i dati sono realmente presenti prima di usarli
+        const lcpValue = webVitals.lcp !== undefined ? webVitals.lcp : 0;
+        const fidValue = webVitals.fid !== undefined ? webVitals.fid / 1000 : 0; // Converti in secondi
+        const clsValue = webVitals.cls !== undefined ? webVitals.cls * 10 : 0; // Moltiplica per scala
+
+        // Prepara i valori target (questi sono standard Web Vitals, quindi OK usarli)
+        const lcpTarget = 2.5;
+        const fidTarget = 0.1; // 100ms in secondi
+        const clsTarget = 0.1 * 10; // Scalato come i dati reali
+
+        // Crea i dataset di base (sempre disponibili)
+        const datasets = [
+            {
+                label: 'Il tuo sito',
+                data: [lcpValue, fidValue, clsValue],
+                backgroundColor: 'rgba(22, 163, 74, 0.2)',
+                borderColor: 'rgba(22, 163, 74, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                pointRadius: 4
+            },
+            {
+                label: 'Obiettivo',
+                data: [lcpTarget, fidTarget, clsTarget],
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                pointRadius: 3
+            }
+        ];
+
+        // Aggiungi una nota per indicare che il grafico mostra solo i dati reali
+        const container = ctx.parentNode;
+        if (container) {
+            const noteExists = container.querySelector('.data-availability-note');
+            if (!noteExists) {
+                const note = document.createElement('div');
+                note.className = 'data-availability-note';
+                note.style.textAlign = 'center';
+                note.style.marginTop = '10px';
+                note.style.fontSize = '0.875rem';
+                note.style.color = 'var(--text-secondary)';
+                note.innerHTML = '<i class="fas fa-info-circle"></i> Il grafico mostra solo i dati reali misurati e i valori target standard';
+                container.appendChild(note);
+            }
+        }
+
+        // Calcola il valore massimo per il grafico basandosi solo sui dati disponibili
+        const maxValue = Math.max(
+            lcpValue * 1.2,
+            fidValue * 1.2,
+            clsValue * 1.2,
+            lcpTarget * 1.2,
+            fidTarget * 1.2,
+            clsTarget * 1.2
+        );
+
+        // Crea il grafico
+        window.webVitalsChart = new Chart(ctxObj, {
+            type: 'radar',
+            data: {
+                labels: ['LCP', 'FID', 'CLS'],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        min: 0,
+                        max: maxValue,
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: 'rgba(0, 0, 0, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 20,
+                            boxWidth: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.raw || 0;
+                                const index = context.dataIndex;
+
+                                // Determina l'unità in base all'indice
+                                let unit, displayValue;
+                                if (index === 0) { // LCP
+                                    unit = 's';
+                                    displayValue = value;
+                                } else if (index === 1) { // FID
+                                    unit = 'ms';
+                                    displayValue = value * 1000; // Riconverti in ms
+                                } else { // CLS
+                                    unit = '';
+                                    displayValue = value / 10; // Riconverti al valore originale
+                                }
+
+                                return `${label}: ${displayValue.toFixed(2)}${unit}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Errore durante la creazione del grafico Web Vitals:', error);
+        console.error('Stack trace:', error.stack);
+    }
+}
 
 /**
  * Aggiorna la visualizzazione delle Web Vitals
  * @param {Object} data - Dati di analisi
  */
-export function updateWebVitals(data) {
+function updateWebVitals(data) {
     const webVitals = data.metrics.web_vitals;
     if (!webVitals) return;
 
@@ -42,6 +199,11 @@ function updateWebVitalMetric(metric, value, unit, thresholds, score) {
     const bar = document.getElementById(`${metric}Bar`);
     const status = document.getElementById(`${metric}Status`);
     const card = document.getElementById(`${metric}Card`);
+
+    if (!valueElement || !bar || !status || !card) {
+        console.warn(`Elementi per Web Vital ${metric} non trovati`);
+        return;
+    }
 
     // Formatta il valore in base alla metrica
     let displayValue;
@@ -86,154 +248,5 @@ function updateWebVitalMetric(metric, value, unit, thresholds, score) {
     bar.style.width = barWidth;
 }
 
-/**
- * Crea il grafico delle Web Vitals
- * @param {Object} data - Dati di analisi
- */
-function createWebVitalsChart(data) {
-    const webVitals = data.metrics.web_vitals;
-    const industryAvg = data.industry_comparison.average_web_vitals;
-
-    if (!webVitals || !industryAvg) return;
-
-    try {
-        const ctx = document.getElementById('webVitalsChart').getContext('2d');
-
-        // Verifica che Chart.js sia disponibile
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js non disponibile per il grafico Web Vitals');
-            return;
-        }
-
-        // Distruggi eventuali grafici precedenti
-        if (window.webVitalsChart && typeof window.webVitalsChart.destroy === 'function') {
-            window.webVitalsChart.destroy();
-        }
-
-        // Prepara i dati per il grafico
-        const lcpData = {
-            actual: webVitals.lcp,
-            target: 2.5,
-            industry: industryAvg.lcp,
-            label: 'LCP (s)'
-        };
-
-        const fidData = {
-            actual: webVitals.fid / 1000, // Converti in secondi per scala uniforme
-            target: 0.1,
-            industry: industryAvg.fid / 1000,
-            label: 'FID (s)'
-        };
-
-        const clsData = {
-            actual: webVitals.cls * 10, // Moltiplica per avere una scala comparabile
-            target: 0.1 * 10,
-            industry: industryAvg.cls * 10,
-            label: 'CLS (x10)'
-        };
-
-        window.webVitalsChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['LCP', 'FID', 'CLS'],
-                datasets: [
-                    {
-                        label: 'Il tuo sito',
-                        data: [lcpData.actual, fidData.actual, clsData.actual],
-                        backgroundColor: 'rgba(22, 163, 74, 0.2)',
-                        borderColor: 'rgba(22, 163, 74, 1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: 'rgba(22, 163, 74, 1)',
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'Media di settore',
-                        data: [lcpData.industry, fidData.industry, clsData.industry],
-                        backgroundColor: 'rgba(107, 114, 128, 0.2)',
-                        borderColor: 'rgba(107, 114, 128, 1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: 'rgba(107, 114, 128, 1)',
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'Obiettivo',
-                        data: [lcpData.target, fidData.target, clsData.target],
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                        pointRadius: 3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        min: 0,
-                        max: Math.max(
-                            lcpData.actual * 1.2,
-                            lcpData.industry * 1.2,
-                            fidData.actual * 1.2,
-                            fidData.industry * 1.2,
-                            clsData.actual * 1.2,
-                            clsData.industry * 1.2
-                        ),
-                        ticks: {
-                            backdropColor: 'transparent',
-                            color: 'rgba(0, 0, 0, 0.7)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            padding: 20,
-                            boxWidth: 15,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.dataset.label || '';
-                                const value = context.raw || 0;
-                                const datasetIndex = context.datasetIndex;
-                                const index = context.dataIndex;
-
-                                // Determina l'unità in base all'indice
-                                let unit, displayValue;
-                                if (index === 0) { // LCP
-                                    unit = 's';
-                                    displayValue = value;
-                                } else if (index === 1) { // FID
-                                    unit = 'ms';
-                                    displayValue = value * 1000; // Riconverti in ms
-                                } else { // CLS
-                                    unit = '';
-                                    displayValue = value / 10; // Riconverti al valore originale
-                                }
-
-                                return `${label}: ${displayValue.toFixed(2)}${unit}`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Errore durante la creazione del grafico Web Vitals:', error);
-    }
-}
-
 // Esporta le funzioni
-export { createWebVitalsChart };
+export { updateWebVitals, createWebVitalsChart };

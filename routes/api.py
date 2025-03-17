@@ -244,6 +244,8 @@ def analyze():
         )
         economic_benefits = economic_analyzer.calculate_benefits()
         industry_comparison = economic_analyzer.generate_comparison_data()
+        current_app.logger.info(f"Industry comparison data generated: {industry_comparison}")
+
 
         # Determina la qualità dei dati economici
         if metrics_availability['sustainability'] == 'enhanced':
@@ -365,6 +367,7 @@ def analyze():
                 report['metrics']['web_vitals']['error'] = web_vitals_error
 
         # Logga il completamento con successo
+        current_app.logger.info(f"Report contains industry_comparison: {'industry_comparison' in report}")
         current_app.logger.info(f"Analysis completed for {url} in {report['analysis_time']}s using {metrics_availability}")
 
         return jsonify(report)
