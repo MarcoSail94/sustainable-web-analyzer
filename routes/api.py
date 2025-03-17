@@ -303,58 +303,77 @@ def analyze():
 
             # Aggiungi metriche avanzate se si utilizza Lighthouse Enhanced
             if web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
-                current_app.logger.info("Usato l'analizzatore Lighthouse Enhanced")
+                current_app.logger.info("Aggiunta metriche avanzate al livello corretto")
 
-                # Verifica la presenza delle metriche avanzate
-                has_optimization_scores = 'optimization_scores' in web_vitals_data
-                has_category_scores = 'category_scores' in web_vitals_data
-                has_energy_metrics = 'energy_metrics' in web_vitals_data
+                # Calcola la dimensione in MB per le metriche energetiche
+                total_mb = resource_data.get('total_size', 0) / (1024 * 1024)
 
-                current_app.logger.info(f"Disponibilità metriche avanzate: optimization_scores={has_optimization_scores}, "
-                                        f"category_scores={has_category_scores}, energy_metrics={has_energy_metrics}")
+                # 1. Aggiungi punteggi categorie
+                if 'category_scores' in web_vitals_data:
+                    report['metrics']['category_scores'] = web_vitals_data['category_scores']
+                    current_app.logger.info(f"Aggiunti category_scores al top level: {web_vitals_data['category_scores']}")
 
-                # Se questi dati sono presenti, log i loro valori
-                if has_category_scores:
-                    current_app.logger.info(f"Punteggi categorie: {web_vitals_data['category_scores']}")
+                # 2. Aggiungi punteggi di ottimizzazione
+                if 'optimization_scores' in web_vitals_data:
+                    report['metrics']['optimization'] = web_vitals_data['optimization_scores']
+                    current_app.logger.info(f"Aggiunti optimization_scores al top level: {web_vitals_data['optimization_scores']}")
 
-                # Aggiungi punteggi di ottimizzazione se disponibili
-                if has_optimization_scores:
-                    current_app.logger.info(f"Optimization scores: {web_vitals_data['optimization_scores']}")
-                    report['metrics']['optimization'] = web_vitals_data.get('optimization_scores')
+                    # 3. Crea metriche di efficienza energetica dai punteggi di ottimizzazione
+                    optimization_scores = web_vitals_data['optimization_scores']
+                    # Calcolo ponderato dei fattori che influenzano l'efficienza energetica
+                    energy_efficiency_score = (
+                                                      (optimization_scores.get('compress_images', 0.5) * 0.2) +
+                                                      (optimization_scores.get('next_gen_images', 0.5) * 0.2) +
+                                                      (optimization_scores.get('text_compression', 0.5) * 0.1) +
+                                                      (optimization_scores.get('js_optimization', 0.5) * 0.3) +
+                                                      (optimization_scores.get('cache_policy', 0.5) * 0.1) +
+                                                      (optimization_scores.get('http2', 0.5) * 0.1)
+                                              ) * 100
 
-                # Logga anche i dati Web Vitals
-                current_app.logger.info(f"Web Vitals: LCP={web_vitals_data.get('lcp')}, FID={web_vitals_data.get('fid')}, CLS={web_vitals_data.get('cls')}")
+                    # Converti optimization_scores da valori 0-1 a percentuali 0-100 per il frontend
+                    optimization_impacts = {
+                        key: round(value * 100)
+                        for key, value in optimization_scores.items()
+                    }
 
-                # Logga i punteggi Web Vitals
-                if 'scores' in web_vitals_data:
-                    current_app.logger.info(f"Web Vitals Scores: {web_vitals_data['scores']}")
+                    report['metrics']['energy_efficiency'] = {
+                        'score': round(energy_efficiency_score, 1),
+                        'estimated_kwh_per_view': round(total_mb * Config.ENERGY_CONSUMPTION_PER_MB, 6),
+                        'estimated_yearly_kwh': round(total_mb * Config.ENERGY_CONSUMPTION_PER_MB * Config.DEFAULT_MONTHLY_VISITS * 12, 2),
+                        'optimization_impacts': optimization_impacts
+                    }
+                    current_app.logger.info(f"Aggiunta energy_efficiency al top level con score: {energy_efficiency_score:.1f}")
 
-           # if web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
-           #     # Aggiungi punteggi di ottimizzazione se disponibili
-           #     if 'optimization_scores' in web_vitals_data:
-           #         report['metrics']['optimization'] = web_vitals_data.get('optimization_scores')
+                # 4. Aggiungi metriche di accessibilità
+                if 'accessibility_score' in web_vitals_data:
+                    report['metrics']['accessibility'] = {
+                        'score': web_vitals_data['accessibility_score'],
+                        'sustainability_impact': 'Migliore accessibilità riduce il consumo energetico permettendo agli utenti di completare le azioni più velocemente'
+                    }
+                    current_app.logger.info(f"Aggiunta accessibility al top level con score: {web_vitals_data['accessibility_score']}")
 
-           #     # Aggiungi punteggi delle categorie se disponibili
-           #     if 'category_scores' in web_vitals_data:
-           #         report['metrics']['category_scores'] = web_vitals_data.get('category_scores')
+                # 5. Aggiungi impronta carbonica annuale
+                co2_per_view = report['metrics']['co2_emissions']
+                yearly_co2_kg = round((co2_per_view / 1000) * Config.DEFAULT_MONTHLY_VISITS * 12, 2)
+                yearly_trees = round(yearly_co2_kg / 21, 1)  # Un albero assorbe circa 21 kg di CO2 all'anno
 
-           #     # Aggiungi metriche di performance dettagliate se disponibili
-           #     if 'performance_metrics' in web_vitals_data:
-           #         report['metrics']['performance_details'] = web_vitals_data.get('performance_metrics')
+                report['metrics']['yearly_carbon_footprint'] = {
+                    'kg_co2': yearly_co2_kg,
+                    'equivalent_trees': yearly_trees,
+                    'comparison': {
+                        'car_km': round(yearly_co2_kg / 0.12, 1),  # 0.12 kg CO2 per km
+                        'smartphone_charges': round(yearly_co2_kg / 0.005, 0),  # 5g CO2 per carica
+                    }
+                }
+                current_app.logger.info(f"Aggiunta yearly_carbon_footprint al top level con kg_co2: {yearly_co2_kg}")
 
-           #     # Aggiungi metriche energetiche se disponibili
-           #     if 'energy_efficiency' in sustainability_metrics:
-           #         report['metrics']['energy'] = sustainability_metrics.get('energy_efficiency')
-
-           #     # Aggiungi impronta carbonica annuale se disponibile
-           #     if 'yearly_carbon_footprint' in sustainability_metrics:
-           #         report['metrics']['carbon_footprint'] = sustainability_metrics.get('yearly_carbon_footprint')
-
-           #     # Aggiungi punteggio di accessibilità se disponibile
-           #     if 'accessibility_score' in web_vitals_data:
-           #         report['metrics']['accessibility'] = {
-           #             'score': web_vitals_data.get('accessibility_score')
-           #         }
+                # 6. Aggiungi metriche di performance dettagliate
+                if 'performance_metrics' in web_vitals_data:
+                    report['metrics']['performance_details'] = {
+                        key: value for key, value in web_vitals_data['performance_metrics'].items()
+                        if key not in ['lcp', 'fid', 'cls']  # Evita duplicazione di metriche già incluse
+                    }
+                    current_app.logger.info("Aggiunti performance_details al top level")
         else:
             # Nessun dato Web Vitals disponibile - comunica chiaramente l'indisponibilità
             report['metrics']['web_vitals'] = {
