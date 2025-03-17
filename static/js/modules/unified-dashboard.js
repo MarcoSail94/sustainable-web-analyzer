@@ -218,7 +218,7 @@ function getMetricsAvailabilityDescription(metricsAvailability) {
   const parts = [];
 
   if (metricsAvailability.web_vitals === 'available') {
-    parts.push('Web Vitals complete');
+    parts.push('Web Vitals completa');
   } else if (metricsAvailability.web_vitals === 'partial') {
     parts.push('Web Vitals parziali');
   } else if (metricsAvailability.web_vitals === 'unavailable') {
@@ -905,27 +905,52 @@ function populateEnhancedMetrics(metrics) {
   console.log("Disponibilità yearly_carbon_footprint:", !!metrics.yearly_carbon_footprint);
   console.log("Disponibilità category_scores:", !!metrics.category_scores);
 
-  // Inserisci dati nelle sezioni appropriate
+  // Popola efficienza energetica (sempre piena larghezza)
   if (metrics.energy_efficiency) {
     console.log("Popolamento efficienza energetica", metrics.energy_efficiency);
     populateEnergyEfficiency(metrics.energy_efficiency);
   }
 
-  if (metrics.accessibility) {
-    console.log("Popolamento accessibilità", metrics.accessibility);
-    populateAccessibility(metrics.accessibility);
+  // Crea una riga flessibile per ottimizzazioni e accessibilità
+  const metricsRow = document.createElement('div');
+  metricsRow.className = 'metrics-row';
+  container.appendChild(metricsRow);
+
+  // Colonna di sinistra (impatto ottimizzazioni)
+  const leftColumn = document.createElement('div');
+  leftColumn.className = 'metrics-column';
+  metricsRow.appendChild(leftColumn);
+
+  // Aggiungi impatto ottimizzazioni se disponibile
+  if (metrics.energy_efficiency && metrics.energy_efficiency.optimization_impacts) {
+    console.log("Popolamento impatto ottimizzazioni", metrics.energy_efficiency.optimization_impacts);
+    populateOptimizationImpactsCompact(metrics.energy_efficiency.optimization_impacts, leftColumn);
   }
 
+  // Colonna di destra (accessibilità)
+  const rightColumn = document.createElement('div');
+  rightColumn.className = 'metrics-column';
+  metricsRow.appendChild(rightColumn);
+
+  // Aggiungi accessibilità se disponibile
+  if (metrics.accessibility) {
+    console.log("Popolamento accessibilità", metrics.accessibility);
+    populateAccessibilityCompact(metrics.accessibility, rightColumn);
+  }
+
+  // Popola impronta carbonica (sempre piena larghezza)
   if (metrics.yearly_carbon_footprint) {
     console.log("Popolamento impronta carbonica", metrics.yearly_carbon_footprint);
     populateCarbonFootprint(metrics.yearly_carbon_footprint);
   }
 
+  // Popola punteggi categorie (sempre piena larghezza)
   if (metrics.category_scores) {
     console.log("Popolamento punteggi categorie", metrics.category_scores);
     populateCategoryScores(metrics.category_scores);
   }
 }
+
 /**
  * Crea la sezione per le metriche avanzate
  */
@@ -958,6 +983,7 @@ function createEnhancedMetricsSection() {
     dashboardSection.appendChild(section);
   }
 }
+
 /**
  * Popola i dati di efficienza energetica
  * @param {Object} energyData - Dati di efficienza energetica
@@ -997,17 +1023,30 @@ function populateEnergyEfficiency(energyData) {
         <div class="metric-label">Consumo Annuale Stimato</div>
       </div>
     </div>
+  `;
 
-    <div class="impact-section">
-      <h4><i class="fas fa-chart-line"></i> Impatto delle Ottimizzazioni</h4>
-      <div class="impact-bars">
-        ${createImpactBars(energyData.optimization_impacts)}
-      </div>
+  container.appendChild(section);
+}
+
+/**
+ * Versione compatta della funzione di impatto ottimizzazioni
+ * @param {Object} impacts - Dati di impatto ottimizzazioni
+ * @param {HTMLElement} container - Container in cui inserire
+ */
+function populateOptimizationImpactsCompact(impacts, container) {
+  const section = document.createElement('div');
+  section.className = 'impact-section';
+
+  section.innerHTML = `
+    <h4><i class="fas fa-chart-line"></i> Impatto delle Ottimizzazioni</h4>
+    <div class="impact-bars">
+      ${createImpactBars(impacts)}
     </div>
   `;
 
   container.appendChild(section);
 }
+
 /**
  * Crea le barre di impatto per le ottimizzazioni
  * @param {Object} impacts - Valori di impatto per categoria
@@ -1046,13 +1085,11 @@ function createImpactBars(impacts) {
 }
 
 /**
- * Popola i dati di accessibilità
+ * Versione compatta della funzione accessibilità
  * @param {Object} accessibilityData - Dati di accessibilità
+ * @param {HTMLElement} container - Container in cui inserire
  */
-function populateAccessibility(accessibilityData) {
-  const container = document.getElementById('enhancedMetricsContainer');
-  if (!container) return;
-
+function populateAccessibilityCompact(accessibilityData, container) {
   const section = document.createElement('div');
   section.className = 'accessibility-section';
 
@@ -1065,7 +1102,7 @@ function populateAccessibility(accessibilityData) {
   }
 
   section.innerHTML = `
-    <h3><i class="fas fa-universal-access"></i> Accessibilità</h3>
+    <h4><i class="fas fa-universal-access"></i> Accessibilità</h4>
 
     <div class="accessibility-card">
       <div class="accessibility-details">
@@ -1126,6 +1163,7 @@ function populateCarbonFootprint(footprintData) {
 
   container.appendChild(section);
 }
+
 /**
  * Popola i punteggi delle categorie di Lighthouse
  * @param {Object} categoryScores - Punteggi delle categorie
