@@ -71,6 +71,9 @@
 <!-- JS principale (moduli ES) -->
 <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 
+<!-- Script per riorganizzare le sezioni -->
+<script src="{{ url_for('static', filename='js/section-organizer.js') }}"></script>
+
 <!-- JS specifici per pagina -->
 {% block js %}{% endblock %}
 </body>
