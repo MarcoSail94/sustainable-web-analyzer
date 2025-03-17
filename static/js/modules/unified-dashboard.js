@@ -889,6 +889,16 @@ function populateEnhancedMetrics(metrics) {
     createEnhancedMetricsSection();
   }
 
+  // Ottieni il container e puliscilo prima di aggiungere nuovi contenuti
+  const container = document.getElementById('enhancedMetricsContainer');
+  if (container) {
+    container.innerHTML = '';
+    console.log("Container metriche avanzate pulito per nuovi dati");
+  } else {
+    console.error("Container metriche avanzate non trovato");
+    return;
+  }
+
   // Log per verificare disponibilità metriche
   console.log("Disponibilità energy_efficiency:", !!metrics.energy_efficiency);
   console.log("Disponibilità accessibility:", !!metrics.accessibility);
@@ -916,7 +926,6 @@ function populateEnhancedMetrics(metrics) {
     populateCategoryScores(metrics.category_scores);
   }
 }
-
 /**
  * Crea la sezione per le metriche avanzate
  */
