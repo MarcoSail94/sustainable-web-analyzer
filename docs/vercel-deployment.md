@@ -6,7 +6,9 @@ Vercel does not need Chromium or a dedicated worker for the first release.
 
 ## Runtime Shape
 
-- Vercel serves the Flask app from `app.py`.
+- Vercel serves the Flask app from the top-level `app.py` entrypoint.
+- Do not add `app.py` under the `functions` key in `vercel.json`: Vercel
+  validates Python function patterns there against files inside `/api`.
 - `/api/analyze` validates user input and calls PageSpeed Insights when
   `ANALYSIS_PROVIDER=pagespeed`.
 - Resource, sustainability, and economic estimates are derived from the
