@@ -114,22 +114,22 @@ function showAnalysisQualityBanner(metricsAvailability) {
 
   switch (qualityLevel) {
     case 'high':
-      message = 'Analisi completa con dati avanzati';
+      message = 'Analisi completa con dati avanzati:';
       style = 'bg-green-50 border-green-200 text-green-700';
       icon = '<i class="fas fa-check-circle text-green-500"></i>';
       break;
     case 'medium':
-      message = 'Analisi parziale con alcuni dati avanzati';
+      message = 'Analisi parziale con alcuni dati avanzati:';
       style = 'bg-blue-50 border-blue-200 text-blue-700';
       icon = '<i class="fas fa-info-circle text-blue-500"></i>';
       break;
     case 'basic':
-      message = 'Analisi di base con metriche limitate';
+      message = 'Analisi di base con metriche limitate:';
       style = 'bg-amber-50 border-amber-200 text-amber-700';
       icon = '<i class="fas fa-exclamation-triangle text-amber-500"></i>';
       break;
     default:
-      message = 'Qualità analisi sconosciuta';
+      message = 'Qualità analisi sconosciuta:';
       style = 'bg-gray-50 border-gray-200 text-gray-700';
       icon = '<i class="fas fa-question-circle text-gray-500"></i>';
   }
@@ -1132,7 +1132,7 @@ function populateCarbonFootprint(footprintData) {
   section.className = 'carbon-footprint-section';
 
   section.innerHTML = `
-    <h3><i class="fas fa-leaf"></i> Impronta Carbonica Annuale</h3>
+    <h3><i class="fas fa-leaf"></i>  Carbon Footprint Annuale </h3>
 
     <div class="carbon-metrics-grid">
       <div class="carbon-metric-card">

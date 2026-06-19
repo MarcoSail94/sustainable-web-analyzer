@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils.helpers import is_same_domain, format_file_size
+from utils.url_validation import UnsafeUrlError, normalize_and_validate_url
 from config import Config
 
 # Set up logging
@@ -25,8 +26,8 @@ class ResourceAnalyzer:
 
     def __init__(self, url):
         """Initialize analyzer with the URL to analyze."""
-        self.url = url
-        self.domain = urlparse(url).netloc
+        self.url = normalize_and_validate_url(url)
+        self.domain = urlparse(self.url).netloc
         self.resources = {
             'html': {'size': 0, 'count': 0},
             'css': {'size': 0, 'count': 0},
@@ -62,12 +63,11 @@ class ResourceAnalyzer:
             timeout = Config.BROWSER_TIMEOUT
 
             try:
-                response = self.session.get(self.url, headers=headers, timeout=timeout)
+                response = self._safe_request('GET', self.url, headers=headers, timeout=timeout)
                 response.raise_for_status()
-            except requests.exceptions.SSLError as e:
-                logger.warning(f"SSL error for {self.url}, trying without verification: {str(e)}")
-                response = self.session.get(self.url, headers=headers, timeout=timeout, verify=False)
-                response.raise_for_status()
+            except UnsafeUrlError as e:
+                logger.warning(f"Unsafe URL rejected during resource analysis: {str(e)}")
+                return {'error': str(e)}
 
             # Calculate load time
             self.load_time = response.elapsed.total_seconds()
@@ -209,7 +209,7 @@ class ResourceAnalyzer:
             resource_type: Type of resource (css, javascript, images, fonts, other)
         """
         try:
-            full_url = self._normalize_url(url)
+            full_url = normalize_and_validate_url(self._normalize_url(url))
 
             # Skip invalid URLs
             if not full_url:
@@ -243,7 +243,7 @@ class ResourceAnalyzer:
 
             # Use HEAD request first to check resource availability and size
             try:
-                head_response = self.session.head(full_url, headers=headers, timeout=timeout)
+                head_response = self._safe_request('HEAD', full_url, headers=headers, timeout=timeout)
 
                 # If Content-Length is available, use it
                 content_length = head_response.headers.get('Content-Length')
@@ -252,7 +252,13 @@ class ResourceAnalyzer:
                     logger.debug(f"Got size from Content-Length: {size} bytes for {full_url}")
                 else:
                     # Fall back to GET if Content-Length is not available
-                    response = self.session.get(full_url, headers=headers, timeout=timeout, stream=True)
+                    response = self._safe_request(
+                        'GET',
+                        full_url,
+                        headers=headers,
+                        timeout=timeout,
+                        stream=True
+                    )
                     size = 0
 
                     # Read in chunks to avoid loading large files fully into memory
@@ -286,6 +292,35 @@ class ResourceAnalyzer:
 
         except Exception as e:
             logger.warning(f"Error analyzing resource {url}: {str(e)}")
+
+    def _safe_request(self, method, url, headers, timeout, max_redirects=5, **kwargs):
+        """
+        Make an HTTP request while validating every redirect target.
+        """
+        current_url = normalize_and_validate_url(url)
+
+        for _ in range(max_redirects + 1):
+            response = self.session.request(
+                method,
+                current_url,
+                headers=headers,
+                timeout=timeout,
+                allow_redirects=False,
+                **kwargs
+            )
+
+            if response.is_redirect or response.is_permanent_redirect:
+                location = response.headers.get('Location')
+                if not location:
+                    return response
+                current_url = normalize_and_validate_url(urljoin(current_url, location))
+                continue
+
+            return response
+
+        raise requests.exceptions.TooManyRedirects(
+            f"Too many redirects while fetching {url}"
+        )
 
     def _normalize_url(self, url):
         """

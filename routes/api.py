@@ -4,14 +4,19 @@ API route unificata con pipeline di analisi intelligente e gestione trasparente 
 
 import time
 import traceback
+import logging
+import requests
 from flask import Blueprint, request, jsonify, current_app
 from urllib.parse import urlparse
-from datetime import datetime
 
 from modules.resource_analyzer import ResourceAnalyzer
+from modules.pagespeed_insights_analyzer import PageSpeedInsightsAnalyzer
 from modules.web_vitals_analyzer import WebVitalsAnalyzer
 from modules.sustainability import SustainabilityAnalyzer
 from modules.economics import EconomicAnalyzer
+from utils.url_validation import UnsafeUrlError, normalize_and_validate_url
+
+logger = logging.getLogger(__name__)
 
 # Importa i moduli avanzati (se disponibili)
 try:
@@ -30,14 +35,74 @@ except ImportError:
         ENHANCED_AVAILABLE = False
 
     if not LIGHTHOUSE_AVAILABLE:
-        current_app.logger.warning("Lighthouse modules not available. Using basic analyzer only.")
+        logger.warning("Lighthouse modules not available. Using basic analyzer only.")
     elif not ENHANCED_AVAILABLE:
-        current_app.logger.warning("Enhanced modules not available. Using standard Lighthouse.")
+        logger.warning("Enhanced modules not available. Using standard Lighthouse.")
 
 from config import Config
 
 # Create blueprint
 api_bp = Blueprint('api', __name__)
+
+@api_bp.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for hosting platforms."""
+    return jsonify({
+        'success': True,
+        'status': 'ok',
+        'analysis_provider': Config.ANALYSIS_PROVIDER,
+        'analysis_worker_configured': bool(Config.ANALYSIS_WORKER_URL),
+        'inline_analysis_enabled': Config.INLINE_ANALYSIS_ENABLED,
+        'pagespeed_configured': bool(Config.PAGESPEED_API_KEY),
+        'lighthouse_enabled': Config.LIGHTHOUSE_ENABLED,
+        'browser_analysis_enabled': Config.BROWSER_ANALYSIS_ENABLED
+    })
+
+def proxy_analysis_to_worker(url, monthly_visits):
+    """Forward an analysis request to the dedicated Lighthouse worker."""
+    endpoint = Config.ANALYSIS_WORKER_URL.rstrip('/')
+    if not endpoint.endswith('/api/analyze'):
+        endpoint = endpoint + '/api/analyze'
+
+    headers = {'Content-Type': 'application/json'}
+    if Config.ANALYSIS_WORKER_TOKEN:
+        headers['Authorization'] = f'Bearer {Config.ANALYSIS_WORKER_TOKEN}'
+
+    response = requests.post(
+        endpoint,
+        json={'url': url, 'monthly_visits': monthly_visits},
+        headers=headers,
+        timeout=Config.WORKER_REQUEST_TIMEOUT
+    )
+
+    try:
+        payload = response.json()
+    except ValueError:
+        current_app.logger.error(
+            'Analysis worker returned a non-JSON response: %s',
+            response.text[:500]
+        )
+        return jsonify({
+            'success': False,
+            'error': 'Analysis worker returned an invalid response'
+        }), 502
+
+    return jsonify(payload), response.status_code
+
+def require_analysis_auth():
+    """Require a shared bearer token when this app is deployed as a worker."""
+    if not Config.REQUIRE_ANALYSIS_AUTH:
+        return None
+
+    expected = Config.ANALYSIS_WORKER_TOKEN
+    provided = request.headers.get('Authorization', '')
+    if not expected or provided != f'Bearer {expected}':
+        return jsonify({
+            'success': False,
+            'error': 'Unauthorized analysis request'
+        }), 401
+
+    return None
 
 def calculate_adaptive_timeout(url, resource_data=None):
     """
@@ -65,6 +130,10 @@ def analyze():
     """
     start_time = time.time()
     try:
+        auth_error = require_analysis_auth()
+        if auth_error:
+            return auth_error
+
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
@@ -77,23 +146,49 @@ def analyze():
             monthly_visits = int(monthly_visits)
             if monthly_visits <= 0:
                 monthly_visits = Config.DEFAULT_MONTHLY_VISITS
+            monthly_visits = min(monthly_visits, Config.MAX_MONTHLY_VISITS)
         except (ValueError, TypeError):
             monthly_visits = Config.DEFAULT_MONTHLY_VISITS
 
         if not url:
             return jsonify({'success': False, 'error': 'URL not specified'}), 400
 
-        # Valida URL
-        if not url.startswith(('http://', 'https://')):
-            url = 'https://' + url
+        try:
+            url = normalize_and_validate_url(url)
+        except UnsafeUrlError as e:
+            return jsonify({'success': False, 'error': str(e)}), 400
 
-        # Normalizza l'URL
-        url = url.rstrip('/')
+        if Config.ANALYSIS_PROVIDER == 'worker':
+            if not Config.ANALYSIS_WORKER_URL:
+                return jsonify({
+                    'success': False,
+                    'error': 'Analysis worker is not configured for this deployment',
+                    'error_type': 'WorkerNotConfigured'
+                }), 503
+
+            try:
+                return proxy_analysis_to_worker(url, monthly_visits)
+            except requests.RequestException as e:
+                current_app.logger.error(f"Analysis worker request failed: {str(e)}")
+                return jsonify({
+                    'success': False,
+                    'error': 'Analysis worker is unavailable',
+                    'error_type': type(e).__name__
+                }), 502
+
+        if not Config.INLINE_ANALYSIS_ENABLED and Config.ANALYSIS_PROVIDER != 'pagespeed':
+            return jsonify({
+                'success': False,
+                'error': 'Inline analysis is disabled for this deployment',
+                'error_type': 'InlineAnalysisDisabled'
+            }), 503
 
         # Ottieni dominio e impostazioni
         domain = urlparse(url).netloc
         domain_settings = Config.get_domain_settings(domain)
         skip_web_vitals = domain_settings.get('skip_web_vitals', False)
+        if Config.ANALYSIS_PROVIDER == 'pagespeed':
+            skip_web_vitals = False
 
         # Metadati sulla disponibilità delle metriche
         metrics_availability = {
@@ -110,35 +205,44 @@ def analyze():
         resource_error = None
         web_vitals_error = None
 
-        # Step 1: Analisi delle risorse (sempre richiesta)
-        current_app.logger.info(f"Analyzing resources for URL: {url}")
-        try:
-            resource_analyzer = ResourceAnalyzer(url)
-            resource_data = resource_analyzer.analyze()
+        # Step 1: Analisi delle risorse.
+        # Con PageSpeed, il breakdown arriva dal risultato Lighthouse e non serve
+        # fare crawling locale delle risorse dalla funzione Vercel.
+        if Config.ANALYSIS_PROVIDER == 'pagespeed':
+            metrics_availability['resources'] = 'pending_pagespeed'
+            current_app.logger.info("Skipping local resource crawl; using PageSpeed network data")
+        else:
+            current_app.logger.info(f"Analyzing resources for URL: {url}")
+            try:
+                resource_analyzer = ResourceAnalyzer(url)
+                resource_data = resource_analyzer.analyze()
 
-            if not resource_data:
-                resource_error = "Resource analysis failed without specific error"
+                if not resource_data:
+                    resource_error = "Resource analysis failed without specific error"
+                    metrics_availability['resources'] = 'error'
+                elif 'error' in resource_data:
+                    resource_error = resource_data['error']
+                    metrics_availability['resources'] = 'error'
+                else:
+                    metrics_availability['resources'] = 'available'
+            except Exception as e:
+                resource_error = str(e)
                 metrics_availability['resources'] = 'error'
-            elif 'error' in resource_data:
-                resource_error = resource_data['error']
-                metrics_availability['resources'] = 'error'
-            else:
-                metrics_availability['resources'] = 'available'
-        except Exception as e:
-            resource_error = str(e)
-            metrics_availability['resources'] = 'error'
-            current_app.logger.error(f"Error in resource analysis: {str(e)}")
+                current_app.logger.error(f"Error in resource analysis: {str(e)}")
 
-        # Se l'analisi delle risorse fallisce completamente, fornisci un errore
-        if metrics_availability['resources'] == 'error':
-            return jsonify({
-                'success': False,
-                'error': f"Resource analysis failed: {resource_error}",
-                'metrics_availability': metrics_availability
-            }), 500
+            # Se l'analisi delle risorse fallisce completamente, fornisci un errore
+            if metrics_availability['resources'] == 'error':
+                return jsonify({
+                    'success': False,
+                    'error': f"Resource analysis failed: {resource_error}",
+                    'metrics_availability': metrics_availability
+                }), 500
 
         # Step 2: Calcola timeout adattivo per Web Vitals
-        adaptive_timeout = calculate_adaptive_timeout(url, resource_data)
+        if Config.ANALYSIS_PROVIDER == 'pagespeed':
+            adaptive_timeout = Config.PAGESPEED_TIMEOUT
+        else:
+            adaptive_timeout = calculate_adaptive_timeout(url, resource_data)
         current_app.logger.info(f"Using adaptive timeout: {adaptive_timeout}s")
 
         # Step 3: Analisi Web Vitals (con pipeline di analizzatori)
@@ -149,45 +253,61 @@ def analyze():
             analyzers_to_try = []
 
             # Determina quali analizzatori sono disponibili
-            if ENHANCED_AVAILABLE:
+            if Config.ANALYSIS_PROVIDER == 'pagespeed':
+                analyzers_to_try.append(('pagespeed_insights', PageSpeedInsightsAnalyzer()))
+            elif Config.LIGHTHOUSE_ENABLED and ENHANCED_AVAILABLE:
                 analyzers_to_try.append(('enhanced_lighthouse', EnhancedLighthouseAnalyzer()))
-            if LIGHTHOUSE_AVAILABLE:
-                analyzers_to_try.append(('standard_lighthouse', LighthouseAnalyzer()))
-            analyzers_to_try.append(('basic', WebVitalsAnalyzer()))
+                if LIGHTHOUSE_AVAILABLE:
+                    analyzers_to_try.append(('standard_lighthouse', LighthouseAnalyzer()))
+                if Config.BROWSER_ANALYSIS_ENABLED:
+                    analyzers_to_try.append(('basic', WebVitalsAnalyzer()))
+            else:
+                if Config.LIGHTHOUSE_ENABLED and LIGHTHOUSE_AVAILABLE:
+                    analyzers_to_try.append(('standard_lighthouse', LighthouseAnalyzer()))
+                if Config.BROWSER_ANALYSIS_ENABLED:
+                    analyzers_to_try.append(('basic', WebVitalsAnalyzer()))
 
-            # Tenta l'analisi con ogni analizzatore disponibile
-            for analyzer_type, analyzer in analyzers_to_try:
-                metrics_availability['analyzers_tried'].append(analyzer_type)
+            if not analyzers_to_try:
+                metrics_availability['web_vitals'] = 'skipped'
+                web_vitals_data = {
+                    'analyzer_type': 'none',
+                    'skipped': True,
+                    'reason': 'Web Vitals analyzers disabled for this runtime'
+                }
+            else:
+                # Tenta l'analisi con ogni analizzatore disponibile
+                for analyzer_type, analyzer in analyzers_to_try:
+                    metrics_availability['analyzers_tried'].append(analyzer_type)
 
-                try:
-                    current_app.logger.info(f"Trying {analyzer_type} analyzer")
-                    if analyzer_type.endswith('lighthouse'):
-                        web_vitals_data = analyzer.measure_web_vitals(
-                            url,
-                            timeout=adaptive_timeout,
-                            options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
-                        )
-                    else:
-                        web_vitals_data = analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
+                    try:
+                        current_app.logger.info(f"Trying {analyzer_type} analyzer")
+                        if analyzer_type.endswith('lighthouse') or analyzer_type == 'pagespeed_insights':
+                            web_vitals_data = analyzer.measure_web_vitals(
+                                url,
+                                timeout=adaptive_timeout,
+                                options=getattr(Config, 'LIGHTHOUSE_OPTIONS', None)
+                            )
+                        else:
+                            web_vitals_data = analyzer.measure_web_vitals(url, timeout=adaptive_timeout)
 
-                    # Aggiungi informazioni sul tipo di analizzatore utilizzato
-                    web_vitals_data['analyzer_type'] = analyzer_type
+                        # Aggiungi informazioni sul tipo di analizzatore utilizzato
+                        web_vitals_data['analyzer_type'] = analyzer_type
 
-                    # Verifica se sono presenti valori di fallback
-                    if web_vitals_data.get('is_fallback', False):
-                        metrics_availability['web_vitals'] = 'partial'
-                        current_app.logger.warning(f"Partial data from {analyzer_type} (fallback values used)")
-                    else:
-                        metrics_availability['web_vitals'] = 'available'
-                        current_app.logger.info(f"Complete data from {analyzer_type}")
+                        # Verifica se sono presenti valori di fallback
+                        if web_vitals_data.get('is_fallback', False):
+                            metrics_availability['web_vitals'] = 'partial'
+                            current_app.logger.warning(f"Partial data from {analyzer_type} (fallback values used)")
+                        else:
+                            metrics_availability['web_vitals'] = 'available'
+                            current_app.logger.info(f"Complete data from {analyzer_type}")
 
-                    # Analisi riuscita, esci dal ciclo
-                    break
+                        # Analisi riuscita, esci dal ciclo
+                        break
 
-                except Exception as e:
-                    current_app.logger.warning(f"Error with {analyzer_type} analyzer: {str(e)}")
-                    web_vitals_error = f"{analyzer_type} analysis failed: {str(e)}"
-                    # Continua con il prossimo analizzatore
+                    except Exception as e:
+                        current_app.logger.warning(f"Error with {analyzer_type} analyzer: {str(e)}")
+                        web_vitals_error = f"{analyzer_type} analysis failed: {str(e)}"
+                        # Continua con il prossimo analizzatore
 
             # Se tutti gli analizzatori falliscono
             if web_vitals_data is None:
@@ -207,10 +327,23 @@ def analyze():
                 'skipped': True
             }
 
+        if Config.ANALYSIS_PROVIDER == 'pagespeed':
+            resource_data = web_vitals_data.get('resource_data')
+            if resource_data:
+                metrics_availability['resources'] = 'available'
+            else:
+                metrics_availability['resources'] = 'error'
+                return jsonify({
+                    'success': False,
+                    'error': web_vitals_data.get('error') or 'PageSpeed Insights analysis failed',
+                    'metrics_availability': metrics_availability
+                }), 502
+
         # Step 4: Calcola metriche di sostenibilità con l'analizzatore appropriato
         current_app.logger.info("Calculating sustainability metrics")
 
-        if ENHANCED_AVAILABLE and web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
+        enhanced_analyzer_types = ['enhanced_lighthouse', 'pagespeed_insights']
+        if ENHANCED_AVAILABLE and web_vitals_data.get('analyzer_type') in enhanced_analyzer_types:
             # Usa l'analizzatore di sostenibilità migliorato
             sustainability_analyzer = EnhancedSustainabilityAnalyzer(
                 resource_data=resource_data,
@@ -272,6 +405,7 @@ def analyze():
                 'timeout': adaptive_timeout,
                 'skip_web_vitals': skip_web_vitals
             },
+            'analysis_provider': Config.ANALYSIS_PROVIDER,
             'metrics_availability': metrics_availability,
             'id': int(time.time())  # Timestamp come ID semplice
         }
@@ -290,7 +424,7 @@ def analyze():
             }
 
             # Aggiungi metriche Lighthouse standard se disponibili
-            if web_vitals_data.get('analyzer_type') in ['enhanced_lighthouse', 'standard_lighthouse']:
+            if web_vitals_data.get('analyzer_type') in ['enhanced_lighthouse', 'standard_lighthouse', 'pagespeed_insights']:
                 report['metrics']['web_vitals']['lighthouse_score'] = web_vitals_data.get('lighthouse_score', None)
                 report['metrics']['web_vitals']['speed_index'] = web_vitals_data.get('speed_index', None)
                 report['metrics']['web_vitals']['ttfb'] = web_vitals_data.get('ttfb', None)
@@ -302,7 +436,7 @@ def analyze():
                         report['metrics']['web_vitals'][metric] = web_vitals_data.get(metric)
 
             # Aggiungi metriche avanzate se si utilizza Lighthouse Enhanced
-            if web_vitals_data.get('analyzer_type') == 'enhanced_lighthouse':
+            if web_vitals_data.get('analyzer_type') in ['enhanced_lighthouse', 'pagespeed_insights']:
                 current_app.logger.info("Aggiunta metriche avanzate al livello corretto")
 
                 # Calcola la dimensione in MB per le metriche energetiche
@@ -339,7 +473,7 @@ def analyze():
                     report['metrics']['energy_efficiency'] = {
                         'score': round(energy_efficiency_score, 1),
                         'estimated_kwh_per_view': round(total_mb * Config.ENERGY_CONSUMPTION_PER_MB, 6),
-                        'estimated_yearly_kwh': round(total_mb * Config.ENERGY_CONSUMPTION_PER_MB * Config.DEFAULT_MONTHLY_VISITS * 12, 2),
+                        'estimated_yearly_kwh': round(total_mb * Config.ENERGY_CONSUMPTION_PER_MB * monthly_visits * 12, 2),
                         'optimization_impacts': optimization_impacts
                     }
                     current_app.logger.info(f"Aggiunta energy_efficiency al top level con score: {energy_efficiency_score:.1f}")
@@ -354,7 +488,7 @@ def analyze():
 
                 # 5. Aggiungi impronta carbonica annuale
                 co2_per_view = report['metrics']['co2_emissions']
-                yearly_co2_kg = round((co2_per_view / 1000) * Config.DEFAULT_MONTHLY_VISITS * 12, 2)
+                yearly_co2_kg = round((co2_per_view / 1000) * monthly_visits * 12, 2)
                 yearly_trees = round(yearly_co2_kg / 21, 1)  # Un albero assorbe circa 21 kg di CO2 all'anno
 
                 report['metrics']['yearly_carbon_footprint'] = {

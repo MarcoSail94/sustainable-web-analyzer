@@ -1,0 +1,35 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_ENV=production \
+    INLINE_ANALYSIS_ENABLED=true \
+    LIGHTHOUSE_ENABLED=true \
+    BROWSER_ANALYSIS_ENABLED=true \
+    REQUIRE_ANALYSIS_AUTH=true \
+    CHROME_PATH=/usr/bin/chromium \
+    PORT=8080
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        chromium \
+        curl \
+        fonts-liberation \
+        nodejs \
+        npm \
+    && npm install -g lighthouse \
+    && npm cache clean --force \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8080
+
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} --workers ${WEB_CONCURRENCY:-2} --timeout ${GUNICORN_TIMEOUT:-360} app:app"]

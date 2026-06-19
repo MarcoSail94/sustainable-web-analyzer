@@ -4,6 +4,13 @@ Configuration settings with domain-specific timeouts and handling.
 
 import os
 
+def env_bool(name, default=False):
+    """Read a boolean value from the environment."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+
 class Config:
     """Base configuration."""
 
@@ -11,6 +18,20 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-please-change-in-production')
     HOST = '0.0.0.0'
     PORT = int(os.environ.get('PORT', 8080))
+    IS_VERCEL = env_bool('VERCEL', False)
+    ANALYSIS_WORKER_URL = os.environ.get('ANALYSIS_WORKER_URL')
+    ANALYSIS_WORKER_TOKEN = os.environ.get('ANALYSIS_WORKER_TOKEN')
+    REQUIRE_ANALYSIS_AUTH = env_bool('REQUIRE_ANALYSIS_AUTH', False)
+    WORKER_REQUEST_TIMEOUT = int(os.environ.get('WORKER_REQUEST_TIMEOUT', 290))
+    INLINE_ANALYSIS_ENABLED = env_bool('INLINE_ANALYSIS_ENABLED', not IS_VERCEL)
+    ANALYSIS_PROVIDER = os.environ.get(
+        'ANALYSIS_PROVIDER',
+        'pagespeed' if IS_VERCEL else 'local'
+    )
+    PAGESPEED_API_KEY = os.environ.get('PAGESPEED_API_KEY')
+    PAGESPEED_STRATEGY = os.environ.get('PAGESPEED_STRATEGY', 'desktop')
+    PAGESPEED_LOCALE = os.environ.get('PAGESPEED_LOCALE', 'it')
+    PAGESPEED_TIMEOUT = int(os.environ.get('PAGESPEED_TIMEOUT', 120))
 
     # Browser settings
     BROWSER_TIMEOUT = 90  # Aumentato da 45 secondi a 90 secondi
@@ -25,6 +46,7 @@ class Config:
 
     # Analysis settings
     DEFAULT_MONTHLY_VISITS = 10000
+    MAX_MONTHLY_VISITS = int(os.environ.get('MAX_MONTHLY_VISITS', 10000000))
     CO2_PER_MB = 0.2  # g CO2 per MB transferred
 
     # Economic analysis parameters
@@ -53,7 +75,8 @@ class Config:
     }
 
     # Impostazioni Lighthouse
-    LIGHTHOUSE_ENABLED = True
+    LIGHTHOUSE_ENABLED = env_bool('LIGHTHOUSE_ENABLED', True)
+    BROWSER_ANALYSIS_ENABLED = env_bool('BROWSER_ANALYSIS_ENABLED', True)
     LIGHTHOUSE_PATH = None  # Sarà rilevato automaticamente o impostato da local_config.py
     LIGHTHOUSE_TIMEOUT = 180  # Timeout specifico per Lighthouse (3 minuti)
     RESOURCE_FETCH_TIMEOUT = 45  # Timeout per il fetch delle singole risorse
@@ -117,6 +140,9 @@ class Config:
     # Carica configurazioni locali se disponibili
     @classmethod
     def load_local_config(cls):
+        if os.environ.get('FLASK_ENV') == 'production' or cls.IS_VERCEL:
+            return False
+
         try:
             import local_config
             for attr in dir(local_config):
@@ -157,6 +183,11 @@ class ProductionConfig(Config):
 
     # More resource fetch workers in production
     MAX_WORKERS = 20
+
+    @classmethod
+    def init_app(cls):
+        if not cls.SECRET_KEY:
+            raise RuntimeError('SECRET_KEY must be set in production')
 
 # Configuration dictionary
 config = {
