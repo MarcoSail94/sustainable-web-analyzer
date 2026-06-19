@@ -36,9 +36,9 @@ function reorganizeSections() {
   const scoreOverviewEl = document.getElementById('scoreOverview');
   const webVitalsEl = document.getElementById('webVitalsSection');
   const enhancedMetricsEl = document.getElementById('enhancedMetricsSection');
-  const resourceSectionEl = getElementByHeadingText(dashboard, 'Analisi delle Risorse');
-  const optimizationsSectionEl = getElementByHeadingText(dashboard, 'Suggerimenti di Ottimizzazione');
-  const comparisonSectionEl = getElementByHeadingText(dashboard, 'Confronto con altri Siti');
+  const resourceSectionEl = getElementByHeadingText(dashboard, ['Risorse critiche', 'Analisi delle Risorse']);
+  const optimizationsSectionEl = getElementByHeadingText(dashboard, ['Roadmap tecnica', 'Suggerimenti di Ottimizzazione']);
+  const comparisonSectionEl = getElementByHeadingText(dashboard, ['Benchmark', 'Confronto con altri Siti']);
   const economicBenefitsEl = document.getElementById('economicBenefits');
   const actionButtonsEl = dashboard.querySelector('.action-buttons');
 
@@ -87,10 +87,11 @@ function reorganizeSections() {
  * @returns {HTMLElement|null} - Elemento trovato o null
  */
 function getElementByHeadingText(container, headingText) {
+  const headingTexts = Array.isArray(headingText) ? headingText : [headingText];
   const detailSections = container.querySelectorAll('.detail-section');
   for (const section of detailSections) {
     const heading = section.querySelector('h2');
-    if (heading && heading.textContent.includes(headingText)) {
+    if (heading && headingTexts.some(text => heading.textContent.includes(text))) {
       return section;
     }
   }

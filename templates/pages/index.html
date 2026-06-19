@@ -1,6 +1,6 @@
 {% extends "layouts/default.html" %}
 
-{% block title %}Eco Byte | Web sustainability audit{% endblock %}
+{% block title %}Eco Byte | Pre-audit tecnico SEO per clienti{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
@@ -10,9 +10,9 @@
 <section class="hero" id="analyzer">
     <div class="container hero-layout">
         <div class="hero-copy">
-            <p class="eyebrow">Web sustainability intelligence</p>
-            <h1>Misura l'impatto reale del tuo sito.</h1>
-            <p class="hero-lead">Eco Byte legge performance, peso delle risorse, CO2 stimata e costi operativi in un unico audit pensato per team product, marketing e sviluppo.</p>
+            <p class="eyebrow">Technical SEO sales audit</p>
+            <h1>Prepara evidenze tecniche per convincere e ottimizzazioni da eseguire.</h1>
+            <p class="hero-lead">Eco Byte legge Core Web Vitals, peso pagina, CO2 stimata e costi operativi in un report che parla sia al consulente SEO sia al cliente in fase di trattativa.</p>
 
             <form id="analyzerForm" class="url-form product-search">
                 <div class="input-shell">
@@ -20,7 +20,7 @@
                     <input type="url" id="urlInput" class="url-input" placeholder="https://example.com" aria-label="URL del sito da analizzare" required>
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                        <span>Analizza</span>
+                        <span>Prepara audit</span>
                     </button>
                 </div>
             </form>
@@ -30,7 +30,7 @@
                     <i class="fas fa-sliders" aria-hidden="true"></i>
                     Parametri
                 </button>
-                <span class="hero-note">Audit pubblico, nessun account richiesto</span>
+                <span class="hero-note">Pensato per call commerciali, proposte e roadmap tecniche</span>
             </div>
 
             <div id="advancedOptions" style="display: none;" class="form-advanced">
@@ -50,8 +50,8 @@
         <aside class="audit-preview" id="report-preview" aria-label="Anteprima del report Eco Byte">
             <div class="preview-header">
                 <div>
-                    <span class="preview-kicker">Live audit</span>
-                    <strong>eco-byte.app</strong>
+                    <span class="preview-kicker">Prospect audit</span>
+                    <strong>cliente-demo.it</strong>
                 </div>
                 <span class="preview-status">Ready</span>
             </div>
@@ -61,20 +61,30 @@
             </div>
             <div class="preview-grid">
                 <div>
-                    <span>CO2/page</span>
-                    <strong>0.21 g</strong>
+                    <span>Leva SEO</span>
+                    <strong>LCP lento</strong>
                 </div>
                 <div>
-                    <span>LCP</span>
-                    <strong>1.8 s</strong>
+                    <span>Azione cliente</span>
+                    <strong>Immagini</strong>
                 </div>
                 <div>
-                    <span>Peso</span>
+                    <span>Peso pagina</span>
                     <strong>740 KB</strong>
                 </div>
                 <div>
                     <span>Saving</span>
                     <strong>23%</strong>
+                </div>
+            </div>
+            <div class="preview-insights">
+                <div>
+                    <span>Consulente</span>
+                    <p>Argomento chiaro per aprire la conversazione tecnica.</p>
+                </div>
+                <div>
+                    <span>Cliente</span>
+                    <p>Priorità concreta da passare a sviluppo o marketing.</p>
                 </div>
             </div>
             <div class="preview-chart" aria-hidden="true">
@@ -94,22 +104,54 @@
         <div class="metric-pill">
             <i class="fas fa-bolt" aria-hidden="true"></i>
             <div>
-                <span>Performance</span>
-                <strong>Core Web Vitals e Lighthouse</strong>
+                <span>Consulente</span>
+                <strong>Evidenze per la trattativa</strong>
+            </div>
+        </div>
+        <div class="metric-pill">
+            <i class="fas fa-user-check" aria-hidden="true"></i>
+            <div>
+                <span>Cliente</span>
+                <strong>Ottimizzazioni comprensibili</strong>
             </div>
         </div>
         <div class="metric-pill">
             <i class="fas fa-leaf" aria-hidden="true"></i>
             <div>
-                <span>Sostenibilità</span>
-                <strong>CO2 stimata per pagina e traffico</strong>
+                <span>Differenziale</span>
+                <strong>SEO tecnico e sostenibilità</strong>
             </div>
         </div>
-        <div class="metric-pill">
-            <i class="fas fa-coins" aria-hidden="true"></i>
-            <div>
-                <span>Business</span>
-                <strong>Costi, risparmi e priorità</strong>
+    </div>
+</section>
+
+<section class="product-section audience-section" id="audiences">
+    <div class="container audience-layout">
+        <div class="section-copy">
+            <p class="eyebrow">Doppia lettura</p>
+            <h2>Stesso dato, due messaggi.</h2>
+            <p>Il consulente trova elementi su cui fare leva in proposta. Il cliente vede interventi concreti, ordinati per impatto e leggibili anche senza competenze tecniche profonde.</p>
+        </div>
+        <div class="audience-grid">
+            <div class="audience-card consultant-card">
+                <div class="audience-icon"><i class="fas fa-briefcase" aria-hidden="true"></i></div>
+                <h3>Per il consulente SEO</h3>
+                <p>Evidenze tecniche da portare in call: rischi di page experience, sprechi front-end, benchmark e argomenti business.</p>
+                <ul>
+                    <li>Leve per giustificare l'intervento</li>
+                    <li>Quick win da inserire in proposta</li>
+                    <li>Dati che rendono concreta la trattativa</li>
+                </ul>
+            </div>
+            <div class="audience-card client-card">
+                <div class="audience-icon"><i class="fas fa-list-check" aria-hidden="true"></i></div>
+                <h3>Per il cliente</h3>
+                <p>Una roadmap chiara: cosa correggere, perché conta e quale beneficio aspettarsi su velocità, esperienza e sprechi.</p>
+                <ul>
+                    <li>Priorità tecniche comprensibili</li>
+                    <li>Risorse da alleggerire o sostituire</li>
+                    <li>Impatto stimato su costi e sostenibilità</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -119,29 +161,29 @@
     <div class="container product-section-grid">
         <div class="section-copy">
             <p class="eyebrow">Metodo</p>
-            <h2>Un audit che parla la lingua del prodotto.</h2>
-            <p>Eco Byte combina misure tecniche e lettura economica: non si ferma al voto, ma trasforma il peso del sito in decisioni operative e priorità di ottimizzazione.</p>
+            <h2>Dal problema tecnico alla proposta di valore.</h2>
+            <p>Eco Byte combina misure tecniche e lettura economica: non si ferma al voto, ma traduce il peso del sito in evidenze commerciali e priorità operative.</p>
         </div>
         <div class="workflow-list">
             <div class="workflow-item">
                 <span>01</span>
                 <div>
                     <h3>Raccoglie segnali</h3>
-                    <p>Risorse, tempi di caricamento, Web Vitals e dati disponibili dalle API di analisi.</p>
+                    <p>Risorse, tempi di caricamento, Web Vitals, Lighthouse e indicatori di peso pagina.</p>
                 </div>
             </div>
             <div class="workflow-item">
                 <span>02</span>
                 <div>
-                    <h3>Calcola impatto</h3>
-                    <p>Stima emissioni, trasferimento dati, costi e sprechi potenziali su base mensile.</p>
+                    <h3>Costruisce evidenza</h3>
+                    <p>Trasforma lentezza, peso e sprechi in argomenti spendibili nella trattativa.</p>
                 </div>
             </div>
             <div class="workflow-item">
                 <span>03</span>
                 <div>
                     <h3>Ordina le azioni</h3>
-                    <p>Porta in superficie gli interventi con impatto migliore su UX, sostenibilità e budget.</p>
+                    <p>Restituisce una roadmap comprensibile per cliente, sviluppo e marketing.</p>
                 </div>
             </div>
         </div>
@@ -175,18 +217,31 @@
 
 <section class="dashboard container" id="dashboardSection" style="display: none;">
     <div class="dashboard-header">
-        <p class="eyebrow">Report</p>
-        <h2>Risultati dell'audit</h2>
-        <p>Una vista unica su performance, impatto ambientale, risorse critiche e ritorno economico delle ottimizzazioni.</p>
+        <p class="eyebrow">Report bifronte</p>
+        <h2>Evidenze per vendere, ottimizzazioni per intervenire.</h2>
+        <p>Una vista unica che aiuta il consulente a spiegare il problema e il cliente a capire cosa fare, con performance, peso pagina, impatto ambientale e business case.</p>
     </div>
 
     <div id="analysisQualityBanner"></div>
 
+    <div class="report-lanes">
+        <div>
+            <span>Leva consulente</span>
+            <strong>Mostra il problema in modo misurabile</strong>
+            <p>Usa Web Vitals, risorse critiche e benchmark per rendere evidente perché serve un intervento tecnico.</p>
+        </div>
+        <div>
+            <span>Roadmap cliente</span>
+            <strong>Trasforma il dato in azioni</strong>
+            <p>Ordina le ottimizzazioni per impatto su velocità, esperienza, costi e sostenibilità.</p>
+        </div>
+    </div>
+
     <div class="score-overview" id="scoreOverview"></div>
 
     <div class="detail-section" id="webVitalsSection">
-        <h2><i class="fas fa-gauge-high" aria-hidden="true"></i> Core Web Vitals</h2>
-        <p>Metriche di esperienza utente che incidono su ranking, conversioni e consumo di risorse.</p>
+        <h2><i class="fas fa-gauge-high" aria-hidden="true"></i> Core Web Vitals e page experience</h2>
+        <p>Metriche da usare in trattativa SEO e da tradurre in interventi tecnici per migliorare esperienza, conversioni e sprechi.</p>
 
         <div class="web-vitals-grid">
             <div class="web-vital-card" id="lcpCard">
@@ -207,8 +262,8 @@
             <div class="web-vital-card" id="fidCard">
                 <div class="web-vital-header">
                     <i class="fas fa-hand-pointer" aria-hidden="true"></i>
-                    <span>FID</span>
-                    <span class="tooltip-icon" title="First Input Delay misura il tempo di risposta alla prima interazione dell'utente.">
+                    <span>Interattività</span>
+                    <span class="tooltip-icon" title="Indicatore di reattività basato sui dati disponibili; utile per discutere INP e interazioni lente.">
                         <i class="fas fa-info-circle" aria-hidden="true"></i>
                     </span>
                 </div>
@@ -240,45 +295,45 @@
         </div>
 
         <div class="web-vitals-info">
-            <h3><i class="fas fa-leaf" aria-hidden="true"></i> Impatto sulla sostenibilità</h3>
-            <p>Una pagina veloce riduce traffico inutile, ricaricamenti e tempo speso prima di completare un'azione.</p>
+            <h3><i class="fas fa-leaf" aria-hidden="true"></i> Perché conta in proposta</h3>
+            <p>Una pagina veloce aiuta il consulente a motivare il lavoro tecnico e il cliente a vedere benefici su esperienza, sprechi e budget.</p>
             <ul>
-                <li><strong>LCP ottimizzato</strong>: meno risorse bloccanti nel caricamento iniziale.</li>
-                <li><strong>FID ottimizzato</strong>: interazioni più rapide e meno sessioni abbandonate.</li>
-                <li><strong>CLS ottimizzato</strong>: percorso utente più stabile e meno spreco operativo.</li>
+                <li><strong>LCP</strong>: evidenzia contenuti principali lenti e asset bloccanti.</li>
+                <li><strong>Interattività</strong>: segnala pagine pesanti da giustificare in roadmap tecnica.</li>
+                <li><strong>CLS</strong>: rende visibili instabilità che danneggiano fiducia e conversioni.</li>
             </ul>
         </div>
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Analisi delle Risorse</h2>
-        <p>Le risorse più pesanti e il loro contributo all'impatto complessivo del sito.</p>
+        <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Risorse critiche per la trattativa</h2>
+        <p>Asset, script e file pesanti da usare come evidenze tecniche e da trasformare in interventi sul sito.</p>
         <div class="resource-list" id="resourceList"></div>
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Suggerimenti di Ottimizzazione</h2>
-        <p>Azioni prioritarie per migliorare efficienza energetica, velocità e costi operativi.</p>
+        <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Roadmap tecnica per il cliente</h2>
+        <p>Ottimizzazioni spiegate in modo pratico: cosa fare, perché farlo e quale impatto aspettarsi.</p>
         <div class="optimization-grid" id="optimizationList"></div>
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Confronto con altri Siti</h2>
-        <p>Posizionamento del sito rispetto a benchmark medi e soglie di qualità.</p>
+        <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Benchmark per la proposta</h2>
+        <p>Confronto utile per contestualizzare il problema e rendere più chiara la priorità dell'intervento.</p>
         <div class="chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
     </div>
 
     <div class="economic-benefits" id="economicBenefits">
-        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Benefici Economici</h2>
-        <p>Stima dei risparmi ottenibili riducendo peso, latenza e sprechi infrastrutturali.</p>
+        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Business case per consulente e cliente</h2>
+        <p>Stima dei risparmi e degli sprechi riducibili, utile per dare peso economico alle ottimizzazioni tecniche.</p>
 
         <div class="benefits-grid" id="benefitsGrid"></div>
 
         <div class="cost-breakdown-section">
-            <h3><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Analisi dettagliata dei costi</h3>
-            <p>Suddivisione dei costi attuali e dei potenziali risparmi mensili.</p>
+            <h3><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Costi da discutere in proposta</h3>
+            <p>Suddivisione dei costi attuali e dei potenziali risparmi mensili da trasformare in argomento decisionale.</p>
 
             <div class="charts-row">
                 <div class="chart-container">
@@ -314,27 +369,27 @@
         </div>
 
         <div class="parameters-info">
-            <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Parametri considerati</h3>
+            <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Parametri che parlano a entrambi</h3>
             <div class="parameters-grid">
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-gauge-high" aria-hidden="true"></i></div>
                     <h4>Prestazioni e SEO</h4>
-                    <p>Velocità e stabilità influenzano ranking, conversioni e traffico sprecato.</p>
+                    <p>Per il consulente sono leva tecnica; per il cliente diventano interventi su UX e conversione.</p>
                 </div>
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div>
                     <h4>Abbandono</h4>
-                    <p>Tempi lenti aumentano uscite premature e ricaricamenti non necessari.</p>
+                    <p>Il dato aiuta a spiegare perché lentezza e instabilità hanno un costo reale.</p>
                 </div>
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-code" aria-hidden="true"></i></div>
                     <h4>Manutenzione</h4>
-                    <p>Front end più leggero significa meno complessità da gestire nel tempo.</p>
+                    <p>La roadmap rende chiaro quali parti del front end vanno alleggerite o ripulite.</p>
                 </div>
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-server" aria-hidden="true"></i></div>
                     <h4>Infrastruttura</h4>
-                    <p>Meno trasferimento dati riduce pressione su hosting, CDN e banda.</p>
+                    <p>Meno trasferimento dati riduce pressione su hosting, CDN, banda e impatto ambientale.</p>
                 </div>
             </div>
         </div>
@@ -343,11 +398,11 @@
     <div class="action-buttons">
         <button class="action-button primary-button" id="downloadReportBtn">
             <i class="fas fa-file-download" aria-hidden="true"></i>
-            Scarica report
+            Esporta audit
         </button>
         <button class="action-button secondary-button" id="shareReportBtn">
             <i class="fas fa-share-nodes" aria-hidden="true"></i>
-            Condividi
+            Condividi con cliente
         </button>
     </div>
 </section>
@@ -356,7 +411,7 @@
     <div class="container contact-layout">
         <div>
             <p class="eyebrow">Next step</p>
-            <h2>Trasforma l'audit in roadmap.</h2>
+            <h2>Porta il report nella prossima call.</h2>
         </div>
         <a class="contact-button" href="#analyzer">
             <i class="fas fa-arrow-up" aria-hidden="true"></i>

@@ -8,6 +8,7 @@
         <nav class="site-nav" aria-label="Navigazione principale">
             <ul>
                 <li><a href="{{ url_for('main.index') }}#analyzer" class="{{ 'active' if request.endpoint == 'main.index' }}">Audit</a></li>
+                <li><a href="{{ url_for('main.index') }}#audiences">Per chi</a></li>
                 <li><a href="{{ url_for('main.index') }}#methodology">Metodo</a></li>
                 <li><a href="{{ url_for('main.index') }}#report-preview">Report</a></li>
                 <li><a href="{{ url_for('main.index') }}#contatti">Contatti</a></li>
@@ -22,7 +23,7 @@
             </label>
             <a class="header-cta" href="{{ url_for('main.index') }}#analyzer">
                 <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                <span>Analizza</span>
+                <span>Prepara audit</span>
             </a>
         </div>
     </div>

@@ -390,17 +390,17 @@ class EnhancedSustainabilityAnalyzer:
             })
             logger.info(f"Aggiunto suggerimento: Migliorare LCP ({self.web_vitals['lcp']/1000:.2f}s)")
 
-        # Ottimizzazione FID
+        # Ottimizzazione interattività
         if self.web_vitals.get('fid', 0) > 100:  # FID > 100ms
             optimizations.append({
-                'title': 'Migliorare FID (First Input Delay)',
-                'description': f'FID è {self.web_vitals["fid"]:.2f}ms, sopra la soglia raccomandata di 100ms. Riduci il JavaScript bloccante e suddividi le attività lunghe per migliorare l\'interattività.',
+                'title': 'Migliorare l\'interattività della pagina',
+                'description': f'La reattività misurata è {self.web_vitals["fid"]:.2f}ms, sopra la soglia raccomandata di 100ms. Riduci il JavaScript bloccante e suddividi le attività lunghe per migliorare le interazioni.',
                 'priority': 'high' if self.web_vitals['fid'] > 300 else 'medium',
                 'impact': round(self.co2_emissions * 0.1, 2),  # 10% di risparmio di CO2
                 'resource_type': 'performance',
                 'economic_impact': round(18.72 * 0.1, 2)
             })
-            logger.info(f"Aggiunto suggerimento: Migliorare FID ({self.web_vitals['fid']:.2f}ms)")
+            logger.info(f"Aggiunto suggerimento: Migliorare interattività ({self.web_vitals['fid']:.2f}ms)")
 
         # Ottimizzazione CLS
         if self.web_vitals.get('cls', 0) > 0.1:  # CLS > 0.1

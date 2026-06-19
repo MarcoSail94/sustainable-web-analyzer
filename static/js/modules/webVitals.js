@@ -114,7 +114,7 @@ function createWebVitalsChart(data) {
             window.webVitalsChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['LCP', 'FID', 'CLS'],
+                    labels: ['LCP', 'Interattività', 'CLS'],
                     datasets: datasets
                 },
                 options: {
@@ -157,7 +157,7 @@ function createWebVitalsChart(data) {
                                     if (index === 0) { // LCP
                                         unit = 's';
                                         displayValue = value;
-                                    } else if (index === 1) { // FID
+                                    } else if (index === 1) { // Interattività
                                         unit = 'ms';
                                         displayValue = value * 1000; // Riconverti in ms
                                     } else { // CLS
@@ -205,7 +205,7 @@ function updateWebVitals(data) {
         { good: 2.5, medium: 4.0 },
         webVitals.scores.lcp);
 
-    // FID (First Input Delay)
+    // Interattività (dato FID/proxy disponibile dal backend)
     updateWebVitalMetric('fid', webVitals.fid, 'ms',
         { good: 100, medium: 300 },
         webVitals.scores.fid);

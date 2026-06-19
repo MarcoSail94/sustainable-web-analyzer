@@ -59,7 +59,7 @@ body {
 .hero h1 {
     background: none;
     color: var(--product-text);
-    font-size: 4rem;
+    font-size: 3.8rem;
     font-weight: 850;
     line-height: 1.02;
     margin: 0 0 1.35rem;
@@ -355,6 +355,36 @@ body {
     font-size: 1.15rem;
 }
 
+.preview-insights {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.85rem;
+}
+
+.preview-insights div {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 7px;
+    padding: 0.85rem;
+}
+
+.preview-insights span {
+    color: #93c5fd;
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 850;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
+
+.preview-insights p {
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+}
+
 .preview-chart {
     align-items: end;
     display: grid;
@@ -440,6 +470,92 @@ body {
 
 .product-section {
     padding: 4.5rem 0;
+}
+
+.audience-section {
+    background: var(--product-bg);
+}
+
+.audience-layout {
+    align-items: start;
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+}
+
+.audience-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.audience-card {
+    background: var(--product-surface);
+    border: 1px solid var(--product-line);
+    border-radius: var(--product-radius);
+    padding: 1.25rem;
+}
+
+.audience-icon {
+    align-items: center;
+    border-radius: 7px;
+    display: inline-flex;
+    height: 2.65rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    width: 2.65rem;
+}
+
+.consultant-card .audience-icon {
+    background: #eef2ff;
+    color: var(--product-blue);
+}
+
+.client-card .audience-icon {
+    background: #ecfdf5;
+    color: var(--product-green);
+}
+
+.audience-card h3 {
+    color: var(--product-text);
+    font-size: 1.12rem;
+    font-weight: 850;
+    margin: 0 0 0.55rem;
+}
+
+.audience-card p,
+.audience-card li {
+    color: var(--product-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.audience-card p {
+    margin: 0 0 0.9rem;
+}
+
+.audience-card ul {
+    list-style: none;
+    margin: 0;
+}
+
+.audience-card li {
+    align-items: baseline;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+}
+
+.audience-card li::before {
+    background: currentColor;
+    border-radius: 999px;
+    content: "";
+    display: inline-flex;
+    flex: 0 0 0.42rem;
+    height: 0.42rem;
+    margin-top: 0.55rem;
+    opacity: 0.55;
+    width: 0.42rem;
 }
 
 .product-section-grid {
@@ -575,6 +691,43 @@ body {
 
 #analysisQualityBanner {
     border-radius: var(--product-radius);
+}
+
+.report-lanes {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 1rem;
+}
+
+.report-lanes > div {
+    background: var(--product-surface);
+    border: 1px solid var(--product-line);
+    border-radius: var(--product-radius);
+    padding: 1.15rem;
+}
+
+.report-lanes span {
+    color: var(--product-green);
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 850;
+    margin-bottom: 0.45rem;
+    text-transform: uppercase;
+}
+
+.report-lanes strong {
+    color: var(--product-text);
+    display: block;
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+}
+
+.report-lanes p {
+    color: var(--product-muted);
+    font-size: 0.94rem;
+    line-height: 1.55;
+    margin: 0;
 }
 
 .score-overview {
@@ -838,6 +991,8 @@ body {
 [data-theme="dark"] .product-strip,
 [data-theme="dark"] .product-section,
 [data-theme="dark"] .contact-band,
+[data-theme="dark"] .audience-card,
+[data-theme="dark"] .report-lanes > div,
 [data-theme="dark"] .detail-section,
 [data-theme="dark"] .economic-benefits,
 [data-theme="dark"] .score-card,
@@ -858,6 +1013,7 @@ body {
 [data-theme="dark"] .input-shell,
 [data-theme="dark"] .metric-pill,
 [data-theme="dark"] .workflow-item,
+[data-theme="dark"] .preview-insights div,
 [data-theme="dark"] .web-vitals-info {
     background: #101826;
     border-color: var(--product-line);
@@ -893,6 +1049,14 @@ body {
     background: #101826;
 }
 
+[data-theme="dark"] .consultant-card .audience-icon {
+    background: #172554;
+}
+
+[data-theme="dark"] .client-card .audience-icon {
+    background: #113827;
+}
+
 @media (max-width: 1080px) {
     .hero-layout {
         grid-template-columns: 1fr;
@@ -913,6 +1077,7 @@ body {
     }
 
     .metric-row,
+    .audience-layout,
     .product-section-grid {
         grid-template-columns: 1fr;
     }
@@ -955,7 +1120,10 @@ body {
         font-size: 4.25rem;
     }
 
-    .preview-grid {
+    .preview-grid,
+    .preview-insights,
+    .audience-grid,
+    .report-lanes {
         grid-template-columns: 1fr;
     }
 

@@ -276,15 +276,15 @@ function populateScoreOverview(metrics, comparison) {
     scoreIcon = 'fa-exclamation-triangle';
   }
 
-  let scoreDescription = "Il tuo sito necessita di miglioramenti";
+  let scoreDescription = "Evidenza tecnica da trasformare in roadmap";
   if (sustainabilityScore >= 80) {
-    scoreDescription = "Il tuo sito è molto efficiente";
+    scoreDescription = "Buona leva differenziante per la proposta";
   } else if (sustainabilityScore >= 50) {
-    scoreDescription = "Il tuo sito è abbastanza efficiente";
+    scoreDescription = "Margine utile per priorità tecniche";
   }
 
   const sustainabilityCard = createScoreCard(
-    'Punteggio Sostenibilità',
+    'Score tecnico',
     `${sustainabilityScore}<span>/100</span>`,
     scoreDescription,
     scoreClass,
@@ -305,13 +305,13 @@ function populateScoreOverview(metrics, comparison) {
 
   let comparisonText = "";
   if (comparison && comparison.better_than_percent) {
-    comparisonText = `Meglio del ${comparison.better_than_percent}% dei siti web`;
+    comparisonText = `Benchmark: meglio del ${comparison.better_than_percent}% dei siti`;
   } else {
-    comparisonText = "Dati di confronto non disponibili";
+    comparisonText = "Dato utile per differenziare la proposta";
   }
 
   const co2Card = createScoreCard(
-    'Emissioni CO₂',
+    'Impatto CO₂',
     `${metrics.co2_emissions}<span>g/view</span>`,
     comparisonText,
     co2Class,
@@ -321,9 +321,9 @@ function populateScoreOverview(metrics, comparison) {
 
   // Peso totale (sempre disponibile con i dati base)
   const sizeCard = createScoreCard(
-    'Peso Totale',
+    'Peso pagina',
     `${metrics.total_size}`,
-    'Dimensione delle risorse del sito',
+    'Asset e script da discutere con il cliente',
     'blue-score',
     'fa-weight-hanging'
   );
@@ -338,17 +338,17 @@ function populateScoreOverview(metrics, comparison) {
     timeClass = 'yellow-score';
   }
 
-  let timeDescription = "Tempo di caricamento del sito";
+  let timeDescription = "Segnale di page experience per la trattativa";
   if (comparison && comparison.average_load_time) {
     if (metrics.load_time > comparison.average_load_time) {
-      timeDescription = `Lento rispetto alla media (${comparison.average_load_time}s)`;
+      timeDescription = `Leva: più lento della media (${comparison.average_load_time}s)`;
     } else {
-      timeDescription = `Veloce rispetto alla media (${comparison.average_load_time}s)`;
+      timeDescription = `Punto forte: meglio della media (${comparison.average_load_time}s)`;
     }
   }
 
   const timeCard = createScoreCard(
-    'Tempo di Caricamento',
+    'Caricamento',
     `${metrics.load_time}<span>s</span>`,
     timeDescription,
     timeClass,
@@ -403,9 +403,9 @@ function populateResourceList(resources) {
 
   resourceList.innerHTML = `
     <div class="resource-item">
-      <div class="resource-name"><strong>Tipo</strong></div>
-      <div class="resource-size"><strong>Dimensione</strong></div>
-      <div class="resource-impact"><strong>Impatto</strong></div>
+      <div class="resource-name"><strong>Risorsa</strong></div>
+      <div class="resource-size"><strong>Peso</strong></div>
+      <div class="resource-impact"><strong>Leva</strong></div>
     </div>
   `;
 
@@ -468,10 +468,14 @@ function populateOptimizations(optimizations) {
     optimizationCard.innerHTML = `
       <h3><i class="fas fa-${priorityIcon}"></i> ${opt.title}</h3>
       <p>${opt.description}</p>
+      <div class="optimization-meta">
+        <span>Leva consulente</span>
+        <span>Task cliente</span>
+      </div>
       <div class="impact-row">
         <div class="impact-item">
           <div class="impact-value">${opt.impact}g</div>
-          <div class="impact-label">CO₂ Risparmiato</div>
+          <div class="impact-label">CO₂ risparmiabile</div>
         </div>
       </div>
     `;

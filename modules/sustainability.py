@@ -212,11 +212,11 @@ class SustainabilityAnalyzer:
                 'economic_impact': round(18.72 * 0.15, 2)
             })
 
-        # FID optimization
+        # Interactivity optimization
         if self.web_vitals.get('fid', 0) > 100:  # FID > 100ms
             optimizations.append({
-                'title': 'Migliorare FID (First Input Delay)',
-                'description': f'FID è {self.web_vitals["fid"]:.2f}ms, sopra la soglia raccomandata di 100ms. Riduci il JavaScript bloccante e suddividi le attività lunghe per migliorare l\'interattività.',
+                'title': 'Migliorare l\'interattività della pagina',
+                'description': f'La reattività misurata è {self.web_vitals["fid"]:.2f}ms, sopra la soglia raccomandata di 100ms. Riduci il JavaScript bloccante e suddividi le attività lunghe per migliorare le interazioni.',
                 'priority': 'high' if self.web_vitals['fid'] > 300 else 'medium',
                 'impact': round(self.co2_emissions * 0.1, 2),  # 10% CO2 savings
                 'resource_type': 'performance',

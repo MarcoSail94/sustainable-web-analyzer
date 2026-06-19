@@ -573,6 +573,24 @@
   line-height: 1.6;
 }
 
+.optimization-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.85rem;
+}
+
+.optimization-meta span {
+  background-color: var(--bg-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--rounded-full);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.28rem 0.55rem;
+  text-transform: uppercase;
+}
+
 .optimization-card .impact-row {
   display: flex;
   justify-content: center;
@@ -1201,4 +1219,9 @@
 
 [data-theme="dark"] .data-unavailable {
   color: var(--gray-500);
+}
+
+[data-theme="dark"] .optimization-meta span {
+  background-color: var(--bg-alt);
+  border-color: var(--border-medium);
 }
