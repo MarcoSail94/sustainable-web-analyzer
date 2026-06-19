@@ -10,7 +10,7 @@ from flask import Blueprint, request, jsonify, current_app
 from urllib.parse import urlparse
 
 from modules.resource_analyzer import ResourceAnalyzer
-from modules.pagespeed_insights_analyzer import PageSpeedInsightsAnalyzer
+from modules.pagespeed_insights_analyzer import PageSpeedInsightsAnalyzer, PageSpeedInsightsError
 from modules.web_vitals_analyzer import WebVitalsAnalyzer
 from modules.sustainability import SustainabilityAnalyzer
 from modules.economics import EconomicAnalyzer
@@ -47,13 +47,15 @@ api_bp = Blueprint('api', __name__)
 @api_bp.route('/health', methods=['GET'])
 def health():
     """Health check endpoint for hosting platforms."""
+    pagespeed_analyzer = PageSpeedInsightsAnalyzer()
     return jsonify({
         'success': True,
         'status': 'ok',
         'analysis_provider': Config.ANALYSIS_PROVIDER,
         'analysis_worker_configured': bool(Config.ANALYSIS_WORKER_URL),
         'inline_analysis_enabled': Config.INLINE_ANALYSIS_ENABLED,
-        'pagespeed_configured': bool(Config.PAGESPEED_API_KEY),
+        'pagespeed_configured': bool(pagespeed_analyzer.api_key),
+        'pagespeed_cache_ttl': Config.PAGESPEED_CACHE_TTL,
         'lighthouse_enabled': Config.LIGHTHOUSE_ENABLED,
         'browser_analysis_enabled': Config.BROWSER_ANALYSIS_ENABLED
     })
@@ -204,6 +206,7 @@ def analyze():
         web_vitals_data = None
         resource_error = None
         web_vitals_error = None
+        web_vitals_error_status = 502
 
         # Step 1: Analisi delle risorse.
         # Con PageSpeed, il breakdown arriva dal risultato Lighthouse e non serve
@@ -304,6 +307,11 @@ def analyze():
                         # Analisi riuscita, esci dal ciclo
                         break
 
+                    except PageSpeedInsightsError as e:
+                        current_app.logger.warning(f"Error with {analyzer_type} analyzer: {str(e)}")
+                        web_vitals_error = f"{analyzer_type} analysis failed: {str(e)}"
+                        web_vitals_error_status = e.status_code or 502
+                        # Continua con il prossimo analizzatore
                     except Exception as e:
                         current_app.logger.warning(f"Error with {analyzer_type} analyzer: {str(e)}")
                         web_vitals_error = f"{analyzer_type} analysis failed: {str(e)}"
@@ -336,8 +344,9 @@ def analyze():
                 return jsonify({
                     'success': False,
                     'error': web_vitals_data.get('error') or 'PageSpeed Insights analysis failed',
+                    'error_type': 'PageSpeedRateLimited' if web_vitals_error_status == 429 else 'PageSpeedAnalysisFailed',
                     'metrics_availability': metrics_availability
-                }), 502
+                }), web_vitals_error_status
 
         # Step 4: Calcola metriche di sostenibilità con l'analizzatore appropriato
         current_app.logger.info("Calculating sustainability metrics")

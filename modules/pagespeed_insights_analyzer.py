@@ -5,7 +5,9 @@ Uses Google's PageSpeed Insights API to obtain Lighthouse lab data without
 running Chromium inside this application runtime.
 """
 
+import copy
 import logging
+import time
 from urllib.parse import urlparse
 
 from config import Config
@@ -14,13 +16,28 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 
+class PageSpeedInsightsError(RuntimeError):
+    """Base error for PageSpeed Insights failures."""
+
+    def __init__(self, message, status_code=None, retryable=False):
+        super().__init__(message)
+        self.status_code = status_code
+        self.retryable = retryable
+
+
+class PageSpeedRateLimitError(PageSpeedInsightsError):
+    """Raised when Google throttles PageSpeed Insights requests."""
+
+
 class PageSpeedInsightsAnalyzer:
     """Analyze a public URL using the PageSpeed Insights API."""
 
     ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
+    _cache = {}
 
     def __init__(self, api_key=None, strategy=None, locale=None, session=None):
-        self.api_key = api_key if api_key is not None else Config.PAGESPEED_API_KEY
+        configured_key = api_key if api_key is not None else Config.PAGESPEED_API_KEY
+        self.api_key = self._normalize_api_key(configured_key)
         self.strategy = (strategy or Config.PAGESPEED_STRATEGY or 'desktop').lower()
         self.locale = locale or Config.PAGESPEED_LOCALE
         self.session = session
@@ -29,14 +46,22 @@ class PageSpeedInsightsAnalyzer:
         """
         Run PageSpeed Insights and return metrics in the existing analyzer shape.
         """
+        cache_key = self._cache_key(url, options=options)
+        cached_metrics = self._get_cached_metrics(cache_key)
+        if cached_metrics:
+            logger.info('Using cached PageSpeed Insights metrics for %s', url)
+            return cached_metrics
+
         session = self.session or self._create_session()
         response = session.get(
             self.ENDPOINT,
             params=self._build_params(url, options=options),
             timeout=timeout or Config.PAGESPEED_TIMEOUT
         )
-        response.raise_for_status()
-        return self._extract_metrics(response.json())
+        self._raise_for_error_response(response)
+        metrics = self._extract_metrics(response.json())
+        self._set_cached_metrics(cache_key, metrics)
+        return metrics
 
     def _build_params(self, url, options=None):
         categories = ['performance', 'accessibility', 'best-practices', 'seo']
@@ -55,6 +80,113 @@ class PageSpeedInsightsAnalyzer:
             params.append(('key', self.api_key))
 
         return params
+
+    def _cache_key(self, url, options=None):
+        return tuple(
+            (name, value)
+            for name, value in self._build_params(url, options=options)
+            if name != 'key'
+        )
+
+    def _get_cached_metrics(self, cache_key):
+        ttl = max(0, getattr(Config, 'PAGESPEED_CACHE_TTL', 0))
+        if ttl == 0:
+            return None
+
+        entry = self._cache.get(cache_key)
+        if not entry:
+            return None
+
+        expires_at, metrics = entry
+        if expires_at <= time.time():
+            self._cache.pop(cache_key, None)
+            return None
+
+        return copy.deepcopy(metrics)
+
+    def _set_cached_metrics(self, cache_key, metrics):
+        ttl = max(0, getattr(Config, 'PAGESPEED_CACHE_TTL', 0))
+        if ttl == 0:
+            return
+
+        max_entries = max(1, getattr(Config, 'PAGESPEED_CACHE_MAX_ENTRIES', 128))
+        if len(self._cache) >= max_entries:
+            oldest_key = min(self._cache, key=lambda key: self._cache[key][0])
+            self._cache.pop(oldest_key, None)
+
+        self._cache[cache_key] = (
+            time.time() + ttl,
+            copy.deepcopy(metrics)
+        )
+
+    def _normalize_api_key(self, api_key):
+        if not api_key:
+            return None
+
+        normalized = str(api_key).strip()
+        if not normalized:
+            return None
+
+        placeholder_tokens = (
+            '<',
+            'change-me',
+            'optional',
+            'your-',
+            'la tua key',
+            'api-key',
+            'google-api-key'
+        )
+        lowered = normalized.lower()
+        if any(token in lowered for token in placeholder_tokens):
+            logger.warning('Ignoring placeholder PageSpeed API key configuration')
+            return None
+
+        return normalized
+
+    def _raise_for_error_response(self, response):
+        if response.status_code < 400:
+            return
+
+        message = self._extract_error_message(response)
+        retry_after = self._retry_after(response)
+
+        if response.status_code == 429:
+            if self.api_key:
+                detail = 'Google ha limitato le richieste PageSpeed per quota o frequenza.'
+            else:
+                detail = (
+                    'Google ha limitato le richieste PageSpeed anonime. '
+                    'Configura una PAGESPEED_API_KEY reale oppure riprova piu tardi.'
+                )
+            if retry_after:
+                detail = f'{detail} Retry-After: {retry_after}.'
+            raise PageSpeedRateLimitError(
+                f'{detail} Dettaglio Google: {message}',
+                status_code=429,
+                retryable=True
+            )
+
+        raise PageSpeedInsightsError(
+            f'PageSpeed Insights returned HTTP {response.status_code}: {message}',
+            status_code=response.status_code,
+            retryable=response.status_code >= 500
+        )
+
+    def _extract_error_message(self, response):
+        try:
+            payload = response.json()
+        except ValueError:
+            text = getattr(response, 'text', '') or response.reason or 'Request failed'
+            return text[:300]
+
+        error = payload.get('error', {})
+        if isinstance(error, dict):
+            return error.get('message') or error.get('status') or 'Request failed'
+        return str(error or 'Request failed')[:300]
+
+    def _retry_after(self, response):
+        headers = getattr(response, 'headers', {}) or {}
+        return headers.get('Retry-After')
 
     def _extract_metrics(self, pagespeed_data):
         lighthouse_data = pagespeed_data.get('lighthouseResult', {})

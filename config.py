@@ -32,6 +32,8 @@ class Config:
     PAGESPEED_STRATEGY = os.environ.get('PAGESPEED_STRATEGY', 'desktop')
     PAGESPEED_LOCALE = os.environ.get('PAGESPEED_LOCALE', 'it')
     PAGESPEED_TIMEOUT = int(os.environ.get('PAGESPEED_TIMEOUT', 120))
+    PAGESPEED_CACHE_TTL = int(os.environ.get('PAGESPEED_CACHE_TTL', 86400))
+    PAGESPEED_CACHE_MAX_ENTRIES = int(os.environ.get('PAGESPEED_CACHE_MAX_ENTRIES', 128))
 
     # Browser settings
     BROWSER_TIMEOUT = 90  # Aumentato da 45 secondi a 90 secondi

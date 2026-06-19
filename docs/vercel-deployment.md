@@ -26,8 +26,14 @@ Vercel does not need Chromium or a dedicated worker for the first release.
 - `PAGESPEED_API_KEY`: optional for trials, recommended for automated usage.
 - `PAGESPEED_STRATEGY=desktop`
 - `PAGESPEED_LOCALE=it`
+- `PAGESPEED_CACHE_TTL=86400`
+- `PAGESPEED_CACHE_MAX_ENTRIES=128`
 - `INLINE_ANALYSIS_ENABLED=false`
 - `REQUIRE_ANALYSIS_AUTH=false`
+
+PageSpeed Insights can be called without a key, but anonymous calls are more
+likely to hit `429 Too Many Requests`. Use a real `PAGESPEED_API_KEY` for
+automated analysis traffic.
 
 ## Optional Worker Environment Variables
 

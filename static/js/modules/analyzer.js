@@ -18,8 +18,10 @@ export function initializeAnalyzer() {
 
   // Gestisci altre interazioni del form
   const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
-  if (toggleAdvancedBtn) {
+  if (toggleAdvancedBtn && !toggleAdvancedBtn._handlerInitialized) {
     toggleAdvancedBtn.addEventListener('click', toggleAdvancedOptions);
+    toggleAdvancedBtn._handlerInitialized = true;
+    toggleAdvancedBtn.setAttribute('aria-expanded', 'false');
   }
 
   // Pre-popola il form se ci sono parametri nell'URL
@@ -36,14 +38,16 @@ export function initializeAnalyzer() {
 
   // Aggiungi funzionalità al pulsante di download
   const downloadReportBtn = document.getElementById('downloadReportBtn');
-  if (downloadReportBtn) {
+  if (downloadReportBtn && !downloadReportBtn._handlerInitialized) {
     downloadReportBtn.addEventListener('click', handleReportDownload);
+    downloadReportBtn._handlerInitialized = true;
   }
 
   // Aggiungi funzionalità al pulsante di condivisione
   const shareReportBtn = document.getElementById('shareReportBtn');
-  if (shareReportBtn) {
+  if (shareReportBtn && !shareReportBtn._handlerInitialized) {
     shareReportBtn.addEventListener('click', handleShareResults);
+    shareReportBtn._handlerInitialized = true;
   }
 }
 
@@ -232,8 +236,8 @@ function toggleAdvancedOptions() {
 
   // Aggiorna il testo del pulsante e l'attributo aria-expanded
   this.innerHTML = isHidden ?
-    '<i class="fas fa-chevron-up"></i> Nascondi Opzioni Avanzate' :
-    '<i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate';
+    '<i class="fas fa-sliders"></i> Nascondi parametri' :
+    '<i class="fas fa-sliders"></i> Parametri';
   this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
 }
 

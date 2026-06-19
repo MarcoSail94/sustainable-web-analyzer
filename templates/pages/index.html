@@ -1,91 +1,200 @@
 {% extends "layouts/default.html" %}
 
-{% block title %}Eco Byte | Analisi di Sostenibilità Web Professionale{% endblock %}
+{% block title %}Eco Byte | Web sustainability audit{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/unified-dashboard.css') }}">
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero">
-    <div class="container hero-content">
-        <h1>Analizza la Sostenibilità del tuo Sito Web</h1>
-        <p>Inserisci l'URL del sito web che desideri analizzare per scoprire il suo impatto ambientale e ricevere suggerimenti per migliorarne l'efficienza energetica ed economica.</p>
+<section class="hero" id="analyzer">
+    <div class="container hero-layout">
+        <div class="hero-copy">
+            <p class="eyebrow">Web sustainability intelligence</p>
+            <h1>Misura l'impatto reale del tuo sito.</h1>
+            <p class="hero-lead">Eco Byte legge performance, peso delle risorse, CO2 stimata e costi operativi in un unico audit pensato per team product, marketing e sviluppo.</p>
 
-        <form id="analyzerForm" class="url-form">
-            <input type="url" id="urlInput" class="url-input" placeholder="https://example.com" required>
-            <button type="submit" class="submit-btn"><i class="fas fa-search"></i> Analizza</button>
-        </form>
+            <form id="analyzerForm" class="url-form product-search">
+                <div class="input-shell">
+                    <i class="fas fa-globe" aria-hidden="true"></i>
+                    <input type="url" id="urlInput" class="url-input" placeholder="https://example.com" aria-label="URL del sito da analizzare" required>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                        <span>Analizza</span>
+                    </button>
+                </div>
+            </form>
 
-        <button id="toggleAdvanced" class="toggle-advanced">
-            <i class="fas fa-chevron-down"></i> Mostra Opzioni Avanzate
-        </button>
+            <div class="hero-controls">
+                <button id="toggleAdvanced" class="toggle-advanced" aria-expanded="false" type="button">
+                    <i class="fas fa-sliders" aria-hidden="true"></i>
+                    Parametri
+                </button>
+                <span class="hero-note">Audit pubblico, nessun account richiesto</span>
+            </div>
 
-        <div id="advancedOptions" style="display: none;" class="form-advanced">
-            <h3><i class="fas fa-sliders-h"></i> Parametri Avanzati</h3>
-            <div class="form-group">
-                <label for="monthlyVisits">Visite Mensili Stimate</label>
-                <input type="number" id="monthlyVisits" class="number-input" value="10000" min="100" step="100">
+            <div id="advancedOptions" style="display: none;" class="form-advanced">
+                <div>
+                    <h3><i class="fas fa-chart-line" aria-hidden="true"></i> Volume traffico</h3>
+                    <p>Usato per stimare costi mensili, trasferimento dati e beneficio economico.</p>
+                </div>
+                <div class="form-group">
+                    <label for="monthlyVisits">Visite mensili stimate</label>
+                    <input type="number" id="monthlyVisits" class="number-input" value="10000" min="100" step="100">
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+
+        <aside class="audit-preview" id="report-preview" aria-label="Anteprima del report Eco Byte">
+            <div class="preview-header">
+                <div>
+                    <span class="preview-kicker">Live audit</span>
+                    <strong>eco-byte.app</strong>
+                </div>
+                <span class="preview-status">Ready</span>
+            </div>
+            <div class="preview-score">
+                <span>86</span>
+                <small>/100</small>
+            </div>
+            <div class="preview-grid">
+                <div>
+                    <span>CO2/page</span>
+                    <strong>0.21 g</strong>
+                </div>
+                <div>
+                    <span>LCP</span>
+                    <strong>1.8 s</strong>
+                </div>
+                <div>
+                    <span>Peso</span>
+                    <strong>740 KB</strong>
+                </div>
+                <div>
+                    <span>Saving</span>
+                    <strong>23%</strong>
+                </div>
+            </div>
+            <div class="preview-chart" aria-hidden="true">
+                <span style="height: 46%"></span>
+                <span style="height: 72%"></span>
+                <span style="height: 58%"></span>
+                <span style="height: 84%"></span>
+                <span style="height: 68%"></span>
+                <span style="height: 92%"></span>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<section class="product-strip" id="about">
+    <div class="container metric-row">
+        <div class="metric-pill">
+            <i class="fas fa-bolt" aria-hidden="true"></i>
+            <div>
+                <span>Performance</span>
+                <strong>Core Web Vitals e Lighthouse</strong>
             </div>
         </div>
-
-        <div id="errorMessage" class="error-message"></div>
+        <div class="metric-pill">
+            <i class="fas fa-leaf" aria-hidden="true"></i>
+            <div>
+                <span>Sostenibilità</span>
+                <strong>CO2 stimata per pagina e traffico</strong>
+            </div>
+        </div>
+        <div class="metric-pill">
+            <i class="fas fa-coins" aria-hidden="true"></i>
+            <div>
+                <span>Business</span>
+                <strong>Costi, risparmi e priorità</strong>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- Loading Section with improved feedback -->
+<section class="product-section" id="methodology">
+    <div class="container product-section-grid">
+        <div class="section-copy">
+            <p class="eyebrow">Metodo</p>
+            <h2>Un audit che parla la lingua del prodotto.</h2>
+            <p>Eco Byte combina misure tecniche e lettura economica: non si ferma al voto, ma trasforma il peso del sito in decisioni operative e priorità di ottimizzazione.</p>
+        </div>
+        <div class="workflow-list">
+            <div class="workflow-item">
+                <span>01</span>
+                <div>
+                    <h3>Raccoglie segnali</h3>
+                    <p>Risorse, tempi di caricamento, Web Vitals e dati disponibili dalle API di analisi.</p>
+                </div>
+            </div>
+            <div class="workflow-item">
+                <span>02</span>
+                <div>
+                    <h3>Calcola impatto</h3>
+                    <p>Stima emissioni, trasferimento dati, costi e sprechi potenziali su base mensile.</p>
+                </div>
+            </div>
+            <div class="workflow-item">
+                <span>03</span>
+                <div>
+                    <h3>Ordina le azioni</h3>
+                    <p>Porta in superficie gli interventi con impatto migliore su UX, sostenibilità e budget.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="loading" id="loadingSection" style="display: none;">
-    <div class="spinner"></div>
-    <p id="loadingMessage">Analisi in corso, attendere prego...</p>
-    <div class="loading-steps">
-        <div class="loading-step" id="loadingStep1">
-            <i class="fas fa-file-code"></i>
-            <span>Analisi risorse</span>
-        </div>
-        <div class="loading-step" id="loadingStep2">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Misurazione performance</span>
-        </div>
-        <div class="loading-step" id="loadingStep3">
-            <i class="fas fa-leaf"></i>
-            <span>Calcolo impatto ambientale</span>
-        </div>
-        <div class="loading-step" id="loadingStep4">
-            <i class="fas fa-chart-line"></i>
-            <span>Analisi economica</span>
+    <div class="loading-card">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Audit in corso...</p>
+        <div class="loading-steps">
+            <div class="loading-step" id="loadingStep1">
+                <i class="fas fa-file-code" aria-hidden="true"></i>
+                <span>Risorse</span>
+            </div>
+            <div class="loading-step" id="loadingStep2">
+                <i class="fas fa-gauge-high" aria-hidden="true"></i>
+                <span>Performance</span>
+            </div>
+            <div class="loading-step" id="loadingStep3">
+                <i class="fas fa-leaf" aria-hidden="true"></i>
+                <span>Impatto</span>
+            </div>
+            <div class="loading-step" id="loadingStep4">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Costi</span>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Dashboard Section -->
 <section class="dashboard container" id="dashboardSection" style="display: none;">
     <div class="dashboard-header">
-        <h2>Risultati dell'Analisi</h2>
-        <p>Ecco i risultati dell'analisi di sostenibilità per il tuo sito web. Scopri come migliorarne l'efficienza.</p>
+        <p class="eyebrow">Report</p>
+        <h2>Risultati dell'audit</h2>
+        <p>Una vista unica su performance, impatto ambientale, risorse critiche e ritorno economico delle ottimizzazioni.</p>
     </div>
 
-    <!-- Area per il banner informativo sulla qualità dell'analisi -->
     <div id="analysisQualityBanner"></div>
 
-    <!-- 1. Overview dei punteggi principali -->
-    <div class="score-overview" id="scoreOverview">
-        <!-- Contenuto generato dinamicamente -->
-    </div>
+    <div class="score-overview" id="scoreOverview"></div>
 
-    <!-- 2. Sezione delle Web Vitals -->
     <div class="detail-section" id="webVitalsSection">
-        <h2><i class="fas fa-tachometer-alt"></i> Core Web Vitals</h2>
-        <p>Metriche avanzate di performance che misurano l'esperienza utente reale. Questi valori influenzano il posizionamento SEO e la sostenibilità del sito.</p>
+        <h2><i class="fas fa-gauge-high" aria-hidden="true"></i> Core Web Vitals</h2>
+        <p>Metriche di esperienza utente che incidono su ranking, conversioni e consumo di risorse.</p>
 
         <div class="web-vitals-grid">
             <div class="web-vital-card" id="lcpCard">
                 <div class="web-vital-header">
-                    <i class="fas fa-paint-brush"></i>
+                    <i class="fas fa-paint-brush" aria-hidden="true"></i>
                     <span>LCP</span>
                     <span class="tooltip-icon" title="Largest Contentful Paint misura quanto tempo impiega il contenuto principale a diventare visibile.">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
                     </span>
                 </div>
                 <div class="web-vital-value" id="lcpValue">0.0s</div>
@@ -97,10 +206,10 @@
 
             <div class="web-vital-card" id="fidCard">
                 <div class="web-vital-header">
-                    <i class="fas fa-mouse-pointer"></i>
+                    <i class="fas fa-hand-pointer" aria-hidden="true"></i>
                     <span>FID</span>
                     <span class="tooltip-icon" title="First Input Delay misura il tempo di risposta alla prima interazione dell'utente.">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
                     </span>
                 </div>
                 <div class="web-vital-value" id="fidValue">0ms</div>
@@ -112,10 +221,10 @@
 
             <div class="web-vital-card" id="clsCard">
                 <div class="web-vital-header">
-                    <i class="fas fa-arrows-alt"></i>
+                    <i class="fas fa-up-down-left-right" aria-hidden="true"></i>
                     <span>CLS</span>
-                    <span class="tooltip-icon" title="Cumulative Layout Shift misura la stabilità visiva durante il caricamento della pagina.">
-                        <i class="fas fa-info-circle"></i>
+                    <span class="tooltip-icon" title="Cumulative Layout Shift misura la stabilità visiva durante il caricamento.">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
                     </span>
                 </div>
                 <div class="web-vital-value" id="clsValue">0.00</div>
@@ -131,62 +240,45 @@
         </div>
 
         <div class="web-vitals-info">
-            <h3><i class="fas fa-leaf"></i> Impatto sulla Sostenibilità</h3>
-            <p>Le Core Web Vitals non influenzano solo l'esperienza utente, ma anche la sostenibilità del sito web:</p>
+            <h3><i class="fas fa-leaf" aria-hidden="true"></i> Impatto sulla sostenibilità</h3>
+            <p>Una pagina veloce riduce traffico inutile, ricaricamenti e tempo speso prima di completare un'azione.</p>
             <ul>
-                <li><strong>LCP ottimizzato</strong>: Riduce il consumo di risorse caricando solo ciò che è necessario per l'utente.</li>
-                <li><strong>FID ottimizzato</strong>: Diminuisce i tassi di abbandono e quindi il consumo energetico dovuto a ricaricamenti inutili.</li>
-                <li><strong>CLS ottimizzato</strong>: Permette agli utenti di completare le attività più velocemente, riducendo il tempo di utilizzo e il consumo energetico.</li>
+                <li><strong>LCP ottimizzato</strong>: meno risorse bloccanti nel caricamento iniziale.</li>
+                <li><strong>FID ottimizzato</strong>: interazioni più rapide e meno sessioni abbandonate.</li>
+                <li><strong>CLS ottimizzato</strong>: percorso utente più stabile e meno spreco operativo.</li>
             </ul>
         </div>
     </div>
 
-    <!-- 3. Il contenitore per le Metriche Avanzate verrà creato dinamicamente qui -->
-
-    <!-- 4. Analisi Risorse -->
     <div class="detail-section">
-        <h2><i class="fas fa-list"></i> Analisi delle Risorse</h2>
-        <p>Panoramica delle risorse del sito web e del loro impatto ambientale.</p>
-
-        <div class="resource-list" id="resourceList">
-            <!-- Contenuto generato dinamicamente -->
-        </div>
+        <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Analisi delle Risorse</h2>
+        <p>Le risorse più pesanti e il loro contributo all'impatto complessivo del sito.</p>
+        <div class="resource-list" id="resourceList"></div>
     </div>
 
-    <!-- 5. Suggerimenti di Ottimizzazione -->
     <div class="detail-section">
-        <h2><i class="fas fa-lightbulb"></i> Suggerimenti di Ottimizzazione</h2>
-        <p>Ecco come puoi migliorare l'efficienza energetica ed economica del tuo sito web:</p>
-
-        <div class="optimization-grid" id="optimizationList">
-            <!-- Contenuto generato dinamicamente -->
-        </div>
+        <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Suggerimenti di Ottimizzazione</h2>
+        <p>Azioni prioritarie per migliorare efficienza energetica, velocità e costi operativi.</p>
+        <div class="optimization-grid" id="optimizationList"></div>
     </div>
 
-    <!-- 6. Confronto con altri siti -->
     <div class="detail-section">
-        <h2><i class="fas fa-chart-bar"></i> Confronto con altri Siti</h2>
-        <p>Ecco come si posiziona il tuo sito rispetto alla media del settore:</p>
-
+        <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Confronto con altri Siti</h2>
+        <p>Posizionamento del sito rispetto a benchmark medi e soglie di qualità.</p>
         <div class="chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
     </div>
 
-    <!-- 7. Benefici economici -->
     <div class="economic-benefits" id="economicBenefits">
-        <h2><i class="fas fa-chart-line"></i> Benefici Economici</h2>
-        <p>Scopri quanto puoi risparmiare ottimizzando il tuo sito web, considerando tutti i fattori di costo.</p>
+        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Benefici Economici</h2>
+        <p>Stima dei risparmi ottenibili riducendo peso, latenza e sprechi infrastrutturali.</p>
 
-        <!-- Card con i valori principali -->
-        <div class="benefits-grid" id="benefitsGrid">
-            <!-- Contenuto generato dinamicamente -->
-        </div>
+        <div class="benefits-grid" id="benefitsGrid"></div>
 
-        <!-- Sezione dei grafici dettagliati -->
         <div class="cost-breakdown-section">
-            <h3><i class="fas fa-file-invoice-dollar"></i> Analisi Dettagliata dei Costi</h3>
-            <p>Ecco una suddivisione dei costi attuali e dei potenziali risparmi del tuo sito web.</p>
+            <h3><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Analisi dettagliata dei costi</h3>
+            <p>Suddivisione dei costi attuali e dei potenziali risparmi mensili.</p>
 
             <div class="charts-row">
                 <div class="chart-container">
@@ -197,21 +289,18 @@
                 </div>
             </div>
 
-            <!-- Tabella con i costi dettagliati -->
             <div class="costs-table-container">
                 <h4>Dettaglio dei costi mensili</h4>
                 <table class="costs-table">
                     <thead>
                     <tr>
                         <th>Categoria</th>
-                        <th>Costo Attuale</th>
-                        <th>Risparmio Potenziale</th>
+                        <th>Costo attuale</th>
+                        <th>Risparmio potenziale</th>
                         <th>Descrizione</th>
                     </tr>
                     </thead>
-                    <tbody id="costsTableBody">
-                    <!-- Contenuto generato dinamicamente -->
-                    </tbody>
+                    <tbody id="costsTableBody"></tbody>
                     <tfoot>
                     <tr>
                         <td><strong>Totale</strong></td>
@@ -224,75 +313,80 @@
             </div>
         </div>
 
-        <!-- Sezione informativa sui parametri considerati -->
         <div class="parameters-info">
-            <h3><i class="fas fa-info-circle"></i> Parametri Considerati</h3>
-            <p>L'analisi include diversi fattori oltre ai semplici costi di hosting e larghezza di banda:</p>
-
+            <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Parametri considerati</h3>
             <div class="parameters-grid">
                 <div class="parameter-card">
-                    <div class="parameter-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <div class="parameter-icon"><i class="fas fa-gauge-high" aria-hidden="true"></i></div>
                     <h4>Prestazioni e SEO</h4>
-                    <p>Siti più veloci ottengono posizionamenti migliori e hanno tassi di conversione più elevati.</p>
+                    <p>Velocità e stabilità influenzano ranking, conversioni e traffico sprecato.</p>
                 </div>
                 <div class="parameter-card">
-                    <div class="parameter-icon"><i class="fas fa-users"></i></div>
-                    <h4>Tassi di Abbandono</h4>
-                    <p>Ogni secondo di ritardo aumenta il tasso di abbandono, con conseguente perdita di potenziali clienti.</p>
+                    <div class="parameter-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div>
+                    <h4>Abbandono</h4>
+                    <p>Tempi lenti aumentano uscite premature e ricaricamenti non necessari.</p>
                 </div>
                 <div class="parameter-card">
-                    <div class="parameter-icon"><i class="fas fa-code"></i></div>
-                    <h4>Costi di Manutenzione</h4>
-                    <p>Siti più leggeri e puliti richiedono meno tempo di sviluppo e debug.</p>
+                    <div class="parameter-icon"><i class="fas fa-code" aria-hidden="true"></i></div>
+                    <h4>Manutenzione</h4>
+                    <p>Front end più leggero significa meno complessità da gestire nel tempo.</p>
                 </div>
                 <div class="parameter-card">
-                    <div class="parameter-icon"><i class="fas fa-server"></i></div>
-                    <h4>Costi Infrastruttura</h4>
-                    <p>Un sito ottimizzato richiede meno risorse di server, con risparmio sui costi di hosting.</p>
+                    <div class="parameter-icon"><i class="fas fa-server" aria-hidden="true"></i></div>
+                    <h4>Infrastruttura</h4>
+                    <p>Meno trasferimento dati riduce pressione su hosting, CDN e banda.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Pulsanti di azione -->
     <div class="action-buttons">
-        <button class="action-button primary-button" id="downloadReportBtn"><i class="fas fa-file-download"></i> Scarica Report Completo</button>
-        <button class="action-button secondary-button" id="shareReportBtn"><i class="fas fa-share-alt"></i> Condividi Risultati</button>
+        <button class="action-button primary-button" id="downloadReportBtn">
+            <i class="fas fa-file-download" aria-hidden="true"></i>
+            Scarica report
+        </button>
+        <button class="action-button secondary-button" id="shareReportBtn">
+            <i class="fas fa-share-nodes" aria-hidden="true"></i>
+            Condividi
+        </button>
+    </div>
+</section>
+
+<section class="contact-band" id="contatti">
+    <div class="container contact-layout">
+        <div>
+            <p class="eyebrow">Next step</p>
+            <h2>Trasforma l'audit in roadmap.</h2>
+        </div>
+        <a class="contact-button" href="#analyzer">
+            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+            Nuova analisi
+        </a>
     </div>
 </section>
 {% endblock %}
 
 {% block js %}
 <script type="module">
-    // Importa il modulo analyzer semplificato
     import { initializeAnalyzer } from '/static/js/modules/analyzer.js';
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Inizializza l'analizzatore
         initializeAnalyzer();
-
-        // Implementa l'aggiornamento delle fasi di caricamento
         setupLoadingSteps();
     });
 
-    /**
-     * Imposta la visualizzazione degli step durante il caricamento
-     */
     function setupLoadingSteps() {
         const steps = document.querySelectorAll('.loading-step');
         if (steps.length === 0) return;
 
-        // Funzione per aggiornare lo stato di un passo
         window.updateLoadingStep = function(stepIndex, status) {
             if (stepIndex < 1 || stepIndex > steps.length) return;
 
             const step = document.getElementById(`loadingStep${stepIndex}`);
             if (!step) return;
 
-            // Rimuovi classi di stato esistenti
             step.classList.remove('active', 'completed', 'error');
 
-            // Aggiungi la classe appropriata
             if (status === 'active') {
                 step.classList.add('active');
             } else if (status === 'completed') {
@@ -302,21 +396,17 @@
             }
         };
 
-        // Simula l'avanzamento automatico
         document.getElementById('analyzerForm').addEventListener('submit', function() {
             const loadingSection = document.getElementById('loadingSection');
             if (!loadingSection || loadingSection.style.display === 'none') return;
 
-            // Resetta gli steps
-            steps.forEach((step, index) => {
+            steps.forEach(step => {
                 step.classList.remove('active', 'completed', 'error');
             });
 
-            // Imposta il primo step come attivo
             setTimeout(() => {
                 window.updateLoadingStep(1, 'active');
 
-                // Implementa una sequenza per simulare il processo
                 setTimeout(() => {
                     window.updateLoadingStep(1, 'completed');
                     window.updateLoadingStep(2, 'active');

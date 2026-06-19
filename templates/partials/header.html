@@ -1,23 +1,29 @@
-<header>
+<header class="site-header">
     <div class="container header-content">
-        <div class="logo">
-            <i class="fas fa-leaf"></i>
+        <a class="logo" href="{{ url_for('main.index') }}" aria-label="Eco Byte home">
+            <span class="logo-mark"><i class="fas fa-leaf" aria-hidden="true"></i></span>
             <span>Eco Byte</span>
-        </div>
-        <nav>
+        </a>
+
+        <nav class="site-nav" aria-label="Navigazione principale">
             <ul>
-                <li><a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' }}">Home</a></li>
-                <li><a href="#about" class="{{ 'active' if request.endpoint == 'main.about' }}">Chi Siamo</a></li>
-                <li><a href="#methodology" class="{{ 'active' if request.endpoint == 'main.methodology' }}">Metodologia</a></li>
-                <li><a href="#contatti">Contatti</a></li>
+                <li><a href="{{ url_for('main.index') }}#analyzer" class="{{ 'active' if request.endpoint == 'main.index' }}">Audit</a></li>
+                <li><a href="{{ url_for('main.index') }}#methodology">Metodo</a></li>
+                <li><a href="{{ url_for('main.index') }}#report-preview">Report</a></li>
+                <li><a href="{{ url_for('main.index') }}#contatti">Contatti</a></li>
             </ul>
         </nav>
 
-        <!-- Toggle per il tema -->
-        <div class="theme-switch">
-            <span class="theme-label">Tema</span>
-            <input type="checkbox" id="themeToggle" class="theme-toggle" aria-label="Cambia tema">
-            <i class="fas fa-moon theme-icon" id="themeIcon"></i>
+        <div class="header-actions">
+            <label class="theme-switch" for="themeToggle">
+                <span class="theme-label">Tema</span>
+                <input type="checkbox" id="themeToggle" class="theme-toggle" aria-label="Cambia tema">
+                <i class="fas fa-moon theme-icon" id="themeIcon" aria-hidden="true"></i>
+            </label>
+            <a class="header-cta" href="{{ url_for('main.index') }}#analyzer">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                <span>Analizza</span>
+            </a>
         </div>
     </div>
 </header>

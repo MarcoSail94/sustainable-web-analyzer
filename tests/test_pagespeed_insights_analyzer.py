@@ -1,9 +1,92 @@
 import unittest
 
+from config import Config
 from modules.pagespeed_insights_analyzer import PageSpeedInsightsAnalyzer
 
 
 class PageSpeedInsightsAnalyzerTest(unittest.TestCase):
+    def setUp(self):
+        PageSpeedInsightsAnalyzer._cache.clear()
+
+    def test_ignores_placeholder_api_key(self):
+        analyzer = PageSpeedInsightsAnalyzer(api_key='<la tua key google, consigliata>')
+
+        params = analyzer._build_params('https://example.com/')
+
+        self.assertNotIn(('key', '<la tua key google, consigliata>'), params)
+
+    def test_includes_real_api_key(self):
+        analyzer = PageSpeedInsightsAnalyzer(api_key='AIza-realistic-key')
+
+        params = analyzer._build_params('https://example.com/')
+
+        self.assertIn(('key', 'AIza-realistic-key'), params)
+
+    def test_error_message_does_not_include_full_request_url(self):
+        class Response:
+            status_code = 400
+            reason = 'Bad Request'
+
+            def json(self):
+                return {'error': {'message': 'API key not valid'}}
+
+        analyzer = PageSpeedInsightsAnalyzer(api_key='AIza-realistic-key')
+
+        with self.assertRaises(RuntimeError) as context:
+            analyzer._raise_for_error_response(Response())
+
+        self.assertEqual(
+            str(context.exception),
+            'PageSpeed Insights returned HTTP 400: API key not valid'
+        )
+        self.assertNotIn('AIza-realistic-key', str(context.exception))
+
+    def test_rate_limit_without_key_suggests_api_key(self):
+        class Response:
+            status_code = 429
+            reason = 'Too Many Requests'
+            headers = {'Retry-After': '60'}
+
+            def json(self):
+                return {'error': {'message': 'Quota exceeded'}}
+
+        analyzer = PageSpeedInsightsAnalyzer(api_key=None)
+
+        with self.assertRaises(RuntimeError) as context:
+            analyzer._raise_for_error_response(Response())
+
+        message = str(context.exception)
+        self.assertIn('PAGESPEED_API_KEY', message)
+        self.assertIn('Retry-After: 60', message)
+        self.assertNotIn('runPagespeed?', message)
+
+    def test_cache_key_does_not_include_api_key(self):
+        first = PageSpeedInsightsAnalyzer(api_key='AIza-first')
+        second = PageSpeedInsightsAnalyzer(api_key='AIza-second')
+
+        self.assertEqual(
+            first._cache_key('https://example.com/'),
+            second._cache_key('https://example.com/')
+        )
+
+    def test_cached_metrics_are_returned_as_copies(self):
+        old_ttl = Config.PAGESPEED_CACHE_TTL
+        Config.PAGESPEED_CACHE_TTL = 60
+        try:
+            analyzer = PageSpeedInsightsAnalyzer(api_key=None)
+            cache_key = analyzer._cache_key('https://example.com/')
+            analyzer._set_cached_metrics(cache_key, {'nested': {'score': 100}})
+
+            cached = analyzer._get_cached_metrics(cache_key)
+            cached['nested']['score'] = 0
+
+            self.assertEqual(
+                analyzer._get_cached_metrics(cache_key)['nested']['score'],
+                100
+            )
+        finally:
+            Config.PAGESPEED_CACHE_TTL = old_ttl
+
     def test_extracts_lighthouse_metrics(self):
         analyzer = PageSpeedInsightsAnalyzer(api_key=None)
 
