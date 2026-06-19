@@ -150,6 +150,12 @@ body {
     transform: translateY(-1px);
 }
 
+.submit-btn:disabled {
+    cursor: wait;
+    opacity: 0.78;
+    transform: none;
+}
+
 .hero-controls {
     align-items: center;
     display: flex;

@@ -58,10 +58,17 @@ export function initializeAnalyzer() {
 async function handleAnalysisSubmit(e) {
   e.preventDefault();
 
+  const analyzerForm = e.currentTarget;
   const urlInput = document.getElementById('urlInput');
   const loadingSection = document.getElementById('loadingSection');
   const dashboardSection = document.getElementById('dashboardSection');
   const errorMessage = document.getElementById('errorMessage');
+  const submitButton = analyzerForm?.querySelector('.submit-btn');
+  const loadingMessage = document.getElementById('loadingMessage');
+
+  if (analyzerForm?._analysisInProgress) {
+    return;
+  }
 
   // Valida l'input
   if (!urlInput || !urlInput.value) {
@@ -85,9 +92,20 @@ async function handleAnalysisSubmit(e) {
     errorMessage.style.display = 'none';
   }
 
+  setAnalysisInProgress(analyzerForm, submitButton, true);
+
   // Mostra il caricamento
   if (loadingSection) {
     loadingSection.style.display = 'block';
+    loadingSection.removeAttribute('aria-hidden');
+
+    if (loadingMessage) {
+      loadingMessage.textContent = 'Audit in corso, raccolgo evidenze tecniche...';
+    }
+
+    requestAnimationFrame(() => {
+      loadingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   if (dashboardSection) {
@@ -112,11 +130,13 @@ async function handleAnalysisSubmit(e) {
     // Nascondi il caricamento
     if (loadingSection) {
       loadingSection.style.display = 'none';
+      loadingSection.setAttribute('aria-hidden', 'true');
     }
 
     if (!data.success) {
       // Mostra errore
       showError(errorMessage, data.error || "Si è verificato un errore durante l'analisi");
+      setAnalysisInProgress(analyzerForm, submitButton, false);
       return;
     }
 
@@ -148,11 +168,28 @@ async function handleAnalysisSubmit(e) {
     // Nascondi il caricamento
     if (loadingSection) {
       loadingSection.style.display = 'none';
+      loadingSection.setAttribute('aria-hidden', 'true');
     }
 
     // Mostra errore
     showError(errorMessage, "Si è verificato un errore durante l'analisi: " + (error.message || 'Errore sconosciuto'));
+  } finally {
+    setAnalysisInProgress(analyzerForm, submitButton, false);
   }
+}
+
+function setAnalysisInProgress(form, submitButton, isInProgress) {
+  if (form) {
+    form._analysisInProgress = isInProgress;
+    form.setAttribute('aria-busy', isInProgress ? 'true' : 'false');
+  }
+
+  if (!submitButton) return;
+
+  submitButton.disabled = isInProgress;
+  submitButton.innerHTML = isInProgress
+    ? '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>Audit in corso...</span>'
+    : '<i class="fas fa-magnifying-glass" aria-hidden="true"></i><span>Prepara audit</span>';
 }
 
 /**

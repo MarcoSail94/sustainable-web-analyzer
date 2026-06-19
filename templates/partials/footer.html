@@ -3,9 +3,9 @@
         <div class="footer-info">
             <a class="footer-logo" href="{{ url_for('main.index') }}">
                 <span class="logo-mark"><i class="fas fa-leaf" aria-hidden="true"></i></span>
-                <span>Eco Byte</span>
+                <span>{{ config.get('APP_BRAND_NAME', 'Client Audit') }}</span>
             </a>
-            <p>Pre-audit tecnico SEO per mostrare evidenze al consulente e ottimizzazioni concrete al cliente.</p>
+            <p>{{ config.get('APP_BRAND_TAGLINE', 'Pre-audit tecnico SEO per trattative commerciali') }}. Pensato per diventare lo strumento dell'agenzia durante la discussione con il cliente finale.</p>
         </div>
 
         <div class="footer-links-section">
@@ -37,6 +37,6 @@
         </div>
     </div>
     <div class="copyright container">
-        &copy; {{ now() }} Eco Byte. Built for lighter web products.
+        &copy; {{ now() }} {{ config.get('APP_BRAND_NAME', 'Client Audit') }}. Report tecnico brandizzabile.
     </div>
 </footer>

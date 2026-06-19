@@ -1,6 +1,6 @@
 {% extends "layouts/default.html" %}
 
-{% block title %}Eco Byte | Pre-audit tecnico SEO per clienti{% endblock %}
+{% block title %}{{ config.get('APP_BRAND_NAME', 'Client Audit') }} | Pre-audit tecnico SEO per prospect{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
@@ -10,9 +10,9 @@
 <section class="hero" id="analyzer">
     <div class="container hero-layout">
         <div class="hero-copy">
-            <p class="eyebrow">Technical SEO sales audit</p>
-            <h1>Prepara evidenze tecniche per convincere e ottimizzazioni da eseguire.</h1>
-            <p class="hero-lead">Eco Byte legge Core Web Vitals, peso pagina, CO2 stimata e costi operativi in un report che parla sia al consulente SEO sia al cliente in fase di trattativa.</p>
+            <p class="eyebrow">Agency sales audit</p>
+            <h1>Analizza il sito del prospect mentre costruisci la proposta.</h1>
+            <p class="hero-lead">Una console white-label per l'azienda SEO: genera evidenze tecniche da usare in trattativa e ottimizzazioni chiare da mostrare al cliente finale.</p>
 
             <form id="analyzerForm" class="url-form product-search">
                 <div class="input-shell">
@@ -30,7 +30,7 @@
                     <i class="fas fa-sliders" aria-hidden="true"></i>
                     Parametri
                 </button>
-                <span class="hero-note">Pensato per call commerciali, proposte e roadmap tecniche</span>
+                <span class="hero-note">Report brandizzabile per call commerciali, follow-up e proposta</span>
             </div>
 
             <div id="advancedOptions" style="display: none;" class="form-advanced">
@@ -47,13 +47,13 @@
             <div id="errorMessage" class="error-message"></div>
         </div>
 
-        <aside class="audit-preview" id="report-preview" aria-label="Anteprima del report Eco Byte">
+        <aside class="audit-preview" id="report-preview" aria-label="Anteprima del report tecnico SEO">
             <div class="preview-header">
                 <div>
-                    <span class="preview-kicker">Prospect audit</span>
+                    <span class="preview-kicker">Audit prospect</span>
                     <strong>cliente-demo.it</strong>
                 </div>
-                <span class="preview-status">Ready</span>
+                <span class="preview-status">White-label</span>
             </div>
             <div class="preview-score">
                 <span>86</span>
@@ -61,7 +61,7 @@
             </div>
             <div class="preview-grid">
                 <div>
-                    <span>Leva SEO</span>
+                    <span>Leva agenzia</span>
                     <strong>LCP lento</strong>
                 </div>
                 <div>
@@ -73,18 +73,18 @@
                     <strong>740 KB</strong>
                 </div>
                 <div>
-                    <span>Saving</span>
+                    <span>Business case</span>
                     <strong>23%</strong>
                 </div>
             </div>
             <div class="preview-insights">
                 <div>
-                    <span>Consulente</span>
-                    <p>Argomento chiaro per aprire la conversazione tecnica.</p>
+                    <span>Agenzia SEO</span>
+                    <p>Argomento misurabile per sostenere proposta e preventivo.</p>
                 </div>
                 <div>
-                    <span>Cliente</span>
-                    <p>Priorità concreta da passare a sviluppo o marketing.</p>
+                    <span>Cliente finale</span>
+                    <p>Priorità concreta da capire, approvare e assegnare.</p>
                 </div>
             </div>
             <div class="preview-chart" aria-hidden="true">
@@ -104,22 +104,22 @@
         <div class="metric-pill">
             <i class="fas fa-bolt" aria-hidden="true"></i>
             <div>
-                <span>Consulente</span>
-                <strong>Evidenze per la trattativa</strong>
+                <span>Agenzia SEO</span>
+                <strong>Evidenze per chiudere la proposta</strong>
             </div>
         </div>
         <div class="metric-pill">
             <i class="fas fa-user-check" aria-hidden="true"></i>
             <div>
-                <span>Cliente</span>
+                <span>Cliente finale</span>
                 <strong>Ottimizzazioni comprensibili</strong>
             </div>
         </div>
         <div class="metric-pill">
             <i class="fas fa-leaf" aria-hidden="true"></i>
             <div>
-                <span>Differenziale</span>
-                <strong>SEO tecnico e sostenibilità</strong>
+                <span>White-label</span>
+                <strong>Report con il brand dell'agenzia</strong>
             </div>
         </div>
     </div>
@@ -128,25 +128,25 @@
 <section class="product-section audience-section" id="audiences">
     <div class="container audience-layout">
         <div class="section-copy">
-            <p class="eyebrow">Doppia lettura</p>
-            <h2>Stesso dato, due messaggi.</h2>
-            <p>Il consulente trova elementi su cui fare leva in proposta. Il cliente vede interventi concreti, ordinati per impatto e leggibili anche senza competenze tecniche profonde.</p>
+            <p class="eyebrow">Durante la trattativa</p>
+            <h2>Uno strumento dell'agenzia, leggibile dal cliente.</h2>
+            <p>Il report deve aiutare chi vende SEO a creare urgenza e fiducia, ma anche permettere al cliente finale di capire quali interventi approvare.</p>
         </div>
         <div class="audience-grid">
             <div class="audience-card consultant-card">
                 <div class="audience-icon"><i class="fas fa-briefcase" aria-hidden="true"></i></div>
-                <h3>Per il consulente SEO</h3>
-                <p>Evidenze tecniche da portare in call: rischi di page experience, sprechi front-end, benchmark e argomenti business.</p>
+                <h3>Per l'azienda SEO</h3>
+                <p>Evidenze tecniche da usare mentre discute con il prospect: page experience, sprechi front-end, benchmark e argomenti business.</p>
                 <ul>
-                    <li>Leve per giustificare l'intervento</li>
-                    <li>Quick win da inserire in proposta</li>
-                    <li>Dati che rendono concreta la trattativa</li>
+                    <li>Leve per giustificare servizio e investimento</li>
+                    <li>Quick win da inserire nella proposta commerciale</li>
+                    <li>Dati proprietari percepiti come metodo dell'agenzia</li>
                 </ul>
             </div>
             <div class="audience-card client-card">
                 <div class="audience-icon"><i class="fas fa-list-check" aria-hidden="true"></i></div>
-                <h3>Per il cliente</h3>
-                <p>Una roadmap chiara: cosa correggere, perché conta e quale beneficio aspettarsi su velocità, esperienza e sprechi.</p>
+                <h3>Per il cliente finale</h3>
+                <p>Una roadmap chiara da discutere in call: cosa correggere, perché conta e quale beneficio aspettarsi.</p>
                 <ul>
                     <li>Priorità tecniche comprensibili</li>
                     <li>Risorse da alleggerire o sostituire</li>
@@ -161,8 +161,8 @@
     <div class="container product-section-grid">
         <div class="section-copy">
             <p class="eyebrow">Metodo</p>
-            <h2>Dal problema tecnico alla proposta di valore.</h2>
-            <p>Eco Byte combina misure tecniche e lettura economica: non si ferma al voto, ma traduce il peso del sito in evidenze commerciali e priorità operative.</p>
+            <h2>Dal problema tecnico alla decisione commerciale.</h2>
+            <p>La console combina misure tecniche e lettura economica: non si ferma al voto, ma traduce il peso del sito in argomenti per vendere e priorità per intervenire.</p>
         </div>
         <div class="workflow-list">
             <div class="workflow-item">
@@ -176,14 +176,14 @@
                 <span>02</span>
                 <div>
                     <h3>Costruisce evidenza</h3>
-                    <p>Trasforma lentezza, peso e sprechi in argomenti spendibili nella trattativa.</p>
+                    <p>Trasforma lentezza, peso e sprechi in evidenze spendibili dall'agenzia.</p>
                 </div>
             </div>
             <div class="workflow-item">
                 <span>03</span>
                 <div>
                     <h3>Ordina le azioni</h3>
-                    <p>Restituisce una roadmap comprensibile per cliente, sviluppo e marketing.</p>
+                    <p>Restituisce una roadmap chiara per cliente finale, sviluppo e marketing.</p>
                 </div>
             </div>
         </div>
@@ -217,21 +217,21 @@
 
 <section class="dashboard container" id="dashboardSection" style="display: none;">
     <div class="dashboard-header">
-        <p class="eyebrow">Report bifronte</p>
-        <h2>Evidenze per vendere, ottimizzazioni per intervenire.</h2>
-        <p>Una vista unica che aiuta il consulente a spiegare il problema e il cliente a capire cosa fare, con performance, peso pagina, impatto ambientale e business case.</p>
+        <p class="eyebrow">Report da call</p>
+        <h2>Evidenze per l'agenzia, azioni per il cliente finale.</h2>
+        <p>Una vista unica da usare durante la discussione commerciale: spiega perché intervenire e rende chiare le ottimizzazioni da mettere in roadmap.</p>
     </div>
 
     <div id="analysisQualityBanner"></div>
 
     <div class="report-lanes">
         <div>
-            <span>Leva consulente</span>
+            <span>Leva agenzia</span>
             <strong>Mostra il problema in modo misurabile</strong>
-            <p>Usa Web Vitals, risorse critiche e benchmark per rendere evidente perché serve un intervento tecnico.</p>
+            <p>Usa Web Vitals, risorse critiche e benchmark per rendere evidente perché il prospect ha bisogno dell'intervento.</p>
         </div>
         <div>
-            <span>Roadmap cliente</span>
+            <span>Roadmap cliente finale</span>
             <strong>Trasforma il dato in azioni</strong>
             <p>Ordina le ottimizzazioni per impatto su velocità, esperienza, costi e sostenibilità.</p>
         </div>
@@ -241,7 +241,7 @@
 
     <div class="detail-section" id="webVitalsSection">
         <h2><i class="fas fa-gauge-high" aria-hidden="true"></i> Core Web Vitals e page experience</h2>
-        <p>Metriche da usare in trattativa SEO e da tradurre in interventi tecnici per migliorare esperienza, conversioni e sprechi.</p>
+        <p>Metriche da usare in call e da tradurre in interventi tecnici per migliorare esperienza, conversioni e sprechi.</p>
 
         <div class="web-vitals-grid">
             <div class="web-vital-card" id="lcpCard">
@@ -296,7 +296,7 @@
 
         <div class="web-vitals-info">
             <h3><i class="fas fa-leaf" aria-hidden="true"></i> Perché conta in proposta</h3>
-            <p>Una pagina veloce aiuta il consulente a motivare il lavoro tecnico e il cliente a vedere benefici su esperienza, sprechi e budget.</p>
+            <p>Una pagina veloce aiuta l'agenzia a motivare il lavoro tecnico e il cliente finale a vedere benefici su esperienza, sprechi e budget.</p>
             <ul>
                 <li><strong>LCP</strong>: evidenzia contenuti principali lenti e asset bloccanti.</li>
                 <li><strong>Interattività</strong>: segnala pagine pesanti da giustificare in roadmap tecnica.</li>
@@ -306,19 +306,19 @@
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Risorse critiche per la trattativa</h2>
-        <p>Asset, script e file pesanti da usare come evidenze tecniche e da trasformare in interventi sul sito.</p>
+        <h2><i class="fas fa-layer-group" aria-hidden="true"></i> Risorse critiche da mostrare in call</h2>
+        <p>Asset, script e file pesanti da usare come evidenze tecniche e da trasformare in interventi sul sito del cliente.</p>
         <div class="resource-list" id="resourceList"></div>
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Roadmap tecnica per il cliente</h2>
+        <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Roadmap tecnica per il cliente finale</h2>
         <p>Ottimizzazioni spiegate in modo pratico: cosa fare, perché farlo e quale impatto aspettarsi.</p>
         <div class="optimization-grid" id="optimizationList"></div>
     </div>
 
     <div class="detail-section">
-        <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Benchmark per la proposta</h2>
+        <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Benchmark per sostenere la proposta</h2>
         <p>Confronto utile per contestualizzare il problema e rendere più chiara la priorità dell'intervento.</p>
         <div class="chart-container">
             <canvas id="comparisonChart"></canvas>
@@ -326,7 +326,7 @@
     </div>
 
     <div class="economic-benefits" id="economicBenefits">
-        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Business case per consulente e cliente</h2>
+        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Business case per proposta e cliente finale</h2>
         <p>Stima dei risparmi e degli sprechi riducibili, utile per dare peso economico alle ottimizzazioni tecniche.</p>
 
         <div class="benefits-grid" id="benefitsGrid"></div>
@@ -369,12 +369,12 @@
         </div>
 
         <div class="parameters-info">
-            <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Parametri che parlano a entrambi</h3>
+            <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Parametri utili nella discussione</h3>
             <div class="parameters-grid">
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-gauge-high" aria-hidden="true"></i></div>
                     <h4>Prestazioni e SEO</h4>
-                    <p>Per il consulente sono leva tecnica; per il cliente diventano interventi su UX e conversione.</p>
+                    <p>Per l'agenzia sono leva tecnica; per il cliente diventano interventi su UX e conversione.</p>
                 </div>
                 <div class="parameter-card">
                     <div class="parameter-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div>
@@ -402,7 +402,7 @@
         </button>
         <button class="action-button secondary-button" id="shareReportBtn">
             <i class="fas fa-share-nodes" aria-hidden="true"></i>
-            Condividi con cliente
+            Condividi con cliente finale
         </button>
     </div>
 </section>
@@ -415,7 +415,7 @@
         </div>
         <a class="contact-button" href="#analyzer">
             <i class="fas fa-arrow-up" aria-hidden="true"></i>
-            Nuova analisi
+            Nuovo audit
         </a>
     </div>
 </section>

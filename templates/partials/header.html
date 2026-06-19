@@ -1,8 +1,8 @@
 <header class="site-header">
     <div class="container header-content">
-        <a class="logo" href="{{ url_for('main.index') }}" aria-label="Eco Byte home">
+        <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ config.get('APP_BRAND_NAME', 'Client Audit') }} home">
             <span class="logo-mark"><i class="fas fa-leaf" aria-hidden="true"></i></span>
-            <span>Eco Byte</span>
+            <span>{{ config.get('APP_BRAND_NAME', 'Client Audit') }}</span>
         </a>
 
         <nav class="site-nav" aria-label="Navigazione principale">
@@ -23,7 +23,7 @@
             </label>
             <a class="header-cta" href="{{ url_for('main.index') }}#analyzer">
                 <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                <span>Prepara audit</span>
+                <span>Nuovo audit</span>
             </a>
         </div>
     </div>

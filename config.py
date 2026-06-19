@@ -28,6 +28,11 @@ class Config:
         'ANALYSIS_PROVIDER',
         'pagespeed' if IS_VERCEL else 'local'
     )
+    APP_BRAND_NAME = os.environ.get('APP_BRAND_NAME', 'Client Audit')
+    APP_BRAND_TAGLINE = os.environ.get(
+        'APP_BRAND_TAGLINE',
+        'Pre-audit tecnico SEO per trattative commerciali'
+    )
     PAGESPEED_API_KEY = os.environ.get('PAGESPEED_API_KEY')
     PAGESPEED_STRATEGY = os.environ.get('PAGESPEED_STRATEGY', 'desktop')
     PAGESPEED_LOCALE = os.environ.get('PAGESPEED_LOCALE', 'it')
